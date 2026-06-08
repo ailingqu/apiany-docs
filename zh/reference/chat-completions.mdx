@@ -1,0 +1,27 @@
+---
+title: Chat Completions
+description: OpenAI 兼容的对话生成接口。
+---
+
+使用 `/v1/chat/completions` 调用 OpenAI 兼容的对话生成接口。
+
+```bash
+curl https://api.apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "system", "content": "You are concise." },
+      { "role": "user", "content": "用一句话解释什么是 API 聚合。" }
+    ],
+    "temperature": 0.7
+  }'
+```
+
+## 说明
+
+- `model` 是 APIAny.AI 的公开模型 ID，不是上游供应商的真实模型 ID。
+- 当前第一阶段以非 streaming 调用为主。
+- 如果上游返回 token usage，平台会尽量归一化到 OpenAI 风格的 `usage` 对象。
+

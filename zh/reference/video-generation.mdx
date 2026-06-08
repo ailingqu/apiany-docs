@@ -1,0 +1,26 @@
+---
+title: 视频生成
+description: 创建视频生成任务并轮询结果。
+---
+
+使用 `/v1/videos/generations` 创建视频生成任务。
+
+```bash
+curl https://api.apiany.ai/v1/videos/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "A cinematic product launch shot for an AI API platform",
+    "duration": "10s",
+    "resolution": "720p",
+    "ratio": "16:9"
+  }'
+```
+
+`/v1/video/generations` 是兼容旧路径的别名，推荐新集成使用复数路径 `/v1/videos/generations`。
+
+## 同步等待接口
+
+`/v1/videos/generations/sync` 会创建视频任务并在同一个 HTTP 请求中等待结果。长耗时任务建议使用异步创建和任务轮询。
+

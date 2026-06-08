@@ -1,0 +1,25 @@
+---
+title: Webhooks
+description: 接收异步任务完成回调。
+---
+
+在 API Key 或请求允许的情况下，异步媒体任务可以配置 callback URL。
+
+当回调发送失败时，平台会根据配置进行重试。
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "result": {
+    "type": "video",
+    "urls": ["https://.../video.mp4"]
+  }
+}
+```
+
+## 建议
+
+对于高价值工作流，收到 webhook 后仍建议通过 `/v1/tasks/{task_id}` 查询一次最终状态，再执行后续业务逻辑。
+

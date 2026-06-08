@@ -1,0 +1,22 @@
+---
+title: Messages
+description: Anthropic 兼容的 Messages 接口。
+---
+
+如果你的客户端已经使用 Anthropic Messages 格式，可以调用 `/v1/messages`。
+
+```bash
+curl https://api.apiany.ai/v1/messages \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "minimax-m3",
+    "max_tokens": 512,
+    "messages": [
+      { "role": "user", "content": "帮我写三个 API 文档章节标题。" }
+    ]
+  }'
+```
+
+APIAny.AI 会将请求转换为内部标准对话格式，选择可用上游通道，并返回 Anthropic 兼容的响应。
+

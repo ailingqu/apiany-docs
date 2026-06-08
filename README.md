@@ -23,7 +23,18 @@ pnpm dev
 
 The canonical API reference lives in `openapi.json`.
 
-For now, update this file directly when public endpoints change. The `scripts/sync-from-platform.mjs` file is the reserved integration point for exporting route and model metadata from the APIAny.AI platform repository later.
+For Chinese API reference content, keep `zh/openapi.json` in sync with `openapi.json`.
+
+For now, update these files directly when public endpoints change. The `scripts/sync-from-platform.mjs` file is the reserved integration point for exporting route and model metadata from the APIAny.AI platform repository later.
+
+## Internationalization
+
+Mintlify multilingual docs use language-specific content paths:
+
+- English: root MDX files, for example `introduction.mdx`.
+- Chinese: `zh/` MDX files, for example `zh/introduction.mdx`.
+
+Do not reuse the same page path in multiple languages. When adding a new English page, add the matching Chinese page under `zh/` and register both paths in `docs.json`.
 
 ## Repository boundary
 
@@ -31,8 +42,8 @@ Keep this repository focused on public documentation:
 
 - Guides and concepts: MDX files.
 - Interactive endpoint reference: `openapi.json`.
+- Chinese endpoint reference: `zh/openapi.json`.
 - AI-readable summary: `llms.txt`.
 - Maintenance scripts: `scripts/`.
 
 Do not import runtime code from the app repository. The app can export stable documentation data, and this docs repo can consume that exported data.
-

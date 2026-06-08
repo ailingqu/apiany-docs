@@ -17,76 +17,156 @@
     "dark": "/logo.svg",
     "href": "https://apiany.ai"
   },
-  "navbar": {
-    "links": [
-      {
-        "label": "Dashboard",
-        "href": "https://apiany.ai/dashboard"
-      },
-      {
-        "label": "Pricing",
-        "href": "https://apiany.ai/pricing"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Get API key",
-      "href": "https://apiany.ai/dashboard/api-keys"
-    }
-  },
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "Guides",
-        "groups": [
+        "language": "en",
+        "default": true,
+        "navbar": {
+          "links": [
+            {
+              "label": "Dashboard",
+              "href": "https://apiany.ai/dashboard"
+            },
+            {
+              "label": "Pricing",
+              "href": "https://apiany.ai/pricing"
+            }
+          ],
+          "primary": {
+            "type": "button",
+            "label": "Get API key",
+            "href": "https://apiany.ai/dashboard/api-keys"
+          }
+        },
+        "tabs": [
           {
-            "group": "Get started",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "authentication"
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Get started",
+                "pages": [
+                  "introduction",
+                  "quickstart",
+                  "authentication"
+                ]
+              },
+              {
+                "group": "Core APIs",
+                "pages": [
+                  "reference/chat-completions",
+                  "reference/messages",
+                  "reference/gemini-generate-content",
+                  "reference/image-generation",
+                  "reference/video-generation",
+                  "reference/tasks"
+                ]
+              },
+              {
+                "group": "Operations",
+                "pages": [
+                  "operations/billing",
+                  "operations/errors",
+                  "operations/rate-limits",
+                  "operations/webhooks",
+                  "operations/update-workflow"
+                ]
+              }
             ]
           },
           {
-            "group": "Core APIs",
-            "pages": [
-              "reference/chat-completions",
-              "reference/messages",
-              "reference/gemini-generate-content",
-              "reference/image-generation",
-              "reference/video-generation",
-              "reference/tasks"
+            "tab": "Models",
+            "groups": [
+              {
+                "group": "Model catalog",
+                "pages": [
+                  "models/overview",
+                  "models/image-models",
+                  "models/video-models",
+                  "models/chat-models"
+                ]
+              }
             ]
           },
           {
-            "group": "Operations",
-            "pages": [
-              "operations/billing",
-              "operations/errors",
-              "operations/rate-limits",
-              "operations/webhooks",
-              "operations/update-workflow"
-            ]
+            "tab": "API Reference",
+            "openapi": "openapi.json"
           }
         ]
       },
       {
-        "tab": "Models",
-        "groups": [
+        "language": "zh",
+        "navbar": {
+          "links": [
+            {
+              "label": "控制台",
+              "href": "https://apiany.ai/zh/dashboard"
+            },
+            {
+              "label": "价格",
+              "href": "https://apiany.ai/zh/pricing"
+            }
+          ],
+          "primary": {
+            "type": "button",
+            "label": "获取 API Key",
+            "href": "https://apiany.ai/zh/dashboard/api-keys"
+          }
+        },
+        "tabs": [
           {
-            "group": "Model catalog",
-            "pages": [
-              "models/overview",
-              "models/image-models",
-              "models/video-models",
-              "models/chat-models"
+            "tab": "指南",
+            "groups": [
+              {
+                "group": "快速开始",
+                "pages": [
+                  "zh/introduction",
+                  "zh/quickstart",
+                  "zh/authentication"
+                ]
+              },
+              {
+                "group": "核心 API",
+                "pages": [
+                  "zh/reference/chat-completions",
+                  "zh/reference/messages",
+                  "zh/reference/gemini-generate-content",
+                  "zh/reference/image-generation",
+                  "zh/reference/video-generation",
+                  "zh/reference/tasks"
+                ]
+              },
+              {
+                "group": "运营与计费",
+                "pages": [
+                  "zh/operations/billing",
+                  "zh/operations/errors",
+                  "zh/operations/rate-limits",
+                  "zh/operations/webhooks",
+                  "zh/operations/update-workflow"
+                ]
+              }
             ]
+          },
+          {
+            "tab": "模型",
+            "groups": [
+              {
+                "group": "模型目录",
+                "pages": [
+                  "zh/models/overview",
+                  "zh/models/image-models",
+                  "zh/models/video-models",
+                  "zh/models/chat-models"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API 参考",
+            "openapi": "zh/openapi.json"
           }
         ]
-      },
-      {
-        "tab": "API Reference",
-        "openapi": "openapi.json"
       }
     ]
   },

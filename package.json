@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "npx mintlify dev",
-    "validate": "node scripts/validate-openapi.mjs",
+    "validate": "node scripts/validate-openapi.mjs && node scripts/validate-docs.mjs",
     "sync:platform": "node scripts/sync-from-platform.mjs"
   }
 }
-

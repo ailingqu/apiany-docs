@@ -1,0 +1,60 @@
+---
+title: 快速开始
+description: 发送第一条 APIAny.AI 请求。
+---
+
+## 1. 创建 API Key
+
+进入 APIAny.AI 控制台，在 API Keys 页面创建项目密钥。
+
+<Snippet file="zh/snippets/auth-header.mdx" />
+
+## 2. 获取模型列表
+
+```bash
+curl https://api.apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 3. 调用对话模型
+
+```bash
+curl https://api.apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "user", "content": "为 APIAny.AI 写一句简短的产品标语。" }
+    ]
+  }'
+```
+
+## 4. 创建图片任务
+
+```bash
+curl https://api.apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A clean product hero image for an AI API gateway",
+    "size": "1k"
+  }'
+```
+
+接口会返回 `task_id`。随后通过任务查询接口轮询结果：
+
+```bash
+curl https://api.apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 本地开发
+
+本地 Next.js 应用默认接口路径为：
+
+```txt
+http://localhost:3000/api/v1/...
+```
+

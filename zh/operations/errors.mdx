@@ -1,0 +1,31 @@
+---
+title: 错误处理
+description: APIAny.AI 标准错误分类。
+---
+
+APIAny.AI 会将上游供应商错误归一化后再返回给调用方。
+
+```json
+{
+  "error": {
+    "type": "rate_limit",
+    "message": "Rate limit exceeded"
+  }
+}
+```
+
+## 错误分类
+
+- `invalid_request`
+- `auth_error`
+- `rate_limit`
+- `insufficient_quota`
+- `content_policy`
+- `timeout`
+- `network_error`
+- `upstream_5xx`
+- `upstream_billable`
+- `unknown`
+
+公开响应不会暴露上游通道名称、供应商密钥或原始内部调用细节。
+

@@ -1,0 +1,38 @@
+---
+title: 认证
+description: 使用项目 API Key 调用 APIAny.AI 公开接口。
+---
+
+APIAny.AI 的公开接口使用 API Key 认证。
+
+<Snippet file="zh/snippets/auth-header.mdx" />
+
+## 安全建议
+
+API Key 是项目级密钥，应当像密码一样保护：
+
+- 不要在浏览器前端代码中暴露 Secret API Key。
+- 将 API Key 存储在服务端环境变量或密钥管理系统中。
+- 如果密钥泄露，请及时禁用并重新生成。
+- 开发、测试、生产环境建议使用不同 API Key。
+
+## 示例
+
+```bash
+curl https://api.apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 错误格式
+
+认证失败会返回统一错误结构：
+
+```json
+{
+  "error": {
+    "type": "auth_error",
+    "message": "Invalid API key"
+  }
+}
+```
+

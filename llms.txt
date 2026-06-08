@@ -7,6 +7,9 @@ Important pages:
 - Introduction: /introduction
 - Quickstart: /quickstart
 - Authentication: /authentication
+- Chinese introduction: /zh/introduction
+- Chinese quickstart: /zh/quickstart
+- Chinese authentication: /zh/authentication
 - Chat completions: /reference/chat-completions
 - Anthropic messages: /reference/messages
 - Gemini generateContent: /reference/gemini-generate-content
@@ -14,6 +17,7 @@ Important pages:
 - Video generation: /reference/video-generation
 - Tasks: /reference/tasks
 - OpenAPI specification: /openapi.json
+- Chinese OpenAPI specification: /zh/openapi.json
 
 Public API base URL:
 
@@ -26,4 +30,3 @@ Authentication:
 ```txt
 Authorization: Bearer $APIANY_API_KEY
 ```
-

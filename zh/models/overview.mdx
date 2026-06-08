@@ -1,0 +1,27 @@
+---
+title: 模型目录
+description: APIAny.AI 公开模型 ID 和模型家族。
+---
+
+APIAny.AI 对外暴露公开模型 ID。这些 ID 是稳定的产品契约，不会暴露运行时选择的上游通道。
+
+当前公开模型家族包括：
+
+- 图片生成模型，例如 Z-Image、Nano Banana、GPT Image、Seedance 图片模型。
+- 视频生成模型，例如 Seedance、Veo、Wan、Gemini Omni。
+- 对话模型，例如 Gemini、GPT、DeepSeek、MiniMax。
+
+## 公开模型 ID
+
+调用时使用控制台和模型页面展示的模型 ID：
+
+```json
+{
+  "model": "gpt-5.4"
+}
+```
+
+## 运行时路由
+
+一个公开模型可以配置多个上游通道，并通过 fallback group 和权重选择通道。调用方只会收到 APIAny.AI 的标准响应。
+

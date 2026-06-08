@@ -1,0 +1,24 @@
+---
+title: Gemini generateContent
+description: Gemini 兼容的内容生成接口。
+---
+
+使用 `/v1beta/models/{model}:generateContent` 调用 Gemini 兼容接口。
+
+```bash
+curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          { "text": "解释为什么媒体生成任务适合异步处理。" }
+        ]
+      }
+    ]
+  }'
+```
+
+路径中的 `model` 仍然是 APIAny.AI 的公开模型 ID。真实上游通道和供应商信息不会暴露给调用方。
+
