@@ -1,16 +1,21 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "APIAny.AI",
+  "name": "APIAny.AI Docs",
+  "description": "APIAny.AI developer documentation for unified chat, image, video, and multimodal AI APIs.",
   "theme": "mint",
   "colors": {
     "primary": "#174CFF",
     "light": "#174CFF",
     "dark": "#8AB4FF"
   },
-  "favicon": "/favicon.svg",
+  "favicon": {
+    "light": "/favicon.svg",
+    "dark": "/favicon.svg"
+  },
   "logo": {
     "light": "/logo.svg",
-    "dark": "/logo.svg"
+    "dark": "/logo.svg",
+    "href": "https://apiany.ai"
   },
   "navbar": {
     "links": [
@@ -90,4 +95,3 @@
     }
   }
 }
-
