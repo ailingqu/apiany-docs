@@ -18,9 +18,6 @@ curl https://api.apiany.ai/v1/videos/generations \
   }'
 ```
 
-`/v1/video/generations` 是兼容旧路径的别名，推荐新集成使用复数路径 `/v1/videos/generations`。
-
 ## 同步等待接口
 
 `/v1/videos/generations/sync` 会创建视频任务并在同一个 HTTP 请求中等待结果。长耗时任务建议使用异步创建和任务轮询。
-

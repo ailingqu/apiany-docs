@@ -31,6 +31,8 @@ const forbiddenPatterns = [
   /repository sync/i,
   /route plan/i,
   /weighted selection/i,
+  /\/api\/v1\/video\/generations\b/i,
+  /\/v1\/video\/generations\b/i,
 ];
 
 const { stdout } = await execFileAsync('git', ['ls-files', ...publicGlobs], {
