@@ -1,0 +1,1235 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "APIAny.AI Public API",
+    "version": "1.0.0",
+    "description": "Public API for APIAny.AI model aggregation, async media tasks, chat completions, billing visibility, and task lookup."
+  },
+  "servers": [
+    {
+      "url": "https://api.apiany.ai",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Local Next.js development"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Models",
+      "description": "Public model catalog."
+    },
+    {
+      "name": "Chat",
+      "description": "Text generation and chat-compatible endpoints."
+    },
+    {
+      "name": "Images",
+      "description": "Image generation and editing endpoints."
+    },
+    {
+      "name": "Videos",
+      "description": "Video generation endpoints."
+    },
+    {
+      "name": "Tasks",
+      "description": "Async task lookup."
+    },
+    {
+      "name": "Account",
+      "description": "Account and credit visibility."
+    }
+  ],
+  "paths": {
+    "/v1/models": {
+      "get": {
+        "operationId": "listModels",
+        "summary": "List public models",
+        "description": "Returns the public APIAny.AI model catalog visible to the API key.",
+        "tags": ["Models"],
+        "responses": {
+          "200": {
+            "description": "Model list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/credits/balance": {
+      "get": {
+        "operationId": "getCreditBalance",
+        "summary": "Get credit balance",
+        "tags": ["Account"],
+        "responses": {
+          "200": {
+            "description": "Credit balance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalanceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "summary": "Create chat completion",
+        "description": "OpenAI-compatible chat completion endpoint. Streaming support is reserved for a future capability.",
+        "tags": ["Chat"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "gpt-5.4",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Write a concise product tagline for APIAny.AI."
+                      }
+                    ],
+                    "temperature": 0.7
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI-compatible chat completion.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "operationId": "createMessage",
+        "summary": "Create message",
+        "description": "Anthropic-compatible messages endpoint.",
+        "tags": ["Chat"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnthropicMessagesRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "minimax-m3",
+                    "max_tokens": 512,
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Draft three API documentation section titles."
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Anthropic-compatible message response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnthropicMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1beta/models/{model}:generateContent": {
+      "post": {
+        "operationId": "generateGeminiContent",
+        "summary": "Generate Gemini-compatible content",
+        "description": "Gemini-compatible content generation endpoint. The path model is the public APIAny model ID.",
+        "tags": ["Chat"],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "gemini-3.5-flash"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiGenerateContentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gemini-compatible response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiGenerateContentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "createImageGeneration",
+        "summary": "Create image generation task",
+        "description": "Creates an asynchronous image generation task and returns a task ID.",
+        "tags": ["Images"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "textToImage": {
+                  "value": {
+                    "model": "nano-banana",
+                    "prompt": "A clean product hero image for an AI API gateway",
+                    "size": "1k"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "nano-banana-pro",
+                    "prompt": "Create a premium ecommerce hero image using these references",
+                    "size": "2k",
+                    "input_images": [
+                      "https://example.com/reference-1.png",
+                      "https://example.com/reference-2.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Task created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations/sync": {
+      "post": {
+        "operationId": "createImageGenerationSync",
+        "summary": "Create image generation and wait",
+        "description": "Creates an image task and waits for completion up to the configured maximum wait time.",
+        "tags": ["Images"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI-compatible image generation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Task still processing after maximum wait time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/edits": {
+      "post": {
+        "operationId": "createImageEdit",
+        "summary": "Create image edit",
+        "description": "OpenAI-style image editing endpoint for models that support reference images.",
+        "tags": ["Images"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageEditRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI-compatible image result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/upload": {
+      "post": {
+        "operationId": "uploadImageAsset",
+        "summary": "Upload image asset",
+        "description": "Uploads an image asset for use as a reference input.",
+        "tags": ["Images"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Uploaded asset URL.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": ["url"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/videos/generations": {
+      "post": {
+        "operationId": "createVideoGeneration",
+        "summary": "Create video generation task",
+        "description": "Creates an asynchronous video generation task and returns a task ID.",
+        "tags": ["Videos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              },
+              "examples": {
+                "seedance": {
+                  "value": {
+                    "model": "seedance-2.0",
+                    "prompt": "A cinematic launch shot for an AI API platform",
+                    "duration": "10s",
+                    "resolution": "720p",
+                    "ratio": "16:9"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "veo3.1",
+                    "prompt": "Animate a product scene between the start and end frames",
+                    "input_images": [
+                      "https://example.com/start.png",
+                      "https://example.com/end.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Task created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/videos/generations/sync": {
+      "post": {
+        "operationId": "createVideoGenerationSync",
+        "summary": "Create video generation and wait",
+        "description": "Creates a video task and waits for completion up to the configured maximum wait time.",
+        "tags": ["Videos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed video task.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Task still processing after maximum wait time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/video/generations": {
+      "post": {
+        "operationId": "createVideoGenerationSingularAlias",
+        "summary": "Create video generation task",
+        "description": "Compatibility alias for `/v1/videos/generations`.",
+        "tags": ["Videos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Task created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/video/generations/sync": {
+      "post": {
+        "operationId": "createVideoGenerationSyncSingularAlias",
+        "summary": "Create video generation and wait",
+        "description": "Compatibility alias for `/v1/videos/generations/sync`.",
+        "tags": ["Videos"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed video task.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Task still processing after maximum wait time.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/tasks/{task_id}": {
+      "get": {
+        "operationId": "getTask",
+        "summary": "Get task detail",
+        "description": "Returns the current state and final result for an async image, video, or future audio task.",
+        "tags": ["Tasks"],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "task_123"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Task detail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "Task not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API key"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Missing or invalid API key.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "Rate limit exceeded.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request",
+                  "auth_error",
+                  "rate_limit",
+                  "insufficient_quota",
+                  "content_policy",
+                  "timeout",
+                  "network_error",
+                  "upstream_5xx",
+                  "upstream_billable",
+                  "unknown"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": ["string", "null"]
+              },
+              "code": {
+                "type": ["string", "null"]
+              }
+            },
+            "required": ["type", "message"]
+          }
+        },
+        "required": ["error"]
+      },
+      "ModelListResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "list"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Model"
+            }
+          }
+        },
+        "required": ["data"]
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "object": {
+            "type": "string",
+            "example": "model"
+          },
+          "type": {
+            "type": "string",
+            "example": "image"
+          },
+          "owned_by": {
+            "type": "string",
+            "example": "APIAny.AI"
+          },
+          "display_name": {
+            "type": "string",
+            "example": "Nano Banana"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "pricing": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": ["id", "object", "type", "display_name", "status"]
+      },
+      "CreditBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "credits": {
+            "type": "number",
+            "example": 206353
+          },
+          "currency": {
+            "type": "string",
+            "example": "credits"
+          }
+        },
+        "required": ["credits", "currency"]
+      },
+      "ChatCompletionRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.4"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            }
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "Reserved for future streaming support."
+          }
+        },
+        "required": ["model", "messages"]
+      },
+      "ChatMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["system", "user", "assistant", "tool"]
+          },
+          "content": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          }
+        },
+        "required": ["role", "content"]
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "chat.completion"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "model": {
+            "type": "string"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": ["id", "object", "created", "model", "choices"]
+      },
+      "AnthropicMessagesRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "minimax-m3"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": ["user", "assistant"]
+                },
+                "content": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": ["role", "content"]
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": ["model", "messages", "max_tokens"]
+      },
+      "AnthropicMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "message"
+          },
+          "role": {
+            "type": "string",
+            "example": "assistant"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": ["id", "type", "role", "content", "model"]
+      },
+      "GeminiGenerateContentRequest": {
+        "type": "object",
+        "properties": {
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string"
+                },
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "required": ["parts"]
+            }
+          },
+          "generationConfig": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": ["contents"]
+      },
+      "GeminiGenerateContentResponse": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usageMetadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": ["candidates"]
+      },
+      "ImageGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["model", "prompt"]
+      },
+      "ImageEditRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary"
+          },
+          "mask": {
+            "type": "string",
+            "format": "binary"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          }
+        },
+        "required": ["model", "prompt", "image"]
+      },
+      "VideoGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "seedance-2.0"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string",
+            "example": "10s"
+          },
+          "resolution": {
+            "type": "string",
+            "example": "720p"
+          },
+          "ratio": {
+            "type": "string",
+            "example": "16:9"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_videos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_audio": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["model", "prompt"]
+      },
+      "AsyncTaskCreateResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing"]
+          },
+          "model": {
+            "type": "string"
+          },
+          "poll_url": {
+            "type": "string",
+            "example": "/v1/tasks/task_123"
+          }
+        },
+        "required": ["task_id", "status", "poll_url"]
+      },
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["pending", "processing", "completed", "failed", "expired"]
+          },
+          "model": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": ["string", "null"],
+            "format": "date-time"
+          },
+          "result": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MediaResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ErrorResponse/properties/error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["task_id", "status"]
+      },
+      "MediaResult": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["image", "video", "audio", "text"]
+          },
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "text": {
+            "type": "string"
+          },
+          "raw": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": ["type"]
+      },
+      "OpenAIImageResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": ["created", "data"]
+      },
+      "TokenUsage": {
+        "type": "object",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer"
+          },
+          "completion_tokens": {
+            "type": "integer"
+          },
+          "total_tokens": {
+            "type": "integer"
+          },
+          "input_tokens": {
+            "type": "integer"
+          },
+          "output_tokens": {
+            "type": "integer"
+          },
+          "cached_input_tokens": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}
+

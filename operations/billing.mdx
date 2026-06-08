@@ -1,0 +1,29 @@
+---
+title: Billing and credits
+description: How APIAny.AI estimates, reserves, settles, and refunds credits.
+---
+
+APIAny.AI uses credits as the account-level billing unit.
+
+The runtime flow is:
+
+1. Estimate credits before a request runs.
+2. Reserve or deduct the estimated amount.
+3. Route the request through configured upstream channels.
+4. Settle actual usage after completion.
+5. Refund non-billable failures according to the model error policy.
+
+## Pricing types
+
+Models can be priced by:
+
+- Request
+- Image
+- Video second
+- Input tokens
+- Output tokens
+- Cached input tokens
+- Minimum request floor
+
+The public model catalog shows configured user-facing prices. Internal upstream channel costs remain hidden from callers.
+

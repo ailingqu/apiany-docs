@@ -1,0 +1,17 @@
+---
+title: Image models
+description: Image generation and editing model behavior.
+---
+
+Image models support one or more of:
+
+- Text to image.
+- Image to image with reference assets.
+- OpenAI-compatible image generation.
+- OpenAI-compatible image editing.
+- Gemini-compatible image workflows.
+
+Model-specific dimensions, image size support, and reference image limits are defined by the platform capability registry and reflected in the model pages.
+
+Production integrations should prefer `/v1/images/generations` and poll `/v1/tasks/{task_id}`.
+

@@ -1,0 +1,60 @@
+---
+title: Quickstart
+description: Make your first APIAny.AI request.
+---
+
+## 1. Create an API key
+
+Open the APIAny.AI dashboard and create a project API key.
+
+<Snippet file="snippets/auth-header.mdx" />
+
+## 2. List available models
+
+```bash
+curl https://api.apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 3. Run a chat completion
+
+```bash
+curl https://api.apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "user", "content": "Write a concise product tagline for APIAny.AI." }
+    ]
+  }'
+```
+
+## 4. Create an image task
+
+```bash
+curl https://api.apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A clean product hero image for an AI API gateway",
+    "size": "1k"
+  }'
+```
+
+The response includes a `task_id`. Poll the task until it completes:
+
+```bash
+curl https://api.apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## Local development note
+
+When testing against the local Next.js app, use:
+
+```txt
+http://localhost:3000/api/v1/...
+```
+

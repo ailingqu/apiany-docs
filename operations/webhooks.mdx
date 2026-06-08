@@ -1,0 +1,25 @@
+---
+title: Webhooks
+description: Receive async task completion callbacks.
+---
+
+Async media tasks can include a callback URL when enabled for the API key or request.
+
+Callbacks are retried by the platform when delivery fails.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "result": {
+    "type": "video",
+    "urls": ["https://.../video.mp4"]
+  }
+}
+```
+
+## Recommendation
+
+Always verify task status through `/v1/tasks/{task_id}` before treating a webhook as final in high-value workflows.
+

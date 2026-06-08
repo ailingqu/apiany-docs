@@ -1,0 +1,93 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "APIAny.AI",
+  "theme": "mint",
+  "colors": {
+    "primary": "#174CFF",
+    "light": "#174CFF",
+    "dark": "#8AB4FF"
+  },
+  "favicon": "/favicon.svg",
+  "logo": {
+    "light": "/logo.svg",
+    "dark": "/logo.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Dashboard",
+        "href": "https://apiany.ai/dashboard"
+      },
+      {
+        "label": "Pricing",
+        "href": "https://apiany.ai/pricing"
+      }
+    ],
+    "primary": {
+      "label": "Get API key",
+      "href": "https://apiany.ai/dashboard/api-keys"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core APIs",
+            "pages": [
+              "reference/chat-completions",
+              "reference/messages",
+              "reference/gemini-generate-content",
+              "reference/image-generation",
+              "reference/video-generation",
+              "reference/tasks"
+            ]
+          },
+          {
+            "group": "Operations",
+            "pages": [
+              "operations/billing",
+              "operations/errors",
+              "operations/rate-limits",
+              "operations/webhooks",
+              "operations/update-workflow"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Models",
+        "groups": [
+          {
+            "group": "Model catalog",
+            "pages": [
+              "models/overview",
+              "models/image-models",
+              "models/video-models",
+              "models/chat-models"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "openapi": "openapi.json"
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com"
+    }
+  }
+}
+

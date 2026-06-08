@@ -1,0 +1,27 @@
+---
+title: Chat completions
+description: OpenAI-compatible chat endpoint.
+---
+
+Use `/v1/chat/completions` for OpenAI-compatible text generation.
+
+```bash
+curl https://api.apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "system", "content": "You are concise." },
+      { "role": "user", "content": "Explain API aggregation in one sentence." }
+    ],
+    "temperature": 0.7
+  }'
+```
+
+## Notes
+
+- The public `model` is an APIAny model ID, not an upstream provider model ID.
+- Non-streaming is the first supported mode.
+- Token usage is normalized into the OpenAI-style `usage` object where upstream data is available.
+

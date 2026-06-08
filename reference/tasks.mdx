@@ -1,0 +1,47 @@
+---
+title: Tasks
+description: Query long-running image, video, and future audio jobs.
+---
+
+Use `/v1/tasks/{task_id}` to query asynchronous task state.
+
+```bash
+curl https://api.apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## Status values
+
+- `pending`
+- `processing`
+- `completed`
+- `failed`
+- `expired`
+
+## Completed task
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "nano-banana",
+  "result": {
+    "type": "image",
+    "urls": ["https://.../result.png"]
+  }
+}
+```
+
+## Failed task
+
+```json
+{
+  "task_id": "task_123",
+  "status": "failed",
+  "error": {
+    "type": "upstream_5xx",
+    "message": "The upstream provider could not complete the request."
+  }
+}
+```
+

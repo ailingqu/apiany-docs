@@ -1,0 +1,19 @@
+---
+title: Video models
+description: Video generation model behavior.
+---
+
+Video models are asynchronous by default.
+
+They may support different combinations of:
+
+- Text input.
+- Image reference input.
+- Video reference input.
+- Audio reference input.
+- Duration choices.
+- Resolution choices.
+- Aspect ratio choices.
+
+APIAny validates public request parameters before calling upstream channels, so unsupported model options fail clearly at the platform boundary.
+

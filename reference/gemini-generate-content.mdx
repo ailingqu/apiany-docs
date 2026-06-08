@@ -1,0 +1,24 @@
+---
+title: Gemini generateContent
+description: Gemini-compatible content generation endpoint.
+---
+
+Use `/v1beta/models/{model}:generateContent` for Gemini-compatible integrations.
+
+```bash
+curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          { "text": "Summarize why async media tasks are useful." }
+        ]
+      }
+    ]
+  }'
+```
+
+The path model remains the public APIAny model ID. Upstream channel details are never returned to the caller.
+

@@ -1,0 +1,38 @@
+---
+title: Authentication
+description: Authenticate public API requests with project API keys.
+---
+
+APIAny.AI public endpoints use API keys.
+
+<Snippet file="snippets/auth-header.mdx" />
+
+## Security model
+
+API keys are project credentials. Treat them like passwords:
+
+- Do not expose secret API keys in browser-side code.
+- Store keys in a server-side secret manager or environment variable.
+- Rotate keys if they are leaked.
+- Use separate keys for development, staging, and production.
+
+## Example
+
+```bash
+curl https://api.apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## Errors
+
+Authentication errors use the platform error format:
+
+```json
+{
+  "error": {
+    "type": "auth_error",
+    "message": "Invalid API key"
+  }
+}
+```
+

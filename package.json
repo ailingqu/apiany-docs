@@ -1,0 +1,12 @@
+{
+  "name": "apiany-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx mintlify dev",
+    "validate": "node scripts/validate-openapi.mjs",
+    "sync:platform": "node scripts/sync-from-platform.mjs"
+  }
+}
+

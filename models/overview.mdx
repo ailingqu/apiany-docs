@@ -1,0 +1,27 @@
+---
+title: Model catalog
+description: Public model IDs and supported model families.
+---
+
+APIAny.AI exposes public model IDs. These IDs are stable product contracts and do not reveal the upstream channel selected at runtime.
+
+Current public model families include:
+
+- Image generation models such as Z-Image, Nano Banana, GPT Image, and Seedance image models.
+- Video generation models such as Seedance, Veo, Wan, and Gemini Omni.
+- Chat models such as Gemini, GPT, DeepSeek, and MiniMax.
+
+## Public model IDs
+
+Use the model ID shown in the dashboard and model pages:
+
+```json
+{
+  "model": "gpt-5.4"
+}
+```
+
+## Runtime routing
+
+A public model can route to one or more upstream channels using fallback groups and weighted selection. The caller only receives the public APIAny response.
+

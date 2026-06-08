@@ -1,0 +1,29 @@
+# APIAny.AI Docs
+
+APIAny.AI is an AI API aggregation platform for image, video, chat, and multimodal model access.
+
+Important pages:
+
+- Introduction: /introduction
+- Quickstart: /quickstart
+- Authentication: /authentication
+- Chat completions: /reference/chat-completions
+- Anthropic messages: /reference/messages
+- Gemini generateContent: /reference/gemini-generate-content
+- Image generation: /reference/image-generation
+- Video generation: /reference/video-generation
+- Tasks: /reference/tasks
+- OpenAPI specification: /openapi.json
+
+Public API base URL:
+
+```txt
+https://api.apiany.ai
+```
+
+Authentication:
+
+```txt
+Authorization: Bearer $APIANY_API_KEY
+```
+

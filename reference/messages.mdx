@@ -1,0 +1,22 @@
+---
+title: Messages
+description: Anthropic-compatible messages endpoint.
+---
+
+Use `/v1/messages` when your client already speaks the Anthropic Messages format.
+
+```bash
+curl https://api.apiany.ai/v1/messages \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "minimax-m3",
+    "max_tokens": 512,
+    "messages": [
+      { "role": "user", "content": "Draft three API docs section titles." }
+    ]
+  }'
+```
+
+APIAny converts the request into the internal canonical chat format, routes it to an eligible upstream channel, and returns an Anthropic-compatible response.
+

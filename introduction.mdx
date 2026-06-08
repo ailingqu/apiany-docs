@@ -1,0 +1,41 @@
+---
+title: Introduction
+description: One API gateway for image, video, chat, and multimodal AI models.
+---
+
+APIAny.AI gives developers one gateway for production AI models across image generation, video generation, chat, and multimodal workflows.
+
+The public API stays stable while APIAny routes requests through configured upstream channels, applies billing, stores task history, and normalizes provider responses into predictable formats.
+
+<CardGroup cols={2}>
+  <Card title="Unified model access" icon="route">
+    Call public model IDs without exposing upstream providers or channel keys to your application.
+  </Card>
+  <Card title="Async media tasks" icon="clock">
+    Use task IDs for long-running image, video, and future audio generation jobs.
+  </Card>
+  <Card title="OpenAI-compatible chat" icon="message-square">
+    Start with `/v1/chat/completions`, then add Anthropic or Gemini-compatible endpoints when needed.
+  </Card>
+  <Card title="Credits and traceability" icon="receipt">
+    Every request can be tied to credits, upstream attempts, normalized results, and audit records.
+  </Card>
+</CardGroup>
+
+## Base URL
+
+<Snippet file="snippets/base-url.mdx" />
+
+## Public API shape
+
+APIAny.AI exposes a small set of public calling patterns:
+
+- Chat: `/v1/chat/completions`
+- Anthropic-compatible messages: `/v1/messages`
+- Gemini-compatible content generation: `/v1beta/models/{model}:generateContent`
+- Image generation: `/v1/images/generations`
+- Video generation: `/v1/videos/generations`
+- Task lookup: `/v1/tasks/{task_id}`
+
+Long-running media endpoints are asynchronous by default. Synchronous variants exist for simple integrations, but production systems should prefer async creation plus task polling.
+

@@ -1,0 +1,20 @@
+---
+title: Rate limits
+description: Request limits and quota behavior.
+---
+
+APIAny.AI applies API key validation, model access checks, credit checks, and rate limits before routing a request to an upstream channel.
+
+When a request exceeds a configured limit, the API returns:
+
+```json
+{
+  "error": {
+    "type": "rate_limit",
+    "message": "Rate limit exceeded"
+  }
+}
+```
+
+Use separate API keys for different applications or environments so limits and usage remain easy to inspect.
+
