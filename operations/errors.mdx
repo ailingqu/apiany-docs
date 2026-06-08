@@ -3,7 +3,7 @@ title: Errors
 description: Standard error categories returned by APIAny.AI.
 ---
 
-APIAny.AI normalizes provider errors before returning them to callers.
+APIAny.AI returns consistent error responses across supported model APIs.
 
 ```json
 {
@@ -23,9 +23,8 @@ APIAny.AI normalizes provider errors before returning them to callers.
 - `content_policy`
 - `timeout`
 - `network_error`
-- `upstream_5xx`
-- `upstream_billable`
+- `service_error`
+- `billable_error`
 - `unknown`
 
-Upstream channel names, secret keys, and raw provider internals are not exposed in public responses.
-
+Responses include only public error information that is useful for developers.

@@ -723,8 +723,8 @@
                   "content_policy",
                   "timeout",
                   "network_error",
-                  "upstream_5xx",
-                  "upstream_billable",
+                  "service_error",
+                  "billable_error",
                   "unknown"
                 ]
               },

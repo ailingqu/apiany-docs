@@ -28,11 +28,10 @@ The response returns a task:
 
 ## Sync variant
 
-`/v1/images/generations/sync` internally creates a task and waits up to the configured maximum wait time.
+`/v1/images/generations/sync` creates a task and waits up to the configured maximum wait time.
 
 Use it for compatibility and demos. Use the async endpoint for production workloads.
 
 ## Image edits
 
 `/v1/images/edits` supports OpenAI-style image editing workflows where the selected model supports reference images.
-

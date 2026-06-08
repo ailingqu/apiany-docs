@@ -21,7 +21,6 @@ curl https://api.apiany.ai/v1/chat/completions \
 
 ## Notes
 
-- The public `model` is an APIAny model ID, not an upstream provider model ID.
+- The public `model` is an APIAny.AI model ID, not a vendor-specific deployment ID.
 - Non-streaming is the first supported mode.
-- Token usage is normalized into the OpenAI-style `usage` object where upstream data is available.
-
+- Token usage is normalized into the OpenAI-style `usage` object when usage data is available.

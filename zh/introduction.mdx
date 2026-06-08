@@ -5,11 +5,11 @@ description: APIAny.AI 为对话、图片、视频和多模态模型提供统一
 
 APIAny.AI 为开发者提供统一的 AI API 网关，用一个 API Key 接入对话、图片、视频和多模态模型。
 
-对外调用接口保持稳定；平台内部负责选择上游通道、处理 fallback、扣减积分、记录任务历史，并将不同供应商的返回格式统一成可预测的 APIAny.AI 返回结构。
+对外调用接口保持稳定；APIAny.AI 负责模型执行、积分计费、任务记录和返回格式整理，让开发者获得一致的调用体验。
 
 <CardGroup cols={2}>
   <Card title="统一模型入口" icon="route">
-    应用只需要调用 APIAny.AI 的公开模型 ID，不需要知道真实上游通道或供应商密钥。
+    应用只需要调用 APIAny.AI 的公开模型 ID，并使用一套稳定接口完成接入。
   </Card>
   <Card title="异步媒体任务" icon="clock">
     图片、视频以及后续音频等长耗时任务都通过 task ID 查询最终结果。
@@ -18,7 +18,7 @@ APIAny.AI 为开发者提供统一的 AI API 网关，用一个 API Key 接入�
     支持 OpenAI Chat Completions、Anthropic Messages、Gemini generateContent 等常见调用方式。
   </Card>
   <Card title="积分与审计" icon="receipt">
-    每次请求都可以追踪积分消耗、上游尝试、标准化结果和任务记录。
+    每次请求都可以追踪积分消耗、任务状态、标准化结果和用量记录。
   </Card>
 </CardGroup>
 
@@ -38,4 +38,3 @@ APIAny.AI 对外提供少量稳定的调用模式：
 - 任务查询：`/v1/tasks/{task_id}`
 
 媒体生成默认推荐使用异步接口。同步等待接口适合调试和简单集成，生产环境建议创建任务后通过 task ID 轮询结果。
-

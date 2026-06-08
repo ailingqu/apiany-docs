@@ -3,7 +3,7 @@ title: 错误处理
 description: APIAny.AI 标准错误分类。
 ---
 
-APIAny.AI 会将上游供应商错误归一化后再返回给调用方。
+APIAny.AI 会在所有支持的模型 API 中返回一致的错误结构。
 
 ```json
 {
@@ -23,9 +23,8 @@ APIAny.AI 会将上游供应商错误归一化后再返回给调用方。
 - `content_policy`
 - `timeout`
 - `network_error`
-- `upstream_5xx`
-- `upstream_billable`
+- `service_error`
+- `billable_error`
 - `unknown`
 
-公开响应不会暴露上游通道名称、供应商密钥或原始内部调用细节。
-
+公开响应只包含开发者排查问题所需的信息。

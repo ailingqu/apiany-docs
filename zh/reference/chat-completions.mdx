@@ -21,7 +21,6 @@ curl https://api.apiany.ai/v1/chat/completions \
 
 ## 说明
 
-- `model` 是 APIAny.AI 的公开模型 ID，不是上游供应商的真实模型 ID。
+- `model` 是 APIAny.AI 的公开模型 ID，不是供应商侧的部署 ID。
 - 当前第一阶段以非 streaming 调用为主。
-- 如果上游返回 token usage，平台会尽量归一化到 OpenAI 风格的 `usage` 对象。
-
+- 如果模型响应包含 token usage，平台会尽量归一化到 OpenAI 风格的 `usage` 对象。

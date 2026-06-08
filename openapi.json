@@ -52,7 +52,9 @@
         "operationId": "listModels",
         "summary": "List public models",
         "description": "Returns the public APIAny.AI model catalog visible to the API key.",
-        "tags": ["Models"],
+        "tags": [
+          "Models"
+        ],
         "responses": {
           "200": {
             "description": "Model list.",
@@ -74,7 +76,9 @@
       "get": {
         "operationId": "getCreditBalance",
         "summary": "Get credit balance",
-        "tags": ["Account"],
+        "tags": [
+          "Account"
+        ],
         "responses": {
           "200": {
             "description": "Credit balance.",
@@ -97,7 +101,9 @@
         "operationId": "createChatCompletion",
         "summary": "Create chat completion",
         "description": "OpenAI-compatible chat completion endpoint. Streaming support is reserved for a future capability.",
-        "tags": ["Chat"],
+        "tags": [
+          "Chat"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -150,7 +156,9 @@
         "operationId": "createMessage",
         "summary": "Create message",
         "description": "Anthropic-compatible messages endpoint.",
-        "tags": ["Chat"],
+        "tags": [
+          "Chat"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -200,7 +208,9 @@
         "operationId": "generateGeminiContent",
         "summary": "Generate Gemini-compatible content",
         "description": "Gemini-compatible content generation endpoint. The path model is the public APIAny model ID.",
-        "tags": ["Chat"],
+        "tags": [
+          "Chat"
+        ],
         "parameters": [
           {
             "name": "model",
@@ -247,7 +257,9 @@
         "operationId": "createImageGeneration",
         "summary": "Create image generation task",
         "description": "Creates an asynchronous image generation task and returns a task ID.",
-        "tags": ["Images"],
+        "tags": [
+          "Images"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -303,7 +315,9 @@
         "operationId": "createImageGenerationSync",
         "summary": "Create image generation and wait",
         "description": "Creates an image task and waits for completion up to the configured maximum wait time.",
-        "tags": ["Images"],
+        "tags": [
+          "Images"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -346,7 +360,9 @@
         "operationId": "createImageEdit",
         "summary": "Create image edit",
         "description": "OpenAI-style image editing endpoint for models that support reference images.",
-        "tags": ["Images"],
+        "tags": [
+          "Images"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -379,7 +395,9 @@
         "operationId": "uploadImageAsset",
         "summary": "Upload image asset",
         "description": "Uploads an image asset for use as a reference input.",
-        "tags": ["Images"],
+        "tags": [
+          "Images"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -392,7 +410,9 @@
                     "format": "binary"
                   }
                 },
-                "required": ["file"]
+                "required": [
+                  "file"
+                ]
               }
             }
           }
@@ -410,7 +430,9 @@
                       "format": "uri"
                     }
                   },
-                  "required": ["url"]
+                  "required": [
+                    "url"
+                  ]
                 }
               }
             }
@@ -423,7 +445,9 @@
         "operationId": "createVideoGeneration",
         "summary": "Create video generation task",
         "description": "Creates an asynchronous video generation task and returns a task ID.",
-        "tags": ["Videos"],
+        "tags": [
+          "Videos"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -480,7 +504,9 @@
         "operationId": "createVideoGenerationSync",
         "summary": "Create video generation and wait",
         "description": "Creates a video task and waits for completion up to the configured maximum wait time.",
-        "tags": ["Videos"],
+        "tags": [
+          "Videos"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -523,7 +549,9 @@
         "operationId": "createVideoGenerationSingularAlias",
         "summary": "Create video generation task",
         "description": "Compatibility alias for `/v1/videos/generations`.",
-        "tags": ["Videos"],
+        "tags": [
+          "Videos"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -553,7 +581,9 @@
         "operationId": "createVideoGenerationSyncSingularAlias",
         "summary": "Create video generation and wait",
         "description": "Compatibility alias for `/v1/videos/generations/sync`.",
-        "tags": ["Videos"],
+        "tags": [
+          "Videos"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -593,7 +623,9 @@
         "operationId": "getTask",
         "summary": "Get task detail",
         "description": "Returns the current state and final result for an async image, video, or future audio task.",
-        "tags": ["Tasks"],
+        "tags": [
+          "Tasks"
+        ],
         "parameters": [
           {
             "name": "task_id",
@@ -690,8 +722,8 @@
                   "content_policy",
                   "timeout",
                   "network_error",
-                  "upstream_5xx",
-                  "upstream_billable",
+                  "service_error",
+                  "billable_error",
                   "unknown"
                 ]
               },
@@ -699,16 +731,27 @@
                 "type": "string"
               },
               "param": {
-                "type": ["string", "null"]
+                "type": [
+                  "string",
+                  "null"
+                ]
               },
               "code": {
-                "type": ["string", "null"]
+                "type": [
+                  "string",
+                  "null"
+                ]
               }
             },
-            "required": ["type", "message"]
+            "required": [
+              "type",
+              "message"
+            ]
           }
         },
-        "required": ["error"]
+        "required": [
+          "error"
+        ]
       },
       "ModelListResponse": {
         "type": "object",
@@ -724,7 +767,9 @@
             }
           }
         },
-        "required": ["data"]
+        "required": [
+          "data"
+        ]
       },
       "Model": {
         "type": "object",
@@ -762,7 +807,13 @@
             "additionalProperties": true
           }
         },
-        "required": ["id", "object", "type", "display_name", "status"]
+        "required": [
+          "id",
+          "object",
+          "type",
+          "display_name",
+          "status"
+        ]
       },
       "CreditBalanceResponse": {
         "type": "object",
@@ -776,7 +827,10 @@
             "example": "credits"
           }
         },
-        "required": ["credits", "currency"]
+        "required": [
+          "credits",
+          "currency"
+        ]
       },
       "ChatCompletionRequest": {
         "type": "object",
@@ -805,14 +859,22 @@
             "description": "Reserved for future streaming support."
           }
         },
-        "required": ["model", "messages"]
+        "required": [
+          "model",
+          "messages"
+        ]
       },
       "ChatMessage": {
         "type": "object",
         "properties": {
           "role": {
             "type": "string",
-            "enum": ["system", "user", "assistant", "tool"]
+            "enum": [
+              "system",
+              "user",
+              "assistant",
+              "tool"
+            ]
           },
           "content": {
             "oneOf": [
@@ -829,7 +891,10 @@
             ]
           }
         },
-        "required": ["role", "content"]
+        "required": [
+          "role",
+          "content"
+        ]
       },
       "ChatCompletionResponse": {
         "type": "object",
@@ -858,7 +923,13 @@
             "$ref": "#/components/schemas/TokenUsage"
           }
         },
-        "required": ["id", "object", "created", "model", "choices"]
+        "required": [
+          "id",
+          "object",
+          "created",
+          "model",
+          "choices"
+        ]
       },
       "AnthropicMessagesRequest": {
         "type": "object",
@@ -874,7 +945,10 @@
               "properties": {
                 "role": {
                   "type": "string",
-                  "enum": ["user", "assistant"]
+                  "enum": [
+                    "user",
+                    "assistant"
+                  ]
                 },
                 "content": {
                   "oneOf": [
@@ -891,7 +965,10 @@
                   ]
                 }
               },
-              "required": ["role", "content"]
+              "required": [
+                "role",
+                "content"
+              ]
             }
           },
           "max_tokens": {
@@ -904,7 +981,11 @@
             "maximum": 1
           }
         },
-        "required": ["model", "messages", "max_tokens"]
+        "required": [
+          "model",
+          "messages",
+          "max_tokens"
+        ]
       },
       "AnthropicMessagesResponse": {
         "type": "object",
@@ -934,7 +1015,13 @@
             "$ref": "#/components/schemas/TokenUsage"
           }
         },
-        "required": ["id", "type", "role", "content", "model"]
+        "required": [
+          "id",
+          "type",
+          "role",
+          "content",
+          "model"
+        ]
       },
       "GeminiGenerateContentRequest": {
         "type": "object",
@@ -955,7 +1042,9 @@
                   }
                 }
               },
-              "required": ["parts"]
+              "required": [
+                "parts"
+              ]
             }
           },
           "generationConfig": {
@@ -963,7 +1052,9 @@
             "additionalProperties": true
           }
         },
-        "required": ["contents"]
+        "required": [
+          "contents"
+        ]
       },
       "GeminiGenerateContentResponse": {
         "type": "object",
@@ -980,7 +1071,9 @@
             "additionalProperties": true
           }
         },
-        "required": ["candidates"]
+        "required": [
+          "candidates"
+        ]
       },
       "ImageGenerationRequest": {
         "type": "object",
@@ -1008,7 +1101,10 @@
             "format": "uri"
           }
         },
-        "required": ["model", "prompt"]
+        "required": [
+          "model",
+          "prompt"
+        ]
       },
       "ImageEditRequest": {
         "type": "object",
@@ -1033,7 +1129,11 @@
             "example": "1k"
           }
         },
-        "required": ["model", "prompt", "image"]
+        "required": [
+          "model",
+          "prompt",
+          "image"
+        ]
       },
       "VideoGenerationRequest": {
         "type": "object",
@@ -1083,7 +1183,10 @@
             "format": "uri"
           }
         },
-        "required": ["model", "prompt"]
+        "required": [
+          "model",
+          "prompt"
+        ]
       },
       "AsyncTaskCreateResponse": {
         "type": "object",
@@ -1094,7 +1197,10 @@
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "processing"]
+            "enum": [
+              "pending",
+              "processing"
+            ]
           },
           "model": {
             "type": "string"
@@ -1104,7 +1210,11 @@
             "example": "/v1/tasks/task_123"
           }
         },
-        "required": ["task_id", "status", "poll_url"]
+        "required": [
+          "task_id",
+          "status",
+          "poll_url"
+        ]
       },
       "TaskResponse": {
         "type": "object",
@@ -1115,7 +1225,13 @@
           },
           "status": {
             "type": "string",
-            "enum": ["pending", "processing", "completed", "failed", "expired"]
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "expired"
+            ]
           },
           "model": {
             "type": "string"
@@ -1125,7 +1241,10 @@
             "format": "date-time"
           },
           "completed_at": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "format": "date-time"
           },
           "result": {
@@ -1149,14 +1268,22 @@
             ]
           }
         },
-        "required": ["task_id", "status"]
+        "required": [
+          "task_id",
+          "status"
+        ]
       },
       "MediaResult": {
         "type": "object",
         "properties": {
           "type": {
             "type": "string",
-            "enum": ["image", "video", "audio", "text"]
+            "enum": [
+              "image",
+              "video",
+              "audio",
+              "text"
+            ]
           },
           "urls": {
             "type": "array",
@@ -1173,7 +1300,9 @@
             "additionalProperties": true
           }
         },
-        "required": ["type"]
+        "required": [
+          "type"
+        ]
       },
       "OpenAIImageResponse": {
         "type": "object",
@@ -1203,7 +1332,10 @@
             "$ref": "#/components/schemas/TokenUsage"
           }
         },
-        "required": ["created", "data"]
+        "required": [
+          "created",
+          "data"
+        ]
       },
       "TokenUsage": {
         "type": "object",
@@ -1232,4 +1364,3 @@
     }
   }
 }
-

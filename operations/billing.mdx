@@ -9,7 +9,7 @@ The runtime flow is:
 
 1. Estimate credits before a request runs.
 2. Reserve or deduct the estimated amount.
-3. Route the request through configured upstream channels.
+3. Run the request through APIAny.AI model execution.
 4. Settle actual usage after completion.
 5. Refund non-billable failures according to the model error policy.
 
@@ -25,5 +25,4 @@ Models can be priced by:
 - Cached input tokens
 - Minimum request floor
 
-The public model catalog shows configured user-facing prices. Internal upstream channel costs remain hidden from callers.
-
+The public model catalog shows user-facing prices. Platform cost and settlement details are not shown to callers.

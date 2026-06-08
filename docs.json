@@ -68,8 +68,7 @@
                   "operations/billing",
                   "operations/errors",
                   "operations/rate-limits",
-                  "operations/webhooks",
-                  "operations/update-workflow"
+                  "operations/webhooks"
                 ]
               }
             ]
@@ -142,8 +141,7 @@
                   "zh/operations/billing",
                   "zh/operations/errors",
                   "zh/operations/rate-limits",
-                  "zh/operations/webhooks",
-                  "zh/operations/update-workflow"
+                  "zh/operations/webhooks"
                 ]
               }
             ]
