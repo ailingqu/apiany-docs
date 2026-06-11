@@ -3,10 +3,10 @@ title: Errors
 description: Standard error categories returned by APIAny.AI.
 ---
 
-Each chat endpoint returns errors in the **same shape as the official provider**
-it is compatible with. Every error response also includes an `X-Request-Id`
-header. Only public, developer-useful information is returned (never upstream
-channel details).
+Each chat endpoint returns errors in the **same shape as the API standard it is
+compatible with** (OpenAI, Anthropic, or Gemini). Every error response also
+includes an `X-Request-Id` header, and returns only the information you need to
+debug your request.
 
 ## OpenAI — `/v1/chat/completions` (and image/video endpoints)
 

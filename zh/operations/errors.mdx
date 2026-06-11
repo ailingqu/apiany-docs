@@ -3,8 +3,8 @@ title: 错误处理
 description: APIAny.AI 标准错误分类。
 ---
 
-每个对话接口都返回与其兼容的**官方厂商一致的错误结构**。所有错误响应都带
-`X-Request-Id` 响应头，且只包含对开发者有用的公开信息（绝不暴露上游通道细节）。
+每个对话接口都返回与其兼容的 **API 标准（OpenAI / Anthropic / Gemini）一致的错误结构**。
+所有错误响应都带 `X-Request-Id` 响应头，只返回你排查请求所需的信息。
 
 ## OpenAI — `/v1/chat/completions`（以及图片/视频接口）
 
