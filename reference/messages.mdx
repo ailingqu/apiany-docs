@@ -19,3 +19,41 @@ curl https://api.apiany.ai/v1/messages \
 ```
 
 APIAny.AI processes the request and returns an Anthropic-compatible response.
+
+## Tool use
+
+Declare tools with `tools` (each has `name`, `description`, `input_schema`) and
+control selection with `tool_choice`. Multi-turn `tool_use` / `tool_result`
+content blocks are supported.
+
+```json
+{
+  "model": "minimax-m3",
+  "max_tokens": 512,
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "Get current weather",
+      "input_schema": {
+        "type": "object",
+        "properties": { "location": { "type": "string" } },
+        "required": ["location"]
+      }
+    }
+  ],
+  "tool_choice": { "type": "auto" },
+  "messages": [{ "role": "user", "content": "Weather in NYC?" }]
+}
+```
+
+## Streaming
+
+Set `stream: true` to receive Anthropic server-sent events:
+`message_start`, `content_block_start`, `content_block_delta`,
+`content_block_stop`, `message_delta`, `message_stop`.
+
+## Parameters
+
+Supported: `model`, `messages`, `max_tokens` (required), `system`,
+`temperature`, `top_p`, `top_k`, `stop_sequences`, `tools`, `tool_choice`,
+and `stream`.

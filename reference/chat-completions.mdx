@@ -19,8 +19,31 @@ curl https://api.apiany.ai/v1/chat/completions \
   }'
 ```
 
+## Streaming
+
+Set `stream: true` to receive server-sent events. Each event is an OpenAI
+`chat.completion.chunk`, and the stream ends with `data: [DONE]`.
+
+```bash
+curl https://api.apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{ "role": "user", "content": "Hello" }],
+    "stream": true
+  }'
+```
+
+## Parameters
+
+OpenAI-standard parameters are accepted, including `temperature`, `top_p`,
+`max_tokens`, `stop`, `n`, `frequency_penalty`, `presence_penalty`, `seed`,
+`response_format`, `tools`, `tool_choice`, `logprobs`, `top_logprobs`,
+`logit_bias`, `user`, and `stream`.
+
 ## Notes
 
 - The public `model` is an APIAny.AI model ID, not a vendor-specific deployment ID.
-- Non-streaming is the first supported mode.
 - Token usage is normalized into the OpenAI-style `usage` object when usage data is available.

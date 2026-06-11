@@ -775,15 +775,55 @@
           "temperature": {
             "type": "number",
             "minimum": 0,
-            "maximum": 2
+            "maximum": 2,
+            "description": "采样温度。"
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "核采样累计概率。"
           },
           "max_tokens": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "description": "响应中最大 token 数。"
           },
+          "stop": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ],
+            "description": "最多 4 个停止序列。"
+          },
+          "n": { "type": "integer", "minimum": 1, "description": "生成候选条数。" },
+          "frequency_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "presence_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "seed": { "type": "integer", "description": "尽量可复现的采样种子。" },
+          "response_format": {
+            "type": "object",
+            "description": "强制 JSON 对象或 JSON Schema 输出，如 { \"type\": \"json_object\" }。",
+            "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "模型可调用的工具/函数声明。",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "description": "工具选择：'auto' | 'none' | 'required' | { type: 'function', function: { name } }。",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "object", "additionalProperties": true }
+            ]
+          },
+          "logprobs": { "type": "boolean" },
+          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
+          "logit_bias": { "type": "object", "additionalProperties": true },
+          "user": { "type": "string", "description": "终端用户标识，用于风险审计。" },
           "stream": {
             "type": "boolean",
-            "description": "Reserved for future streaming support."
+            "description": "为 true 时通过 SSE 流式返回增量（OpenAI chat.completion.chunk），以 'data: [DONE]' 结束。"
           }
         },
         "required": [
@@ -900,12 +940,42 @@
           },
           "max_tokens": {
             "type": "integer",
-            "minimum": 1
+            "minimum": 1,
+            "description": "最大生成 token 数（必填）。"
+          },
+          "system": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+            ],
+            "description": "系统提示词。"
           },
           "temperature": {
             "type": "number",
             "minimum": 0,
-            "maximum": 1
+            "maximum": 1,
+            "description": "随机性（0–1）。"
+          },
+          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
+          "top_k": { "type": "integer", "description": "仅从概率最高的 K 个候选采样。" },
+          "stop_sequences": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "自定义停止序列。"
+          },
+          "tools": {
+            "type": "array",
+            "description": "模型可调用的工具；每个含 name、description、input_schema(JSON Schema)。",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "工具选择：{ type: 'auto' } | { type: 'any' } | { type: 'tool', name }。"
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "为 true 时按 Anthropic SSE 事件流返回（message_start / content_block_delta / message_delta / message_stop）。"
           }
         },
         "required": [
@@ -976,7 +1046,39 @@
           },
           "generationConfig": {
             "type": "object",
+            "description": "生成配置。另外：调用 :streamGenerateContent（而非 :generateContent）可获得 Gemini SSE 流。",
+            "properties": {
+              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+              "topP": { "type": "number" },
+              "topK": { "type": "integer" },
+              "maxOutputTokens": { "type": "integer" },
+              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "responseMimeType": {
+                "type": "string",
+                "description": "如 'application/json' 用于结构化输出。"
+              },
+              "responseSchema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "结构化输出的 JSON Schema（配合 responseMimeType application/json）。"
+              },
+              "responseModalities": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "含 'IMAGE' 时返回图片生成结果。"
+              }
+            },
             "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "含 functionDeclarations 的工具声明。",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "systemInstruction": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "系统指令，Gemini Content 对象（{ parts: [{ text }] }）。"
           }
         },
         "required": [

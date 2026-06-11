@@ -21,3 +21,40 @@ curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
 ```
 
 The path model remains the public APIAny.AI model ID. Vendor connection details are managed by APIAny.AI.
+
+## Streaming
+
+Call `:streamGenerateContent` instead of `:generateContent` to receive a
+Gemini server-sent event stream of incremental `candidates` chunks.
+
+```bash
+curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" -N \
+  -d '{ "contents": [ { "parts": [ { "text": "Hello" } ] } ] }'
+```
+
+## Structured output
+
+Use `generationConfig.responseMimeType: "application/json"` with
+`responseSchema` for JSON output:
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "Extract name and age" }] }],
+  "generationConfig": {
+    "responseMimeType": "application/json",
+    "responseSchema": {
+      "type": "object",
+      "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+    }
+  }
+}
+```
+
+## Parameters
+
+Supported `generationConfig`: `temperature`, `topP`, `topK`, `maxOutputTokens`,
+`stopSequences`, `responseMimeType`, `responseSchema`, `responseModalities`
+(include `IMAGE` for image output). Also top-level `tools` (functionDeclarations)
+and `systemInstruction`.
