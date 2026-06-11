@@ -19,3 +19,39 @@ curl https://api.apiany.ai/v1/messages \
 ```
 
 APIAny.AI 会处理请求，并返回 Anthropic 兼容的响应。
+
+## 工具调用
+
+用 `tools`（每个含 `name`、`description`、`input_schema`）声明工具，用
+`tool_choice` 控制选择；支持多轮 `tool_use` / `tool_result` 内容块。
+
+```json
+{
+  "model": "minimax-m3",
+  "max_tokens": 512,
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "获取当前天气",
+      "input_schema": {
+        "type": "object",
+        "properties": { "location": { "type": "string" } },
+        "required": ["location"]
+      }
+    }
+  ],
+  "tool_choice": { "type": "auto" },
+  "messages": [{ "role": "user", "content": "纽约天气如何？" }]
+}
+```
+
+## 流式
+
+设置 `stream: true` 按 Anthropic SSE 事件流返回：
+`message_start`、`content_block_start`、`content_block_delta`、
+`content_block_stop`、`message_delta`、`message_stop`。
+
+## 参数
+
+支持：`model`、`messages`、`max_tokens`（必填）、`system`、`temperature`、
+`top_p`、`top_k`、`stop_sequences`、`tools`、`tool_choice`、`stream`。

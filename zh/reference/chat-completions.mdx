@@ -19,8 +19,30 @@ curl https://api.apiany.ai/v1/chat/completions \
   }'
 ```
 
+## 流式
+
+设置 `stream: true` 即可通过 SSE 流式返回。每个事件是 OpenAI
+`chat.completion.chunk`，流以 `data: [DONE]` 结束。
+
+```bash
+curl https://api.apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{ "role": "user", "content": "你好" }],
+    "stream": true
+  }'
+```
+
+## 参数
+
+支持 OpenAI 标准参数：`temperature`、`top_p`、`max_tokens`、`stop`、`n`、
+`frequency_penalty`、`presence_penalty`、`seed`、`response_format`、`tools`、
+`tool_choice`、`logprobs`、`top_logprobs`、`logit_bias`、`user`、`stream`。
+
 ## 说明
 
 - `model` 是 APIAny.AI 的公开模型 ID，不是供应商侧的部署 ID。
-- 当前第一阶段以非 streaming 调用为主。
 - 如果模型响应包含 token usage，平台会尽量归一化到 OpenAI 风格的 `usage` 对象。

@@ -21,3 +21,40 @@ curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
 ```
 
 路径中的 `model` 仍然是 APIAny.AI 的公开模型 ID。供应商连接细节由 APIAny.AI 托管。
+
+## 流式
+
+把路径里的 `:generateContent` 换成 `:streamGenerateContent`，即可获得
+Gemini SSE 流（逐块返回增量 `candidates`）。
+
+```bash
+curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" -N \
+  -d '{ "contents": [ { "parts": [ { "text": "你好" } ] } ] }'
+```
+
+## 结构化输出
+
+用 `generationConfig.responseMimeType: "application/json"` 配合 `responseSchema`
+得到 JSON 输出：
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "抽取姓名和年龄" }] }],
+  "generationConfig": {
+    "responseMimeType": "application/json",
+    "responseSchema": {
+      "type": "object",
+      "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+    }
+  }
+}
+```
+
+## 参数
+
+支持 `generationConfig`：`temperature`、`topP`、`topK`、`maxOutputTokens`、
+`stopSequences`、`responseMimeType`、`responseSchema`、`responseModalities`
+（含 `IMAGE` 时返回图片）。另支持顶层 `tools`（functionDeclarations）与
+`systemInstruction`。

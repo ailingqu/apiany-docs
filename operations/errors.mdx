@@ -3,28 +3,58 @@ title: Errors
 description: Standard error categories returned by APIAny.AI.
 ---
 
-APIAny.AI returns consistent error responses across supported model APIs.
+Each chat endpoint returns errors in the **same shape as the official provider**
+it is compatible with. Every error response also includes an `X-Request-Id`
+header. Only public, developer-useful information is returned (never upstream
+channel details).
+
+## OpenAI — `/v1/chat/completions` (and image/video endpoints)
 
 ```json
 {
   "error": {
-    "type": "rate_limit",
-    "message": "Rate limit exceeded"
+    "message": "Insufficient credits",
+    "type": "insufficient_quota",
+    "code": "insufficient_credits",
+    "param": null
   }
 }
 ```
 
-## Error categories
+## Anthropic — `/v1/messages`
 
-- `invalid_request`
-- `auth_error`
-- `rate_limit`
-- `insufficient_quota`
-- `content_policy`
-- `timeout`
-- `network_error`
-- `service_error`
-- `billable_error`
-- `unknown`
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "authentication_error",
+    "message": "Invalid API key"
+  }
+}
+```
 
-Responses include only public error information that is useful for developers.
+## Gemini — `/v1beta/models/{model}:generateContent`
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "model is required",
+    "status": "INVALID_ARGUMENT"
+  }
+}
+```
+
+## Status mapping
+
+The error `type` / `status` is derived from the HTTP status:
+
+| HTTP | OpenAI `type` | Anthropic `type` | Gemini `status` |
+|------|---------------|------------------|-----------------|
+| 400  | invalid_request_error | invalid_request_error | INVALID_ARGUMENT |
+| 401  | authentication_error  | authentication_error  | UNAUTHENTICATED  |
+| 403  | permission_error      | permission_error      | PERMISSION_DENIED |
+| 404  | not_found_error       | not_found_error       | NOT_FOUND        |
+| 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
+| 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
+| 5xx  | api_error             | api_error / overloaded_error | INTERNAL / UNAVAILABLE |
