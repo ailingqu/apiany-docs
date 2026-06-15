@@ -12,14 +12,14 @@ Open the APIAny.AI dashboard and create a project API key.
 ## 2. List available models
 
 ```bash
-curl https://api.apiany.ai/v1/models \
+curl https://apiany.ai/v1/models \
   -H "Authorization: Bearer $APIANY_API_KEY"
 ```
 
 ## 3. Run a chat completion
 
 ```bash
-curl https://api.apiany.ai/v1/chat/completions \
+curl https://apiany.ai/v1/chat/completions \
   -H "Authorization: Bearer $APIANY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -33,7 +33,7 @@ curl https://api.apiany.ai/v1/chat/completions \
 ## 4. Create an image task
 
 ```bash
-curl https://api.apiany.ai/v1/images/generations \
+curl https://apiany.ai/v1/images/generations \
   -H "Authorization: Bearer $APIANY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -46,7 +46,7 @@ curl https://api.apiany.ai/v1/images/generations \
 The response includes a `task_id`. Poll the task until it completes:
 
 ```bash
-curl https://api.apiany.ai/v1/tasks/task_123 \
+curl https://apiany.ai/v1/tasks/task_123 \
   -H "Authorization: Bearer $APIANY_API_KEY"
 ```
 
@@ -55,6 +55,6 @@ curl https://api.apiany.ai/v1/tasks/task_123 \
 When testing against the local Next.js app, use:
 
 ```txt
-http://localhost:3000/api/v1/...
+http://localhost:3000/v1/...
 ```
 

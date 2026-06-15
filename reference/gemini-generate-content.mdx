@@ -6,7 +6,7 @@ description: Gemini-compatible content generation endpoint.
 Use `/v1beta/models/{model}:generateContent` for Gemini-compatible integrations.
 
 ```bash
-curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
   -H "Authorization: Bearer $APIANY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
@@ -28,7 +28,7 @@ Call `:streamGenerateContent` instead of `:generateContent` to receive a
 Gemini server-sent event stream of incremental `candidates` chunks.
 
 ```bash
-curl https://api.apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
   -H "Authorization: Bearer $APIANY_API_KEY" \
   -H "Content-Type: application/json" -N \
   -d '{ "contents": [ { "parts": [ { "text": "Hello" } ] } ] }'
