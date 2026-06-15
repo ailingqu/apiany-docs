@@ -22,7 +22,7 @@ Important pages:
 Public API base URL:
 
 ```txt
-https://api.apiany.ai
+https://apiany.ai
 ```
 
 Authentication:

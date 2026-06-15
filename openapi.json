@@ -9,10 +9,6 @@
     {
       "url": "https://apiany.ai",
       "description": "Production"
-    },
-    {
-      "url": "http://localhost:3000",
-      "description": "Local Next.js development"
     }
   ],
   "security": [
