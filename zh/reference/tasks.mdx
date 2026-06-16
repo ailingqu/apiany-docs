@@ -20,15 +20,40 @@ curl https://apiany.ai/v1/tasks/task_123 \
 
 ## 成功任务
 
+`result` 的结构取决于任务类型。
+
+**图片**任务返回 OpenAI 图片格式——图片地址在 `result.data[0].url`：
+
 ```json
 {
   "task_id": "task_123",
   "status": "completed",
-  "model": "nano-banana",
+  "model": "gpt-image-2",
+  "type": "image",
   "result": {
-    "type": "image",
-    "urls": ["https://.../result.png"]
-  }
+    "created": 1781597831,
+    "data": [
+      { "url": "https://s.apiany.ai/.../result.png" }
+    ]
+  },
+  "error": null
+}
+```
+
+**视频**与**音频**任务的主地址在 `result.video_url` / `result.audio_url`，全部产物也会列在 `result.urls[]` 中：
+
+```json
+{
+  "task_id": "task_456",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://s.apiany.ai/.../result.mp4",
+    "urls": ["https://s.apiany.ai/.../result.mp4"]
+  },
+  "error": null
 }
 ```
 

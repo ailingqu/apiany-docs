@@ -1319,16 +1319,64 @@
         ]
       },
       "MediaResult": {
+        "description": "Completed task result. Image tasks use the OpenAI image format (image URL at data[0].url); video and audio tasks expose video_url/audio_url plus a urls[] array.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ImageTaskResult"
+          },
+          {
+            "$ref": "#/components/schemas/MediaUrlResult"
+          }
+        ]
+      },
+      "ImageTaskResult": {
         "type": "object",
+        "description": "Image task result (OpenAI image format). The image URL is at data[0].url.",
         "properties": {
-          "type": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MediaUrlResult": {
+        "type": "object",
+        "description": "Video or audio task result. The primary URL is video_url or audio_url; every output is also listed in urls[].",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "video_url": {
             "type": "string",
-            "enum": [
-              "image",
-              "video",
-              "audio",
-              "text"
-            ]
+            "format": "uri"
+          },
+          "audio_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "output_url": {
+            "type": "string",
+            "format": "uri"
           },
           "urls": {
             "type": "array",
@@ -1336,18 +1384,8 @@
               "type": "string",
               "format": "uri"
             }
-          },
-          "text": {
-            "type": "string"
-          },
-          "raw": {
-            "type": "object",
-            "additionalProperties": true
           }
-        },
-        "required": [
-          "type"
-        ]
+        }
       },
       "OpenAIImageResponse": {
         "type": "object",

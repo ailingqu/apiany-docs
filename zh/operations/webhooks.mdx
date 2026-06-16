@@ -7,13 +7,19 @@ description: 接收异步任务完成回调。
 
 当回调发送失败时，平台会根据配置进行重试。
 
+回调内容与任务详情结构一致。`result` 按任务类型不同：图片任务的地址在
+`result.data[0].url`，视频/音频任务的地址在 `result.video_url` /
+`result.audio_url`（并同时列在 `result.urls[]`）。
+
 ```json
 {
   "task_id": "task_123",
   "status": "completed",
   "model": "seedance-2.0",
+  "type": "video",
   "result": {
-    "type": "video",
+    "status": "completed",
+    "video_url": "https://.../video.mp4",
     "urls": ["https://.../video.mp4"]
   }
 }

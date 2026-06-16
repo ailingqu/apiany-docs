@@ -20,15 +20,40 @@ curl https://apiany.ai/v1/tasks/task_123 \
 
 ## Completed task
 
+The shape of `result` depends on the task type.
+
+**Image** tasks return the OpenAI image format — the image URL is at `result.data[0].url`:
+
 ```json
 {
   "task_id": "task_123",
   "status": "completed",
-  "model": "nano-banana",
+  "model": "gpt-image-2",
+  "type": "image",
   "result": {
-    "type": "image",
-    "urls": ["https://.../result.png"]
-  }
+    "created": 1781597831,
+    "data": [
+      { "url": "https://s.apiany.ai/.../result.png" }
+    ]
+  },
+  "error": null
+}
+```
+
+**Video** and **audio** tasks return the primary URL at `result.video_url` / `result.audio_url`, and every output is also listed in `result.urls[]`:
+
+```json
+{
+  "task_id": "task_456",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://s.apiany.ai/.../result.mp4",
+    "urls": ["https://s.apiany.ai/.../result.mp4"]
+  },
+  "error": null
 }
 ```
 

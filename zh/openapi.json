@@ -1299,16 +1299,64 @@
         ]
       },
       "MediaResult": {
+        "description": "已完成任务的结果。图片任务采用 OpenAI 图片格式（图片地址在 data[0].url）；视频与音频任务提供 video_url/audio_url 以及 urls[] 数组。",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ImageTaskResult"
+          },
+          {
+            "$ref": "#/components/schemas/MediaUrlResult"
+          }
+        ]
+      },
+      "ImageTaskResult": {
         "type": "object",
+        "description": "图片任务结果（OpenAI 图片格式），图片地址在 data[0].url。",
         "properties": {
-          "type": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MediaUrlResult": {
+        "type": "object",
+        "description": "视频或音频任务结果。主地址为 video_url 或 audio_url；全部产物同时列在 urls[]。",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "video_url": {
             "type": "string",
-            "enum": [
-              "image",
-              "video",
-              "audio",
-              "text"
-            ]
+            "format": "uri"
+          },
+          "audio_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "output_url": {
+            "type": "string",
+            "format": "uri"
           },
           "urls": {
             "type": "array",
@@ -1316,18 +1364,8 @@
               "type": "string",
               "format": "uri"
             }
-          },
-          "text": {
-            "type": "string"
-          },
-          "raw": {
-            "type": "object",
-            "additionalProperties": true
           }
-        },
-        "required": [
-          "type"
-        ]
+        }
       },
       "OpenAIImageResponse": {
         "type": "object",

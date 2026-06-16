@@ -7,13 +7,19 @@ Async media tasks can include a callback URL when enabled for the API key or req
 
 Callbacks are retried by the platform when delivery fails.
 
+The callback body is the same shape as the task detail. The `result` differs by
+task type: image results carry `result.data[0].url`, while video/audio results
+carry `result.video_url` / `result.audio_url` (and `result.urls[]`).
+
 ```json
 {
   "task_id": "task_123",
   "status": "completed",
   "model": "seedance-2.0",
+  "type": "video",
   "result": {
-    "type": "video",
+    "status": "completed",
+    "video_url": "https://.../video.mp4",
     "urls": ["https://.../video.mp4"]
   }
 }
