@@ -147,6 +147,79 @@
         }
       }
     },
+    "/v1/responses": {
+      "post": {
+        "operationId": "createResponse",
+        "summary": "Create response",
+        "description": "OpenAI Responses-compatible endpoint. Supports Responses-native input, reasoning controls, built-in tools such as web search, and official Responses SSE when stream is true.",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponsesRequest"
+              },
+              "examples": {
+                "reasoning": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "Review this API design and list the main risks.",
+                    "reasoning": {
+                      "effort": "high",
+                      "summary": "auto"
+                    },
+                    "text": {
+                      "verbosity": "medium"
+                    }
+                  }
+                },
+                "webSearch": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "What changed in the latest OpenAI Responses API docs?",
+                    "tools": [
+                      {
+                        "type": "web_search_preview"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI-compatible Responses response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesResponse"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "Responses SSE stream when stream=true."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
     "/v1/messages": {
       "post": {
         "operationId": "createMessage",
@@ -909,6 +982,163 @@
           "created",
           "model",
           "choices"
+        ]
+      },
+      "ResponsesRequest": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.5"
+          },
+          "input": {
+            "description": "Responses input. Can be a string or an array of message / tool-result items.",
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          },
+          "instructions": {
+            "type": "string",
+            "description": "System or developer instructions."
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Maximum output tokens."
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh"
+                ],
+                "description": "Reasoning strength for supported models."
+              },
+              "summary": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "concise",
+                  "detailed"
+                ]
+              }
+            }
+          },
+          "text": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "verbosity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "format": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "tools": {
+            "type": "array",
+            "description": "Responses tools, including function tools and built-in tools such as web_search_preview.",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "tool_choice": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "If true, responses are streamed as OpenAI Responses SSE events."
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "model",
+          "input"
+        ]
+      },
+      "ResponsesResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "response"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "output": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "output_text": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "model",
+          "output"
         ]
       },
       "AnthropicMessagesRequest": {

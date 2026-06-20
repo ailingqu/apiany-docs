@@ -1,0 +1,84 @@
+---
+title: Responses
+description: OpenAI-compatible Responses endpoint with reasoning and built-in tools.
+---
+
+Use `/v1/responses` when your client already speaks the OpenAI Responses API
+format, or when you need Responses-native features such as reasoning controls,
+web search tools, and official Responses server-sent events.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "Write a short implementation plan for adding search to a docs site.",
+    "reasoning": { "effort": "medium" },
+    "text": { "verbosity": "medium" }
+  }'
+```
+
+## Reasoning controls
+
+`gpt-5.5` and `gpt-5.4` accept Responses reasoning controls. Use
+`reasoning.effort` to set the reasoning strength:
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "Review this API design and list the main risks.",
+  "reasoning": {
+    "effort": "high",
+    "summary": "auto"
+  }
+}
+```
+
+Supported `reasoning.effort` values are `none`, `minimal`, `low`, `medium`,
+`high`, and `xhigh`.
+
+## Web search
+
+Pass OpenAI Responses tools directly. For web-connected answers, include a web
+search tool in `tools`:
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "What changed in the latest OpenAI Responses API docs?",
+  "tools": [
+    { "type": "web_search_preview" }
+  ]
+}
+```
+
+APIAny.AI forwards Responses-native tools to upstream channels that support
+them. Function tools are also supported.
+
+## Streaming
+
+Set `stream: true` to receive the upstream Responses SSE event stream. Events
+follow the OpenAI Responses format, such as `response.created`,
+`response.output_text.delta`, tool events, and `response.completed`.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "Draft three concise release note bullets.",
+    "reasoning": { "effort": "low" },
+    "stream": true
+  }'
+```
+
+## Notes
+
+- The `model` is a public APIAny.AI model ID.
+- `max_output_tokens` is the Responses-style output token limit.
+- Responses-native fields such as `reasoning`, `text`, `tools`,
+  `tool_choice`, `include`, `previous_response_id`, and `store` are forwarded
+  when supported by the selected upstream channel.

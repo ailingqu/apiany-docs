@@ -55,6 +55,7 @@
                 "group": "Core APIs",
                 "pages": [
                   "reference/chat-completions",
+                  "reference/responses",
                   "reference/messages",
                   "reference/gemini-generate-content",
                   "reference/image-generation",
@@ -128,6 +129,7 @@
                 "group": "核心 API",
                 "pages": [
                   "zh/reference/chat-completions",
+                  "zh/reference/responses",
                   "zh/reference/messages",
                   "zh/reference/gemini-generate-content",
                   "zh/reference/image-generation",

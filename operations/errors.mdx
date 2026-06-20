@@ -57,4 +57,4 @@ The error `type` / `status` is derived from the HTTP status:
 | 404  | not_found_error       | not_found_error       | NOT_FOUND        |
 | 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
-| 5xx  | api_error             | api_error / overloaded_error | INTERNAL / UNAVAILABLE |
+| 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |

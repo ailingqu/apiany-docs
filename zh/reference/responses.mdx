@@ -1,0 +1,82 @@
+---
+title: Responses
+description: 兼容 OpenAI Responses 的接口，支持 reasoning 和内置工具。
+---
+
+当客户端已经使用 OpenAI Responses API 格式，或需要 reasoning 强度控制、
+联网搜索工具、官方 Responses SSE 事件时，使用 `/v1/responses`。
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "写一个给文档站增加搜索功能的简短实施计划。",
+    "reasoning": { "effort": "medium" },
+    "text": { "verbosity": "medium" }
+  }'
+```
+
+## Reasoning 控制
+
+`gpt-5.5` 和 `gpt-5.4` 支持 Responses reasoning 控制。使用
+`reasoning.effort` 设置思考强度：
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "审核这个 API 设计并列出主要风险。",
+  "reasoning": {
+    "effort": "high",
+    "summary": "auto"
+  }
+}
+```
+
+`reasoning.effort` 支持 `none`、`minimal`、`low`、`medium`、`high`、
+`xhigh`。
+
+## 联网搜索
+
+可以直接传 OpenAI Responses tools。需要联网答案时，在 `tools` 中加入
+web search 工具：
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "OpenAI Responses API 文档最近有什么变化？",
+  "tools": [
+    { "type": "web_search_preview" }
+  ]
+}
+```
+
+APIAny.AI 会把 Responses 原生工具转发给支持这些能力的上游通道。Function
+tools 也支持。
+
+## 流式
+
+设置 `stream: true` 后会收到上游 Responses SSE 事件流。事件遵循 OpenAI
+Responses 格式，例如 `response.created`、`response.output_text.delta`、
+工具事件和 `response.completed`。
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "写三条简短的发布说明。",
+    "reasoning": { "effort": "low" },
+    "stream": true
+  }'
+```
+
+## 说明
+
+- `model` 使用 APIAny.AI 的公开模型 ID。
+- `max_output_tokens` 是 Responses 风格的输出 token 上限。
+- `reasoning`、`text`、`tools`、`tool_choice`、`include`、
+  `previous_response_id`、`store` 等 Responses 原生字段会在上游支持时转发。

@@ -148,6 +148,79 @@
         }
       }
     },
+    "/v1/responses": {
+      "post": {
+        "operationId": "createResponse",
+        "summary": "创建 Responses 响应",
+        "description": "兼容 OpenAI Responses 的接口。支持 Responses 原生 input、reasoning 控制、web search 等内置工具，以及 stream=true 时的官方 Responses SSE。",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponsesRequest"
+              },
+              "examples": {
+                "reasoning": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "审核这个 API 设计并列出主要风险。",
+                    "reasoning": {
+                      "effort": "high",
+                      "summary": "auto"
+                    },
+                    "text": {
+                      "verbosity": "medium"
+                    }
+                  }
+                },
+                "webSearch": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "OpenAI Responses API 文档最近有什么变化？",
+                    "tools": [
+                      {
+                        "type": "web_search_preview"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI-compatible Responses response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesResponse"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "stream=true 时返回 Responses SSE 事件流。"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
     "/v1/messages": {
       "post": {
         "operationId": "createMessage",
@@ -892,6 +965,163 @@
           "created",
           "model",
           "choices"
+        ]
+      },
+      "ResponsesRequest": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.5"
+          },
+          "input": {
+            "description": "Responses 输入。可以是字符串，也可以是 message / tool-result item 数组。",
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          },
+          "instructions": {
+            "type": "string",
+            "description": "系统或开发者指令。"
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "最大输出 token 数。"
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh"
+                ],
+                "description": "支持模型的 reasoning 强度。"
+              },
+              "summary": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "concise",
+                  "detailed"
+                ]
+              }
+            }
+          },
+          "text": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "verbosity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "format": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "tools": {
+            "type": "array",
+            "description": "Responses tools，包含 function tools 和 web_search_preview 等内置工具。",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "tool_choice": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "为 true 时返回 OpenAI Responses SSE 事件。"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "model",
+          "input"
+        ]
+      },
+      "ResponsesResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "response"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "output": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "output_text": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "model",
+          "output"
         ]
       },
       "AnthropicMessagesRequest": {
