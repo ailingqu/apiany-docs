@@ -1,113 +1,95 @@
-// Updates snippets/docs-version.mdx with a public build marker:
-//   **Docs version / 文档版本：** <YYYY-MM-DD> · <fingerprint>
+// Keeps an inline "last updated" timestamp current at the bottom of the intro
+// pages (introduction.mdx + zh/introduction.mdx):
+//   最后更新 / Last updated: <YYYY-MM-DD HH:MM> (UTC+8)
 //
-// <fingerprint> is a 7-char sha256 over the tracked public docs source files
-// (the same set validate-public-content.mjs guards), EXCLUDING the marker file
-// itself. It is a content fingerprint, NOT a git commit short hash: a commit can
-// never contain its own hash (the hash depends on the file, the file would
-// depend on the hash), so a commit-hash marker is always off by one and breaks
-// the "live string == latest" check. A self-excluding fingerprint is
-// self-consistent and lets you verify deployment freshness exactly:
-//   live docs.apiany.ai marker == repo snippets/docs-version.mdx  =>  deployed = latest.
+// The marker is inlined as plain text (NOT a <Snippet>): a snippet placed as the
+// last element of a page is silently dropped by the Mintlify build, while inline
+// text renders reliably. The script rewrites the marker line in place, and
+// self-heals (re-appends it) if a Mintlify web-editor rewrite removed it.
 //
-//   node scripts/update-docs-version.mjs          # rewrite the marker
-//   node scripts/update-docs-version.mjs --check   # exit 1 if the marker is stale
+// Two timestamp sources keep it accurate without commit spam:
+//   - default (the pre-commit hook): wall-clock now ≈ the commit being made.
+//   - --head  (the GitHub Action):   the HEAD commit's committer date, so pushes
+//     that bypass the hook (e.g. the web editor) still get an accurate time while
+//     normal local pushes already match and need no follow-up commit.
+//
+//   node scripts/update-docs-version.mjs          # stamp wall-clock now
+//   node scripts/update-docs-version.mjs --head    # stamp HEAD committer date
+//   node scripts/update-docs-version.mjs --check    # exit 1 if marker != HEAD time
 
-import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const MARKER = 'snippets/docs-version.mdx';
+const TARGETS = ['introduction.mdx', 'zh/introduction.mdx'];
+const TZ = process.env.TZ || 'Asia/Shanghai';
+const LINE_RE = /^最后更新 \/ Last updated: .*\(UTC\+8\)$/m;
+const STAMP_RE = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/;
 
-// Same public surface as scripts/validate-public-content.mjs.
-const publicGlobs = [
-  '*.mdx',
-  'reference/**/*.mdx',
-  'models/**/*.mdx',
-  'operations/**/*.mdx',
-  'zh/**/*.mdx',
-  'snippets/**/*.mdx',
-  'zh/snippets/**/*.mdx',
-  'openapi.json',
-  'zh/openapi.json',
-  'docs.json',
-  'llms.txt',
-];
-
-function git(args) {
+function git(args, opts = {}) {
   return execFileSync('git', args, {
     cwd: process.cwd(),
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'ignore'],
+    ...opts,
   }).trim();
 }
 
-function currentDate() {
-  const timeZone = process.env.TZ || 'Asia/Shanghai';
+function nowStamp() {
   const parts = new Intl.DateTimeFormat('en-CA', {
-    timeZone,
+    timeZone: TZ,
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   }).formatToParts(new Date());
-  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
-  return `${values.year}-${values.month}-${values.day}`;
+  const v = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+  return `${v.year}-${v.month}-${v.day} ${v.hour}:${v.minute}`;
+}
+
+function headStamp() {
+  return git(['show', '-s', '--format=%cd', '--date=format-local:%Y-%m-%d %H:%M', 'HEAD'], {
+    env: { ...process.env, TZ },
+  });
 }
 
 const root = git(['rev-parse', '--show-toplevel']);
 
-function fingerprint() {
-  const stdout = execFileSync('git', ['ls-files', ...publicGlobs], {
-    cwd: root,
-    encoding: 'utf8',
-  });
-  const files = [
-    ...new Set(
-      stdout
-        .split('\n')
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .filter((file) => file !== MARKER),
-    ),
-  ].sort();
+const mode = process.argv.includes('--check')
+  ? 'check'
+  : process.argv.includes('--head')
+    ? 'head'
+    : 'now';
 
-  const hash = createHash('sha256');
-  for (const file of files) {
-    hash.update(file);
-    hash.update('\0');
-    hash.update(readFileSync(resolve(root, file)));
-    hash.update('\0');
-  }
-  return hash.digest('hex').slice(0, 7);
-}
-
-const id = fingerprint();
-const outputPath = resolve(root, MARKER);
-const content = `**Docs version / 文档版本：** ${currentDate()} · ${id}\n`;
-
-let current = '';
-try {
-  current = readFileSync(outputPath, 'utf8');
-} catch {
-  current = '';
-}
-
-if (process.argv.includes('--check')) {
-  // Only the fingerprint matters in check mode (the date drifts daily by design).
-  const idOf = (text) => (text.match(/·\s*([0-9a-f]{7})\s*$/m) || [])[1];
-  if (idOf(current) !== id) {
+if (mode === 'check') {
+  const txt = readFileSync(resolve(root, TARGETS[0]), 'utf8');
+  const found = (txt.match(LINE_RE)?.[0]?.match(STAMP_RE) || [])[0];
+  const expected = headStamp();
+  if (found !== expected) {
     console.error(
-      `Docs version marker is stale: expected fingerprint ${id}, found ${idOf(current) ?? '(none)'}.\n` +
+      `Docs timestamp is stale: HEAD is ${expected}, marker shows ${found ?? '(none)'}.\n` +
         `Run "pnpm version:docs" (or just commit — the pre-commit hook updates it).`,
     );
     process.exit(1);
   }
-  console.log(`Docs version marker is current: ${id}`);
+  console.log(`Docs timestamp is current: ${expected}`);
 } else {
-  if (current !== content) {
-    mkdirSync(dirname(outputPath), { recursive: true });
-    writeFileSync(outputPath, content);
+  const stamp = mode === 'head' ? headStamp() : nowStamp();
+  const newLine = `最后更新 / Last updated: ${stamp} (UTC+8)`;
+  for (const rel of TARGETS) {
+    const path = resolve(root, rel);
+    const original = readFileSync(path, 'utf8');
+    let updated;
+    if (LINE_RE.test(original)) {
+      updated = original.replace(LINE_RE, newLine);
+    } else {
+      // Self-heal: marker was removed (e.g. a web-editor rewrite). Re-append it.
+      const base = original.endsWith('\n') ? original : `${original}\n`;
+      updated = `${base}\n{/* docs-updated */}\n\n${newLine}\n`;
+    }
+    if (updated !== original) writeFileSync(path, updated);
   }
-  console.log(`Updated docs version marker: ${currentDate()} · ${id}`);
+  console.log(`Updated docs timestamp: ${stamp}`);
 }

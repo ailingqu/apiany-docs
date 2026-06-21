@@ -29,17 +29,17 @@ jobs:
         with:
           node-version: 20
 
-      - name: Update version marker
-        run: node scripts/update-docs-version.mjs
+      - name: Update timestamp marker
+        run: node scripts/update-docs-version.mjs --head
 
       - name: Commit if the marker changed
         run: |
-          if git diff --quiet -- snippets/docs-version.mdx; then
-            echo "Version marker already current — nothing to commit."
+          if git diff --quiet -- introduction.mdx zh/introduction.mdx; then
+            echo "Timestamp marker already current — nothing to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add snippets/docs-version.mdx
-          git commit -m "chore: update docs version marker [skip ci]"
+          git add introduction.mdx zh/introduction.mdx
+          git commit -m "chore: update docs timestamp [skip ci]"
           git push

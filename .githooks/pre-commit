@@ -1,7 +1,7 @@
 #!/bin/sh
-# Auto-update the docs version marker (date + content fingerprint) on every
-# commit, so docs.apiany.ai always shows a marker matching the committed content.
+# Auto-update the inline "last updated" timestamp at the bottom of the intro
+# pages on every commit, so docs.apiany.ai always shows when it was last updated.
 # Enable once with: git config core.hooksPath .githooks  (pnpm install does this).
 
 node scripts/update-docs-version.mjs || exit 1
-git add snippets/docs-version.mdx
+git add introduction.mdx zh/introduction.mdx
