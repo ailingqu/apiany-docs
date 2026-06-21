@@ -1,40 +1,55 @@
 ---
-title: Introduction
-description: One API gateway for image, video, chat, and multimodal AI models.
+title: "Introduction"
+description: "One API gateway for image, video, chat, and multimodal AI models."
 ---
 
-APIAny.AI gives developers one gateway for production AI models across image generation, video generation, chat, and multimodal workflows.
-
-The public API stays stable while APIAny.AI handles model execution, billing, task history, and response formatting behind a consistent developer experience.
+APIAny.AI is an AI API gateway that gives you a single, stable endpoint and API key to call chat, image, and video models across providers like OpenAI, Anthropic, Gemini, and others. Instead of juggling multiple provider accounts, rotating credentials, and normalizing incompatible response formats, you send requests to APIAny.AI and the gateway handles routing, billing, task history, and response normalization transparently — your application only ever sees one consistent API surface.
 
 <CardGroup cols={2}>
   <Card title="Unified model access" icon="route">
-    Call public model IDs with one API key and one stable API surface.
+    Call any public model ID without exposing upstream providers or channel keys to your application. APIAny routes requests at runtime using fallback groups and weighted selection.
   </Card>
+
   <Card title="Async media tasks" icon="clock">
-    Use task IDs for long-running image, video, and future audio generation jobs.
+    Long-running image and video generation jobs return a `task_id` immediately. Poll `GET /v1/tasks/{task_id}` to retrieve results when they are ready.
   </Card>
-  <Card title="OpenAI-compatible chat" icon="message-square">
-    Start with `/v1/chat/completions`, then add Anthropic or Gemini-compatible endpoints when needed.
+
+  <Card title="Multi-format chat" icon="message-square">
+    Start with the OpenAI-compatible `/v1/chat/completions` endpoint, then adopt the Anthropic-compatible `/v1/messages` or Gemini-compatible `/v1beta/models/{model}:generateContent` endpoints as your integration evolves.
   </Card>
+
   <Card title="Credits and traceability" icon="receipt">
-    Every request can be tied to credits, task history, normalized results, and usage records.
+    Every request is tied to your credit balance and stored with upstream attempt details, normalized results, and audit records so you can inspect exactly what happened.
   </Card>
 </CardGroup>
 
-## Base URL
-
-<Snippet file="snippets/base-url.mdx" />
-
 ## Public API shape
 
-APIAny.AI exposes a small set of public calling patterns:
+APIAny.AI exposes a small, predictable set of public calling patterns:
 
-- Chat: `/v1/chat/completions`
-- Anthropic-compatible messages: `/v1/messages`
-- Gemini-compatible content generation: `/v1beta/models/{model}:generateContent`
-- Image generation: `/v1/images/generations`
-- Video generation: `/v1/videos/generations`
-- Task lookup: `/v1/tasks/{task_id}`
+- **Chat completions** — `POST /v1/chat/completions`: OpenAI-compatible text generation and chat for models like `gpt-5.4`.
+- **Anthropic-compatible messages** — `POST /v1/messages`: Drop-in replacement for the Anthropic Messages API.
+- **Gemini-compatible content generation** — `POST /v1beta/models/{model}:generateContent`: Drop-in replacement for the Gemini generateContent API; the path `{model}` is the public APIAny model ID.
+- **Image generation (async)** — `POST /v1/images/generations`: Create an asynchronous image generation task and receive a `task_id`.
+- **Image generation (sync)** — `POST /v1/images/generations/sync`: Generate an image and block until the result is ready. Best for simple integrations where timeout risk is acceptable.
+- **Image editing** — `POST /v1/images/edits`: Apply edits or inpainting to an existing image using a model and prompt.
+- **Video generation (async)** — `POST /v1/videos/generations`: Create an asynchronous video generation task and receive a `task_id`.
+- **Video generation (sync)** — `POST /v1/videos/generations/sync`: Generate a video and block until the result is ready.
+- **Task lookup** — `GET /v1/tasks/{task_id}`: Retrieve the current status and final result of any async image or video task.
+- **Credits balance** — `GET /v1/credits/balance`: Check how many credits remain on your account at any time.
 
-Long-running media endpoints are asynchronous by default. Synchronous variants exist for simple integrations, but production systems should prefer async creation plus task polling.
+<Tip>
+  Image and video generation endpoints are asynchronous by default. Your request returns a `task_id` immediately rather than blocking until the media is ready. Production systems should prefer the async creation endpoints followed by task polling — this avoids timeout failures on long-running jobs and lets you process results on your own schedule. Synchronous variants (`/sync`) are available for simple integrations where blocking behaviour is acceptable.
+</Tip>
+
+## Base URL
+
+All production API requests go to:
+
+```bash filename
+https://apiany.ai
+```
+
+## How it works
+
+When you send a request to APIAny.AI, the gateway looks up the public model ID you specified, selects an upstream channel using any configured fallback groups or weighted routing rules, forwards the request, and returns a normalized response — all without exposing provider-level details to your application. Public model IDs are stable product contracts: even if APIAny reroutes a model to a different upstream channel in the future, your integration keeps working without any code changes.

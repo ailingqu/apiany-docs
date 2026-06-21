@@ -20,6 +20,41 @@
   "navigation": {
     "languages": [
       {
+        "language": "cn",
+        "tabs": [
+          {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Get started",
+                "pages": []
+              },
+              {
+                "group": "Core APIs",
+                "pages": []
+              },
+              {
+                "group": "Operations",
+                "pages": []
+              }
+            ]
+          },
+          {
+            "tab": "Models",
+            "groups": [
+              {
+                "group": "Model catalog",
+                "pages": []
+              }
+            ]
+          },
+          {
+            "tab": "API Reference",
+            "openapi": "openapi.json"
+          }
+        ]
+      },
+      {
         "language": "en",
         "default": true,
         "navbar": {
