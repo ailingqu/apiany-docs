@@ -23,7 +23,7 @@ import { resolve } from 'node:path';
 
 const TARGETS = ['introduction.mdx', 'zh/introduction.mdx'];
 const TZ = process.env.TZ || 'Asia/Shanghai';
-const LINE_RE = /^最后更新 \/ Last updated: .*\(UTC\+8\)$/m;
+const LINE_RE = /^.*Last updated: .*\(UTC\+8\)$/m;
 const STAMP_RE = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/;
 
 function git(args, opts = {}) {
@@ -77,7 +77,7 @@ if (mode === 'check') {
   console.log(`Docs timestamp is current: ${expected}`);
 } else {
   const stamp = mode === 'head' ? headStamp() : nowStamp();
-  const newLine = `最后更新 / Last updated: ${stamp} (UTC+8)`;
+  const newLine = `Last updated: ${stamp} (UTC+8)`;
   for (const rel of TARGETS) {
     const path = resolve(root, rel);
     const original = readFileSync(path, 'utf8');
