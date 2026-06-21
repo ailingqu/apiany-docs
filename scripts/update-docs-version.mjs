@@ -25,7 +25,7 @@ function currentDate() {
 const root = git(['rev-parse', '--show-toplevel']);
 const shortRef = git(['rev-parse', '--short=7', 'HEAD']);
 const outputPath = resolve(root, 'snippets/docs-version.mdx');
-const content = `<small>Docs version / 文档版本：${currentDate()} · ${shortRef}</small>\n`;
+const content = `**Docs version / 文档版本：** ${currentDate()} · ${shortRef}\n`;
 
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, content);
