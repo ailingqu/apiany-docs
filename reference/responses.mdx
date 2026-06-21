@@ -53,13 +53,13 @@ search tool in `tools`:
 }
 ```
 
-APIAny.AI forwards Responses-native tools to upstream channels that support
+APIAny.AI forwards Responses-native tools to compatible models that support
 them. Function tools are also supported.
 
 ## Streaming
 
-Set `stream: true` to receive the upstream Responses SSE event stream. Events
-follow the OpenAI Responses format, such as `response.created`,
+Set `stream: true` to receive the Responses SSE event stream. Events follow
+the OpenAI Responses format, such as `response.created`,
 `response.output_text.delta`, tool events, and `response.completed`.
 
 ```bash
@@ -81,4 +81,4 @@ curl https://apiany.ai/v1/responses \
 - `max_output_tokens` is the Responses-style output token limit.
 - Responses-native fields such as `reasoning`, `text`, `tools`,
   `tool_choice`, `include`, `previous_response_id`, and `store` are forwarded
-  when supported by the selected upstream channel.
+  when supported by the selected model.

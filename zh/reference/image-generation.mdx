@@ -28,11 +28,10 @@ curl https://apiany.ai/v1/images/generations \
 
 ## 同步等待接口
 
-`/v1/images/generations/sync` 内部仍然会创建任务，只是在服务端等待任务完成或达到最大等待时间。
+`/v1/images/generations/sync` 会等待生成结果返回，或在达到最大等待时间后返回当前状态。
 
 该接口适合兼容 OpenAI Images 风格或调试场景。生产系统建议使用异步接口。
 
 ## 图片编辑
 
 `/v1/images/edits` 用于 OpenAI 风格图片编辑。只有支持参考图的模型可以调用该接口。
-

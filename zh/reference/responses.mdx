@@ -52,12 +52,12 @@ web search 工具：
 }
 ```
 
-APIAny.AI 会把 Responses 原生工具转发给支持这些能力的上游通道。Function
+APIAny.AI 会把 Responses 原生工具转发给支持这些能力的兼容模型。Function
 tools 也支持。
 
 ## 流式
 
-设置 `stream: true` 后会收到上游 Responses SSE 事件流。事件遵循 OpenAI
+设置 `stream: true` 后会收到 Responses SSE 事件流。事件遵循 OpenAI
 Responses 格式，例如 `response.created`、`response.output_text.delta`、
 工具事件和 `response.completed`。
 
@@ -79,4 +79,4 @@ curl https://apiany.ai/v1/responses \
 - `model` 使用 APIAny.AI 的公开模型 ID。
 - `max_output_tokens` 是 Responses 风格的输出 token 上限。
 - `reasoning`、`text`、`tools`、`tool_choice`、`include`、
-  `previous_response_id`、`store` 等 Responses 原生字段会在上游支持时转发。
+  `previous_response_id`、`store` 等 Responses 原生字段会在所选模型支持时转发。
