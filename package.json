@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npx mintlify dev",
     "validate": "node scripts/validate-openapi.mjs && node scripts/validate-docs.mjs && node scripts/validate-public-content.mjs",
-    "sync:platform": "node scripts/sync-from-platform.mjs"
+    "sync:platform": "node scripts/sync-from-platform.mjs",
+    "version:docs": "node scripts/update-docs-version.mjs"
   }
 }
