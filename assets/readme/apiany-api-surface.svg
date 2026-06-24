@@ -1,0 +1,38 @@
+<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">APIAny.AI API surface</title>
+  <desc id="desc">A summary of the public API surface for chat, images, videos, tasks, and credits.</desc>
+  <rect width="1200" height="520" rx="32" fill="#F8FAFC"/>
+  <text x="64" y="76" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="850">Public API surface</text>
+  <text x="64" y="112" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="18">One documented API area for core production AI workflows.</text>
+  <g>
+    <rect x="64" y="156" width="320" height="128" rx="24" fill="#FFFFFF" stroke="#D9E2EF"/>
+    <rect x="92" y="184" width="56" height="56" rx="16" fill="#EAF1FF"/>
+    <text x="111" y="222" fill="#174CFF" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="800">T</text>
+    <text x="168" y="202" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">Chat</text>
+    <text x="168" y="236" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="16">/v1/chat/completions</text>
+  </g>
+  <g>
+    <rect x="440" y="156" width="320" height="128" rx="24" fill="#FFFFFF" stroke="#D9E2EF"/>
+    <rect x="468" y="184" width="56" height="56" rx="16" fill="#ECFDF5"/>
+    <text x="486" y="222" fill="#10B981" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="800">I</text>
+    <text x="544" y="202" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">Images</text>
+    <text x="544" y="236" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="16">/v1/images/generations</text>
+  </g>
+  <g>
+    <rect x="816" y="156" width="320" height="128" rx="24" fill="#FFFFFF" stroke="#D9E2EF"/>
+    <rect x="844" y="184" width="56" height="56" rx="16" fill="#FFF7ED"/>
+    <text x="860" y="222" fill="#F97316" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="800">V</text>
+    <text x="920" y="202" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">Videos</text>
+    <text x="920" y="236" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="16">/v1/videos/generations</text>
+  </g>
+  <g>
+    <rect x="64" y="330" width="506" height="116" rx="24" fill="#FFFFFF" stroke="#D9E2EF"/>
+    <text x="92" y="374" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">Task lookup</text>
+    <text x="92" y="410" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="18">GET /v1/tasks/{task_id}</text>
+  </g>
+  <g>
+    <rect x="630" y="330" width="506" height="116" rx="24" fill="#FFFFFF" stroke="#D9E2EF"/>
+    <text x="658" y="374" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="800">Credits balance</text>
+    <text x="658" y="410" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="18">GET /v1/credits/balance</text>
+  </g>
+</svg>

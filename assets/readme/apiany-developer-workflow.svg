@@ -1,0 +1,48 @@
+<svg width="1200" height="440" viewBox="0 0 1200 440" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">APIAny.AI developer workflow</title>
+  <desc id="desc">A six-step developer workflow from dashboard sign in to API key, model selection, request, task lookup, and usage review.</desc>
+  <rect width="1200" height="440" rx="30" fill="#0B1220"/>
+  <text x="64" y="72" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="800">Developer workflow</text>
+  <text x="64" y="108" fill="#94A3B8" font-family="Inter, Arial, sans-serif" font-size="18">From first key to production usage records.</text>
+  <g stroke="#334155" stroke-width="3" stroke-linecap="round">
+    <path d="M194 218 H294"/>
+    <path d="M374 218 H474"/>
+    <path d="M554 218 H654"/>
+    <path d="M734 218 H834"/>
+    <path d="M914 218 H1014"/>
+  </g>
+  <g>
+    <rect x="64" y="156" width="130" height="124" rx="22" fill="#111C31" stroke="#22314D"/>
+    <circle cx="104" cy="196" r="20" fill="#174CFF"/>
+    <text x="96" y="203" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="800">1</text>
+    <text x="88" y="238" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Sign in</text>
+  </g>
+  <g>
+    <rect x="294" y="156" width="130" height="124" rx="22" fill="#111C31" stroke="#22314D"/>
+    <circle cx="334" cy="196" r="20" fill="#16B8C7"/>
+    <text x="326" y="203" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="800">2</text>
+    <text x="320" y="238" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">API key</text>
+  </g>
+  <g>
+    <rect x="524" y="156" width="130" height="124" rx="22" fill="#111C31" stroke="#22314D"/>
+    <circle cx="564" cy="196" r="20" fill="#10B981"/>
+    <text x="556" y="203" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="800">3</text>
+    <text x="545" y="238" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Model ID</text>
+  </g>
+  <g>
+    <rect x="754" y="156" width="130" height="124" rx="22" fill="#111C31" stroke="#22314D"/>
+    <circle cx="794" cy="196" r="20" fill="#F59E0B"/>
+    <text x="786" y="203" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="800">4</text>
+    <text x="786" y="238" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Request</text>
+  </g>
+  <g>
+    <rect x="984" y="156" width="130" height="124" rx="22" fill="#111C31" stroke="#22314D"/>
+    <circle cx="1024" cy="196" r="20" fill="#9B5CFF"/>
+    <text x="1016" y="203" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="800">5</text>
+    <text x="1010" y="238" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Results</text>
+  </g>
+  <g>
+    <rect x="64" y="326" width="1050" height="56" rx="18" fill="#17223A" stroke="#273854"/>
+    <text x="92" y="361" fill="#CBD5E1" font-family="Inter, Arial, sans-serif" font-size="18">Review usage, credits, task history, and billing from the APIAny.AI dashboard.</text>
+  </g>
+</svg>
