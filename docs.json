@@ -126,6 +126,12 @@
                 ]
               },
               {
+                "group": "集成指南",
+                "pages": [
+                  "zh/integrations/chat/chatbox"
+                ]
+              },
+              {
                 "group": "核心 API",
                 "pages": [
                   "zh/reference/chat-completions",

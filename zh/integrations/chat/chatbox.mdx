@@ -1,0 +1,84 @@
+---
+title: 在 Chatbox 中使用 APIAny.AI
+description: 在 Chatbox 桌面客户端中配置 APIAny.AI API Key、API 主机和常用模型。
+---
+
+[Chatbox](https://chatboxai.app/) 是一款桌面 AI 聊天客户端。你可以把 Chatbox 连接到 APIAny.AI，使用同一个 API Key 调用对话、推理和多模态模型。
+
+## 准备工作
+
+开始前请确认：
+
+- 已安装 Chatbox 桌面客户端。
+- 已在 [APIAny.AI 控制台](https://apiany.ai/zh/dashboard/api-keys)创建 API Key。
+- API Key 已保存到本地安全位置，后续配置时需要粘贴到 Chatbox。
+
+## 1. 打开 Chatbox
+
+首次打开 Chatbox 时，选择使用自己的 API Key 或本地模型。
+
+![Chatbox 主界面](/images/integrations/chatbox/main-interface.png)
+
+## 2. 选择 API 类型
+
+进入设置页，在模型配置列表中选择要配置的 API 类型。大多数对话模型建议优先使用 OpenAI API 兼容配置。
+
+![选择 OpenAI API](/images/integrations/chatbox/settings-page.png)
+
+## 3. 配置 OpenAI API 兼容模式
+
+在 OpenAI API 配置页中填写：
+
+| 字段 | 填写内容 |
+| --- | --- |
+| API 密钥 | 你的 APIAny.AI API Key |
+| API 主机 | `https://apiany.ai/v1` |
+| 模型 | 按需添加 `gpt-5.4`、`gpt-4o`、`gpt-4o-mini` 等模型 |
+
+保存后点击检查，确认 Chatbox 可以连接 APIAny.AI。
+
+![配置 OpenAI API](/images/integrations/chatbox/api-config.png)
+
+## 4. 配置 Claude API 模式
+
+如果你希望在 Chatbox 中使用 Claude API 模式，可以切换到 Claude 配置页，并填写：
+
+| 字段 | 填写内容 |
+| --- | --- |
+| API 密钥 | 你的 APIAny.AI API Key |
+| API 主机 | `https://apiany.ai/v1` |
+| 模型 | 例如 `claude-sonnet-4-5-20250929` |
+
+![配置 Claude API](/images/integrations/chatbox/claude.png)
+
+## 5. 配置 Gemini API 模式
+
+如果你希望在 Chatbox 中使用 Gemini API 模式，可以切换到 Gemini 配置页，并填写：
+
+| 字段 | 填写内容 |
+| --- | --- |
+| API 密钥 | 你的 APIAny.AI API Key |
+| API 主机 | `https://apiany.ai/` |
+| 模型 | 例如 `gemini-2.0-flash-exp`、`gemini-2.5-flash` |
+
+![配置 Gemini API](/images/integrations/chatbox/gemini.png)
+
+## 6. 开始对话
+
+回到 Chatbox 主界面，在右下角选择刚配置的模型，然后发送测试消息。
+
+![Chatbox 对话测试](/images/integrations/chatbox/chat-interface.png)
+
+## 常见问题
+
+### 检查失败或模型无响应
+
+请确认 API Key 已复制完整，并且 API 主机与所选 API 类型匹配。OpenAI API 兼容模式建议使用 `https://apiany.ai/v1`。
+
+### 找不到模型
+
+在模型列表中手动新增模型名称。模型名称需要和 APIAny.AI 模型目录中的名称一致。
+
+### 需要查看请求错误
+
+打开 Chatbox 的调试或日志信息，查看返回的错误状态码与消息。常见认证问题通常和 API Key 缺失、过期或粘贴错误有关。
