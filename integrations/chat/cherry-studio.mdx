@@ -1,0 +1,91 @@
+---
+title: Using APIAny.AI in Cherry Studio
+description: Configure APIAny.AI API keys, base URLs, and recommended models in Cherry Studio.
+---
+
+[Cherry Studio](https://www.cherry-ai.com/) can connect to APIAny.AI through OpenAI-compatible settings. After setup, you can use chat, reasoning, translation, and multimodal models from the same client.
+
+## Prerequisites
+
+- Cherry Studio is installed.
+- You have created an API key in the [APIAny.AI dashboard](https://apiany.ai/dashboard/api-keys).
+- You have selected a model ID, such as `gpt-5.4-mini` or `gpt-4o-mini`.
+
+## Configuration values
+
+| Field | Value |
+| --- | --- |
+| Name | `APIAny.AI` |
+| API Key | Your APIAny.AI API key |
+| API URL | `https://apiany.ai` |
+| Model | `gpt-5.4-mini`, `gpt-4o-mini`, or another available model |
+
+
+## Setup
+
+1. Open Settings and go to model service configuration.
+2. Add a custom OpenAI-compatible service named APIAny.AI.
+3. Enter the API key and API URL.
+4. Select the added model in a new chat and test it.
+
+## Recommended models
+
+| Model ID | Best for |
+| --- | --- |
+| `gpt-5.5` | Best first choice for complex reasoning, coding, and production workflows. |
+| `gpt-5.4` | Strong general-purpose model for advanced chat and agent tasks. |
+| `gpt-5.4-mini` | Balanced speed, quality, and cost for everyday usage. |
+| `gpt-4o-mini` | Fast and economical choice for simple chat, translation, and lightweight tasks. |
+| `claude-sonnet-4-6` | Claude-compatible model ID for long-form writing and coding workflows. |
+| `gemini-3.5-flash` | Gemini-compatible model ID for fast multimodal usage. |
+
+## Walkthrough screenshots
+
+The screenshots below show the key configuration screens in Cherry Studio. API names and endpoints have been adjusted for APIAny.AI.
+
+### Step 1
+
+![Cherry Studio setup screenshot 1](/images/integrations/cherry-studio/main-interface.png)
+
+### Step 2
+
+![Cherry Studio setup screenshot 2](/images/integrations/cherry-studio/settings-providers.png)
+
+### Step 3
+
+![Cherry Studio setup screenshot 3](/images/integrations/cherry-studio/add-provider-config.png)
+
+### Step 4
+
+![Cherry Studio setup screenshot 4](/images/integrations/cherry-studio/settings.png)
+
+### Step 5
+
+![Cherry Studio setup screenshot 5](/images/integrations/cherry-studio/provider-list.png)
+
+### Step 6
+
+![Cherry Studio setup screenshot 6](/images/integrations/cherry-studio/model-selection.png)
+
+### Step 7
+
+![Cherry Studio setup screenshot 7](/images/integrations/cherry-studio/new-chat.png)
+
+### Step 8
+
+![Cherry Studio setup screenshot 8](/images/integrations/cherry-studio/chat-interface.png)
+
+
+## Troubleshooting
+
+### 401 or authentication errors
+
+Make sure the API key is copied completely, has no extra spaces, and is enabled in the APIAny.AI dashboard.
+
+### The model does not appear in the app
+
+Enter the model ID manually and confirm it is available in the [model catalog](/models/chat-models). Some tools do not fetch model lists automatically.
+
+### Which Base URL should I use?
+
+OpenAI-compatible settings usually use `https://apiany.ai/v1`; Claude-compatible settings usually use `https://apiany.ai`; tools that ask for a full endpoint use `https://apiany.ai/v1/chat/completions`.

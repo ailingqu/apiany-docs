@@ -52,6 +52,22 @@
                 ]
               },
               {
+                "group": "Integrations",
+                "pages": [
+                  "integrations/chat/chatbox",
+                  "integrations/chat/cherry-studio",
+                  "integrations/chat/anythingllm",
+                  "integrations/dev-tool/claude-code",
+                  "integrations/dev-tool/cursor",
+                  "integrations/dev-tool/cline",
+                  "integrations/dev-tool/gemini",
+                  "integrations/dev-tool/codex-cli",
+                  "integrations/dev-tool/cc-switch",
+                  "integrations/platform/dify",
+                  "integrations/platform/immersive-translate"
+                ]
+              },
+              {
                 "group": "Core APIs",
                 "pages": [
                   "reference/chat-completions",
@@ -128,7 +144,17 @@
               {
                 "group": "集成指南",
                 "pages": [
-                  "zh/integrations/chat/chatbox"
+                  "zh/integrations/chat/chatbox",
+                  "zh/integrations/chat/cherry-studio",
+                  "zh/integrations/chat/anythingllm",
+                  "zh/integrations/dev-tool/claude-code",
+                  "zh/integrations/dev-tool/cursor",
+                  "zh/integrations/dev-tool/cline",
+                  "zh/integrations/dev-tool/gemini",
+                  "zh/integrations/dev-tool/codex-cli",
+                  "zh/integrations/dev-tool/cc-switch",
+                  "zh/integrations/platform/dify",
+                  "zh/integrations/platform/immersive-translate"
                 ]
               },
               {

@@ -1,0 +1,74 @@
+---
+title: Using APIAny.AI in Codex CLI
+description: Configure APIAny.AI API keys, base URLs, and recommended models in Codex CLI.
+---
+
+[Codex CLI](https://github.com/openai/codex) can connect to APIAny.AI through environment variables or local configuration files. It is useful for terminal, editor, and automated development workflows.
+
+## Prerequisites
+
+- Codex CLI is installed.
+- You have created an API key in the [APIAny.AI dashboard](https://apiany.ai/dashboard/api-keys).
+- You have selected a model ID.
+
+## Install
+
+```bash
+npm install -g @openai/codex
+```
+
+## Configure the API key
+
+Add this to `~/.codex/auth.json`:
+
+```json
+{
+  "OPENAI_API_KEY": "sk-xxxxxxxxxxxx"
+}
+```
+
+## Configure config.toml
+
+Add this to `~/.codex/config.toml`:
+
+```toml
+model = "gpt-5.5"
+model_provider = "apiany"
+
+[model_providers.apiany]
+name = "APIAny.AI"
+base_url = "https://apiany.ai/v1"
+wire_api = "responses"
+requires_openai_auth = true
+```
+
+Restart your terminal, then run `codex` or test with:
+
+```bash
+codex "Introduce yourself in one sentence"
+```
+
+## Recommended models
+
+| Model ID | Best for |
+| --- | --- |
+| `gpt-5.5` | Best first choice for complex reasoning, coding, and production workflows. |
+| `gpt-5.4` | Strong general-purpose model for advanced chat and agent tasks. |
+| `gpt-5.4-mini` | Balanced speed, quality, and cost for everyday usage. |
+| `gpt-4o-mini` | Fast and economical choice for simple chat, translation, and lightweight tasks. |
+| `claude-sonnet-4-6` | Claude-compatible model ID for long-form writing and coding workflows. |
+| `gemini-3.5-flash` | Gemini-compatible model ID for fast multimodal usage. |
+
+## Troubleshooting
+
+### 401 or authentication errors
+
+Make sure the API key is copied completely, has no extra spaces, and is enabled in the APIAny.AI dashboard.
+
+### The model does not appear in the app
+
+Enter the model ID manually and confirm it is available in the [model catalog](/models/chat-models). Some tools do not fetch model lists automatically.
+
+### Which Base URL should I use?
+
+OpenAI-compatible settings usually use `https://apiany.ai/v1`; Claude-compatible settings usually use `https://apiany.ai`; tools that ask for a full endpoint use `https://apiany.ai/v1/chat/completions`.

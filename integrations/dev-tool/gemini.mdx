@@ -1,0 +1,62 @@
+---
+title: Using APIAny.AI in Gemini CLI
+description: Configure APIAny.AI API keys, base URLs, and recommended models in Gemini CLI.
+---
+
+[Gemini CLI](https://github.com/google-gemini/gemini-cli) can connect to APIAny.AI through environment variables or local configuration files. It is useful for terminal, editor, and automated development workflows.
+
+## Prerequisites
+
+- Gemini CLI is installed.
+- You have created an API key in the [APIAny.AI dashboard](https://apiany.ai/dashboard/api-keys).
+- You have selected a model ID.
+
+## Install
+
+```bash
+npm install -g @google/gemini-cli
+gemini --version
+```
+
+## Configure environment variables
+
+macOS / Linux:
+
+```bash
+export GEMINI_API_KEY="sk-xxxxxxxxxxxx"
+export GEMINI_BASE_URL="https://apiany.ai/v1"
+gemini --model gemini-3.5-flash "Summarize this project"
+```
+
+Windows PowerShell:
+
+```powershell
+$env:GEMINI_API_KEY = "sk-xxxxxxxxxxxx"
+$env:GEMINI_BASE_URL = "https://apiany.ai/v1"
+gemini --model gemini-3.5-flash "Summarize this project"
+```
+
+## Recommended models
+
+| Model ID | Best for |
+| --- | --- |
+| `gpt-5.5` | Best first choice for complex reasoning, coding, and production workflows. |
+| `gpt-5.4` | Strong general-purpose model for advanced chat and agent tasks. |
+| `gpt-5.4-mini` | Balanced speed, quality, and cost for everyday usage. |
+| `gpt-4o-mini` | Fast and economical choice for simple chat, translation, and lightweight tasks. |
+| `claude-sonnet-4-6` | Claude-compatible model ID for long-form writing and coding workflows. |
+| `gemini-3.5-flash` | Gemini-compatible model ID for fast multimodal usage. |
+
+## Troubleshooting
+
+### 401 or authentication errors
+
+Make sure the API key is copied completely, has no extra spaces, and is enabled in the APIAny.AI dashboard.
+
+### The model does not appear in the app
+
+Enter the model ID manually and confirm it is available in the [model catalog](/models/chat-models). Some tools do not fetch model lists automatically.
+
+### Which Base URL should I use?
+
+OpenAI-compatible settings usually use `https://apiany.ai/v1`; Claude-compatible settings usually use `https://apiany.ai`; tools that ask for a full endpoint use `https://apiany.ai/v1/chat/completions`.

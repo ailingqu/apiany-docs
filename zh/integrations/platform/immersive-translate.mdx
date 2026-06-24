@@ -1,13 +1,13 @@
 ---
-title: 在 Chatbox 中使用 APIAny.AI
-description: 在 Chatbox 中配置 APIAny.AI API Key、Base URL 和推荐模型。
+title: 在沉浸式翻译中使用 APIAny.AI
+description: 在沉浸式翻译中配置 APIAny.AI API Key、Base URL 和推荐模型。
 ---
 
-[Chatbox](https://chatboxai.app/) 可以通过 OpenAI 兼容配置接入 APIAny.AI。完成配置后，你可以在同一个客户端中使用对话、推理、翻译和多模态模型。
+[沉浸式翻译](https://immersivetranslate.com/) 可以通过 OpenAI 兼容配置接入 APIAny.AI。完成配置后，你可以在同一个客户端中使用对话、推理、翻译和多模态模型。
 
 ## 准备工作
 
-- 已安装 Chatbox。
+- 已安装沉浸式翻译。
 - 已在 [APIAny.AI 控制台](https://apiany.ai/zh/dashboard/api-keys) 创建 API Key。
 - 已准备一个要使用的模型 ID，例如 `gpt-5.4-mini` 或 `gpt-4o-mini`。
 
@@ -15,19 +15,18 @@ description: 在 Chatbox 中配置 APIAny.AI API Key、Base URL 和推荐模型�
 
 | 字段 | 填写内容 |
 | --- | --- |
-| OpenAI API Key | 你的 APIAny.AI API Key |
-| OpenAI API Host | `https://apiany.ai/v1` |
-| Claude API Host | `https://apiany.ai/v1` |
-| Gemini API Host | `https://apiany.ai` |
-| 模型 | `gpt-5.4-mini`, `claude-sonnet-4-6`, `gemini-3.5-flash` |
+| 服务名称 | `APIAny.AI` |
+| APIKEY | 你的 APIAny.AI API Key |
+| 自定义 API 接口地址 | `https://apiany.ai/v1/chat/completions` |
+| 模型 | `gpt-4o-mini` 或 `gpt-5.4-mini` |
 
 
 ## 配置步骤
 
-1. 打开 Chatbox，进入设置页。
-2. 选择 OpenAI API、Claude API 或 Gemini API 配置页。
-3. 填写 API Key、API 主机和模型 ID。
-4. 保存配置并发送一条测试消息。
+1. 打开沉浸式翻译扩展设置。
+2. 进入翻译服务，新增自定义 OpenAI 兼容服务。
+3. 填写服务名称、APIKEY、完整接口地址和模型。
+4. 保存后回到扩展面板，选择 APIAny.AI 开始翻译。
 
 ## 推荐模型
 
@@ -42,31 +41,27 @@ description: 在 Chatbox 中配置 APIAny.AI API Key、Base URL 和推荐模型�
 
 ## 操作截图
 
-以下截图展示 Chatbox 中的关键配置入口和保存后的使用界面。截图中的 API 地址和名称均已按 APIAny.AI 调整。
+以下截图展示 沉浸式翻译 中的关键配置入口和保存后的使用界面。截图中的 API 地址和名称均已按 APIAny.AI 调整。
 
 ### 步骤 1
 
-![Chatbox 配置截图 1](/images/integrations/chatbox/main-interface.png)
+![沉浸式翻译 配置截图 1](/images/integrations/immersive-translate/extension-icon.png)
 
 ### 步骤 2
 
-![Chatbox 配置截图 2](/images/integrations/chatbox/settings-page.png)
+![沉浸式翻译 配置截图 2](/images/integrations/immersive-translate/settings-services.png)
 
 ### 步骤 3
 
-![Chatbox 配置截图 3](/images/integrations/chatbox/api-config.png)
+![沉浸式翻译 配置截图 3](/images/integrations/immersive-translate/openai-config.png)
 
 ### 步骤 4
 
-![Chatbox 配置截图 4](/images/integrations/chatbox/claude.png)
+![沉浸式翻译 配置截图 4](/images/integrations/immersive-translate/webpage-translation.png)
 
 ### 步骤 5
 
-![Chatbox 配置截图 5](/images/integrations/chatbox/gemini.png)
-
-### 步骤 6
-
-![Chatbox 配置截图 6](/images/integrations/chatbox/chat-interface.png)
+![沉浸式翻译 配置截图 5](/images/integrations/immersive-translate/pdf-translation.png)
 
 
 ## 常见问题
