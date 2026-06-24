@@ -11,6 +11,8 @@ APIAny.AI gives developers one account, one API key, and one consistent API surf
   ·
   <a href="https://apiany.ai/dashboard/api-keys">Get an API key</a>
   ·
+  <a href="https://github.com/ailingqu/ApiAny.AI-MCP">MCP Server</a>
+  ·
   <a href="https://apiany.ai/pricing">Pricing</a>
 </p>
 
@@ -100,6 +102,7 @@ This docs site is public-facing. Write from APIAny.AI's first-party product voic
 - Dashboard: [apiany.ai/dashboard](https://apiany.ai/dashboard)
 - Model catalog: [apiany.ai/models](https://apiany.ai/models)
 - Pricing: [apiany.ai/pricing](https://apiany.ai/pricing)
+- MCP server: [github.com/ailingqu/ApiAny.AI-MCP](https://github.com/ailingqu/ApiAny.AI-MCP)
 
 ## License
 
