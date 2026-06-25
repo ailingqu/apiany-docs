@@ -1,0 +1,19 @@
+---
+title: Limites de débit
+description: Limites de requêtes et comportement des quotas.
+---
+
+APIAny.AI applique la validation de la clé API, les vérifications d'accès aux modèles, les vérifications de crédits et les limites de débit avant l'exécution d'une requête de modèle.
+
+Lorsqu'une requête dépasse une limite configurée, l'API renvoie :
+
+```json
+{
+  "error": {
+    "type": "rate_limit",
+    "message": "Rate limit exceeded"
+  }
+}
+```
+
+Utilisez des clés API distinctes pour différentes applications ou environnements afin que les limites et la consommation restent faciles à inspecter.

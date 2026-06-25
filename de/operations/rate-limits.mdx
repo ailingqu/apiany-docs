@@ -1,0 +1,19 @@
+---
+title: Ratenlimits
+description: Anfragelimits und Verhalten von Kontingenten.
+---
+
+APIAny.AI führt vor der Ausführung einer Modellanfrage die Validierung des API-Schlüssels, die Prüfung des Modellzugriffs, die Credit-Prüfung und die Ratenlimits durch.
+
+Wenn eine Anfrage ein konfiguriertes Limit überschreitet, gibt die API zurück:
+
+```json
+{
+  "error": {
+    "type": "rate_limit",
+    "message": "Rate limit exceeded"
+  }
+}
+```
+
+Verwende separate API-Schlüssel für verschiedene Anwendungen oder Umgebungen, damit Limits und Nutzung leicht überprüfbar bleiben.

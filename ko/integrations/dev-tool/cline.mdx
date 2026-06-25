@@ -1,0 +1,79 @@
+---
+title: Cline 연동
+description: Cline에서 APIAny.AI API Key, Base URL, 추천 모델을 설정합니다.
+---
+
+[Cline](https://cline.bot/)은 OpenAI 호환 설정을 통해 APIAny.AI에 연결할 수 있습니다. 설정을 완료하면 동일한 클라이언트에서 대화, 추론, 번역, 멀티모달 모델을 사용할 수 있습니다.
+
+## 준비 사항
+
+- Cline이 설치되어 있습니다.
+- [APIAny.AI 대시보드](https://apiany.ai/ko/dashboard/api-keys)에서 API Key를 생성했습니다.
+- `gpt-5.4-mini`나 `gpt-4o-mini`와 같은 사용할 모델 ID를 선택했습니다.
+
+## 설정 값
+
+| 필드 | 값 |
+| --- | --- |
+| API mode | `OpenAI Compatible` |
+| Base URL | `https://apiany.ai/v1` |
+| API Key | 사용자의 APIAny.AI API Key |
+| 모델 | `gpt-5.4` |
+
+
+## 설정 단계
+
+1. VS Code에서 Cline을 설치하고 엽니다.
+2. Cline 설정을 열고 OpenAI Compatible을 선택합니다.
+3. Base URL, API Key, 모델 ID를 입력합니다.
+4. 저장한 후 Cline에 간단한 코딩 작업을 실행하도록 요청하여 연결을 확인합니다.
+
+## 추천 모델
+
+| 모델 ID | 적합한 용도 |
+| --- | --- |
+| `gpt-5.5` | 복잡한 추론, 코딩, 프로덕션 워크플로에 가장 먼저 추천하는 모델입니다. |
+| `gpt-5.4` | 고급 대화 및 에이전트 작업에 적합한 강력한 범용 모델입니다. |
+| `gpt-5.4-mini` | 속도, 품질, 비용의 균형이 잡혀 일상적인 사용에 적합합니다. |
+| `gpt-4o-mini` | 간단한 대화, 번역, 경량 작업에 적합하며 빠르고 경제적입니다. |
+| `claude-sonnet-4-6` | 장문 작성 및 코딩 워크플로를 위한 Claude 호환 모델 ID입니다. |
+| `gemini-3.5-flash` | 빠른 멀티모달 사용을 위한 Gemini 호환 모델 ID입니다. |
+
+## 단계별 스크린샷
+
+아래 스크린샷은 Cline의 주요 설정 화면을 보여줍니다. 스크린샷의 API 주소와 이름은 APIAny.AI에 맞게 조정되어 있습니다.
+
+### 1단계
+
+![Cline setup screenshot 1](/images/integrations/cline/extension-install.png)
+
+### 2단계
+
+![Cline setup screenshot 2](/images/integrations/cline/sidebar-settings.png)
+
+### 3단계
+
+![Cline setup screenshot 3](/images/integrations/cline/api-config.png)
+
+### 4단계
+
+![Cline setup screenshot 4](/images/integrations/cline/chat-interface.png)
+
+### 5단계
+
+![Cline setup screenshot 5](/images/integrations/cline/code-refactor.png)
+
+
+## 문제 해결
+
+### 401 또는 인증 오류
+
+API Key가 완전히 복사되었는지, 앞뒤에 불필요한 공백이 없는지, APIAny.AI 대시보드에서 활성화되어 있는지 확인하세요.
+
+### 모델이 앱에 표시되지 않음
+
+모델 ID를 직접 입력하고 [모델 카탈로그](/ko/models/chat-models)에서 사용 가능한지 확인하세요. 일부 도구는 모델 목록을 자동으로 가져오지 않습니다.
+
+### 어떤 Base URL을 사용해야 하나요?
+
+OpenAI 호환 설정에서는 일반적으로 `https://apiany.ai/v1`을, Claude 호환 설정에서는 일반적으로 `https://apiany.ai`를 사용합니다. 전체 엔드포인트 주소를 요구하는 도구에서는 `https://apiany.ai/v1/chat/completions`를 사용하세요.

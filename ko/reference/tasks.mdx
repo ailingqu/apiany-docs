@@ -1,0 +1,71 @@
+---
+title: 작업 조회
+description: 장시간 실행되는 이미지, 비디오 및 향후 오디오 작업을 조회합니다.
+---
+
+비동기 작업 상태를 조회하려면 `/v1/tasks/{task_id}`를 사용하세요.
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 상태 값
+
+- `pending`
+- `processing`
+- `completed`
+- `failed`
+- `expired`
+
+## 완료된 작업
+
+`result`의 형태는 작업 유형에 따라 다릅니다.
+
+**이미지** 작업은 OpenAI 이미지 형식을 반환하며, 이미지 URL은 `result.data[0].url`에 있습니다.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "gpt-image-2",
+  "type": "image",
+  "result": {
+    "created": 1781597831,
+    "data": [
+      { "url": "https://s.apiany.ai/.../result.png" }
+    ]
+  },
+  "error": null
+}
+```
+
+**비디오**와 **오디오** 작업은 기본 URL을 `result.video_url` / `result.audio_url`에 반환하며, 모든 출력은 `result.urls[]`에도 나열됩니다.
+
+```json
+{
+  "task_id": "task_456",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://s.apiany.ai/.../result.mp4",
+    "urls": ["https://s.apiany.ai/.../result.mp4"]
+  },
+  "error": null
+}
+```
+
+## 실패한 작업
+
+```json
+{
+  "task_id": "task_123",
+  "status": "failed",
+  "error": {
+    "type": "service_error",
+    "message": "작업을 완료할 수 없습니다."
+  }
+}
+```

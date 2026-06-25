@@ -111,6 +111,186 @@
         ]
       },
       {
+        "language": "fr",
+        "navbar": {
+          "links": [
+            {
+              "label": "Tableau de bord",
+              "href": "https://apiany.ai/fr/dashboard"
+            },
+            {
+              "label": "Tarifs",
+              "href": "https://apiany.ai/fr/pricing"
+            }
+          ],
+          "primary": {
+            "type": "button",
+            "label": "Obtenir une clé API",
+            "href": "https://apiany.ai/fr/dashboard/apikeys"
+          }
+        },
+        "tabs": [
+          {
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Démarrer",
+                "pages": [
+                  "fr/introduction",
+                  "fr/quickstart",
+                  "fr/authentication"
+                ]
+              },
+              {
+                "group": "Intégrations",
+                "pages": [
+                  "fr/integrations/chat/chatbox",
+                  "fr/integrations/chat/cherry-studio",
+                  "fr/integrations/chat/anythingllm",
+                  "fr/integrations/dev-tool/claude-code",
+                  "fr/integrations/dev-tool/cursor",
+                  "fr/integrations/dev-tool/cline",
+                  "fr/integrations/dev-tool/gemini",
+                  "fr/integrations/dev-tool/codex-cli",
+                  "fr/integrations/dev-tool/cc-switch",
+                  "fr/integrations/platform/dify",
+                  "fr/integrations/platform/immersive-translate"
+                ]
+              },
+              {
+                "group": "API principales",
+                "pages": [
+                  "fr/reference/chat-completions",
+                  "fr/reference/responses",
+                  "fr/reference/messages",
+                  "fr/reference/gemini-generate-content",
+                  "fr/reference/image-generation",
+                  "fr/reference/video-generation",
+                  "fr/reference/tasks"
+                ]
+              },
+              {
+                "group": "Exploitation et facturation",
+                "pages": [
+                  "fr/operations/billing",
+                  "fr/operations/errors",
+                  "fr/operations/rate-limits",
+                  "fr/operations/webhooks"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Modèles",
+            "groups": [
+              {
+                "group": "Catalogue de modèles",
+                "pages": [
+                  "fr/models/overview",
+                  "fr/models/image-models",
+                  "fr/models/video-models",
+                  "fr/models/chat-models"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Référence API",
+            "openapi": "fr/openapi.json"
+          }
+        ]
+      },
+      {
+        "language": "de",
+        "navbar": {
+          "links": [
+            {
+              "label": "Dashboard",
+              "href": "https://apiany.ai/de/dashboard"
+            },
+            {
+              "label": "Preise",
+              "href": "https://apiany.ai/de/pricing"
+            }
+          ],
+          "primary": {
+            "type": "button",
+            "label": "API Key abrufen",
+            "href": "https://apiany.ai/de/dashboard/apikeys"
+          }
+        },
+        "tabs": [
+          {
+            "tab": "Anleitungen",
+            "groups": [
+              {
+                "group": "Erste Schritte",
+                "pages": [
+                  "de/introduction",
+                  "de/quickstart",
+                  "de/authentication"
+                ]
+              },
+              {
+                "group": "Integrationen",
+                "pages": [
+                  "de/integrations/chat/chatbox",
+                  "de/integrations/chat/cherry-studio",
+                  "de/integrations/chat/anythingllm",
+                  "de/integrations/dev-tool/claude-code",
+                  "de/integrations/dev-tool/cursor",
+                  "de/integrations/dev-tool/cline",
+                  "de/integrations/dev-tool/gemini",
+                  "de/integrations/dev-tool/codex-cli",
+                  "de/integrations/dev-tool/cc-switch",
+                  "de/integrations/platform/dify",
+                  "de/integrations/platform/immersive-translate"
+                ]
+              },
+              {
+                "group": "Core-APIs",
+                "pages": [
+                  "de/reference/chat-completions",
+                  "de/reference/responses",
+                  "de/reference/messages",
+                  "de/reference/gemini-generate-content",
+                  "de/reference/image-generation",
+                  "de/reference/video-generation",
+                  "de/reference/tasks"
+                ]
+              },
+              {
+                "group": "Betrieb und Abrechnung",
+                "pages": [
+                  "de/operations/billing",
+                  "de/operations/errors",
+                  "de/operations/rate-limits",
+                  "de/operations/webhooks"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Modelle",
+            "groups": [
+              {
+                "group": "Modellkatalog",
+                "pages": [
+                  "de/models/overview",
+                  "de/models/image-models",
+                  "de/models/video-models",
+                  "de/models/chat-models"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API-Referenz",
+            "openapi": "de/openapi.json"
+          }
+        ]
+      },
+      {
         "language": "zh",
         "navbar": {
           "links": [
@@ -197,6 +377,276 @@
           {
             "tab": "API 参考",
             "openapi": "zh/openapi.json"
+          }
+        ]
+      },
+      {
+        "language": "ja",
+        "navbar": {
+          "links": [
+            {
+              "label": "ダッシュボード",
+              "href": "https://apiany.ai/ja/dashboard"
+            },
+            {
+              "label": "料金",
+              "href": "https://apiany.ai/ja/pricing"
+            }
+          ],
+          "primary": {
+            "type": "button",
+            "label": "API キーを取得",
+            "href": "https://apiany.ai/ja/dashboard/apikeys"
+          }
+        },
+        "tabs": [
+          {
+            "tab": "ガイド",
+            "groups": [
+              {
+                "group": "はじめに",
+                "pages": [
+                  "ja/introduction",
+                  "ja/quickstart",
+                  "ja/authentication"
+                ]
+              },
+              {
+                "group": "インテグレーション",
+                "pages": [
+                  "ja/integrations/chat/chatbox",
+                  "ja/integrations/chat/cherry-studio",
+                  "ja/integrations/chat/anythingllm",
+                  "ja/integrations/dev-tool/claude-code",
+                  "ja/integrations/dev-tool/cursor",
+                  "ja/integrations/dev-tool/cline",
+                  "ja/integrations/dev-tool/gemini",
+                  "ja/integrations/dev-tool/codex-cli",
+                  "ja/integrations/dev-tool/cc-switch",
+                  "ja/integrations/platform/dify",
+                  "ja/integrations/platform/immersive-translate"
+                ]
+              },
+              {
+                "group": "コア API",
+                "pages": [
+                  "ja/reference/chat-completions",
+                  "ja/reference/responses",
+                  "ja/reference/messages",
+                  "ja/reference/gemini-generate-content",
+                  "ja/reference/image-generation",
+                  "ja/reference/video-generation",
+                  "ja/reference/tasks"
+                ]
+              },
+              {
+                "group": "運用と課金",
+                "pages": [
+                  "ja/operations/billing",
+                  "ja/operations/errors",
+                  "ja/operations/rate-limits",
+                  "ja/operations/webhooks"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "モデル",
+            "groups": [
+              {
+                "group": "モデルカタログ",
+                "pages": [
+                  "ja/models/overview",
+                  "ja/models/image-models",
+                  "ja/models/video-models",
+                  "ja/models/chat-models"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API リファレンス",
+            "openapi": "ja/openapi.json"
+          }
+        ]
+      },
+      {
+        "language": "ko",
+        "navbar": {
+          "links": [
+            {
+              "label": "대시보드",
+              "href": "https://apiany.ai/ko/dashboard"
+            },
+            {
+              "label": "요금",
+              "href": "https://apiany.ai/ko/pricing"
+            }
+          ],
+          "primary": {
+            "type": "button",
+            "label": "API Key 발급",
+            "href": "https://apiany.ai/ko/dashboard/apikeys"
+          }
+        },
+        "tabs": [
+          {
+            "tab": "가이드",
+            "groups": [
+              {
+                "group": "시작하기",
+                "pages": [
+                  "ko/introduction",
+                  "ko/quickstart",
+                  "ko/authentication"
+                ]
+              },
+              {
+                "group": "연동 가이드",
+                "pages": [
+                  "ko/integrations/chat/chatbox",
+                  "ko/integrations/chat/cherry-studio",
+                  "ko/integrations/chat/anythingllm",
+                  "ko/integrations/dev-tool/claude-code",
+                  "ko/integrations/dev-tool/cursor",
+                  "ko/integrations/dev-tool/cline",
+                  "ko/integrations/dev-tool/gemini",
+                  "ko/integrations/dev-tool/codex-cli",
+                  "ko/integrations/dev-tool/cc-switch",
+                  "ko/integrations/platform/dify",
+                  "ko/integrations/platform/immersive-translate"
+                ]
+              },
+              {
+                "group": "핵심 API",
+                "pages": [
+                  "ko/reference/chat-completions",
+                  "ko/reference/responses",
+                  "ko/reference/messages",
+                  "ko/reference/gemini-generate-content",
+                  "ko/reference/image-generation",
+                  "ko/reference/video-generation",
+                  "ko/reference/tasks"
+                ]
+              },
+              {
+                "group": "운영 및 결제",
+                "pages": [
+                  "ko/operations/billing",
+                  "ko/operations/errors",
+                  "ko/operations/rate-limits",
+                  "ko/operations/webhooks"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "모델",
+            "groups": [
+              {
+                "group": "모델 카탈로그",
+                "pages": [
+                  "ko/models/overview",
+                  "ko/models/image-models",
+                  "ko/models/video-models",
+                  "ko/models/chat-models"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "API 레퍼런스",
+            "openapi": "ko/openapi.json"
+          }
+        ]
+      },
+      {
+        "language": "es",
+        "navbar": {
+          "links": [
+            {
+              "label": "Panel",
+              "href": "https://apiany.ai/es/dashboard"
+            },
+            {
+              "label": "Precios",
+              "href": "https://apiany.ai/es/pricing"
+            }
+          ],
+          "primary": {
+            "type": "button",
+            "label": "Obtener API Key",
+            "href": "https://apiany.ai/es/dashboard/apikeys"
+          }
+        },
+        "tabs": [
+          {
+            "tab": "Guías",
+            "groups": [
+              {
+                "group": "Primeros pasos",
+                "pages": [
+                  "es/introduction",
+                  "es/quickstart",
+                  "es/authentication"
+                ]
+              },
+              {
+                "group": "Integraciones",
+                "pages": [
+                  "es/integrations/chat/chatbox",
+                  "es/integrations/chat/cherry-studio",
+                  "es/integrations/chat/anythingllm",
+                  "es/integrations/dev-tool/claude-code",
+                  "es/integrations/dev-tool/cursor",
+                  "es/integrations/dev-tool/cline",
+                  "es/integrations/dev-tool/gemini",
+                  "es/integrations/dev-tool/codex-cli",
+                  "es/integrations/dev-tool/cc-switch",
+                  "es/integrations/platform/dify",
+                  "es/integrations/platform/immersive-translate"
+                ]
+              },
+              {
+                "group": "APIs principales",
+                "pages": [
+                  "es/reference/chat-completions",
+                  "es/reference/responses",
+                  "es/reference/messages",
+                  "es/reference/gemini-generate-content",
+                  "es/reference/image-generation",
+                  "es/reference/video-generation",
+                  "es/reference/tasks"
+                ]
+              },
+              {
+                "group": "Operaciones y facturación",
+                "pages": [
+                  "es/operations/billing",
+                  "es/operations/errors",
+                  "es/operations/rate-limits",
+                  "es/operations/webhooks"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Modelos",
+            "groups": [
+              {
+                "group": "Catálogo de modelos",
+                "pages": [
+                  "es/models/overview",
+                  "es/models/image-models",
+                  "es/models/video-models",
+                  "es/models/chat-models"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Referencia de la API",
+            "openapi": "es/openapi.json"
           }
         ]
       }

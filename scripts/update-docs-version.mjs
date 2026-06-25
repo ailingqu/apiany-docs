@@ -21,7 +21,15 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
-const TARGETS = ['introduction.mdx', 'zh/introduction.mdx'];
+const TARGETS = [
+  'introduction.mdx',
+  'fr/introduction.mdx',
+  'de/introduction.mdx',
+  'zh/introduction.mdx',
+  'ja/introduction.mdx',
+  'ko/introduction.mdx',
+  'es/introduction.mdx',
+];
 const TZ = process.env.TZ || 'Asia/Shanghai';
 const LINE_RE = /^.*Last updated: .*\(UTC\+8\)$/m;
 const STAMP_RE = /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/;

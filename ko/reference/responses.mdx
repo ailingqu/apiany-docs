@@ -1,0 +1,84 @@
+---
+title: Responses
+description: reasoning 및 내장 도구를 지원하는 OpenAI 호환 Responses 엔드포인트.
+---
+
+클라이언트가 이미 OpenAI Responses API 형식을 사용하거나, reasoning 제어,
+웹 검색 도구, 공식 Responses SSE 이벤트와 같은 Responses 고유 기능이 필요할 때
+`/v1/responses`를 사용하세요.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "문서 사이트에 검색 기능을 추가하기 위한 간단한 구현 계획을 작성해 주세요.",
+    "reasoning": { "effort": "medium" },
+    "text": { "verbosity": "medium" }
+  }'
+```
+
+## Reasoning 제어
+
+`gpt-5.5`와 `gpt-5.4`는 Responses reasoning 제어를 지원합니다.
+`reasoning.effort`로 추론 강도를 설정하세요.
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "이 API 설계를 검토하고 주요 위험 요소를 나열해 주세요.",
+  "reasoning": {
+    "effort": "high",
+    "summary": "auto"
+  }
+}
+```
+
+지원되는 `reasoning.effort` 값은 `none`, `minimal`, `low`, `medium`,
+`high`, `xhigh`입니다.
+
+## 웹 검색
+
+OpenAI Responses tools를 직접 전달할 수 있습니다. 웹에 연결된 답변이 필요하면
+`tools`에 웹 검색 도구를 포함하세요.
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "최신 OpenAI Responses API 문서에서 무엇이 바뀌었나요?",
+  "tools": [
+    { "type": "web_search_preview" }
+  ]
+}
+```
+
+APIAny.AI는 Responses 고유 도구를 이를 지원하는 호환 모델로 전달합니다. Function
+tools도 지원됩니다.
+
+## 스트리밍
+
+`stream: true`로 설정하면 Responses SSE 이벤트 스트림을 받습니다. 이벤트는
+`response.created`, `response.output_text.delta`, 도구 이벤트,
+`response.completed`처럼 OpenAI Responses 형식을 따릅니다.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "간결한 릴리스 노트 항목 세 개를 작성해 주세요.",
+    "reasoning": { "effort": "low" },
+    "stream": true
+  }'
+```
+
+## 참고
+
+- `model`은 APIAny.AI의 공개 모델 ID입니다.
+- `max_output_tokens`는 Responses 스타일의 출력 토큰 상한입니다.
+- `reasoning`, `text`, `tools`, `tool_choice`, `include`,
+  `previous_response_id`, `store` 등 Responses 고유 필드는 선택한 모델이
+  지원할 때 전달됩니다.

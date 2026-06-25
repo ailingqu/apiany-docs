@@ -1,0 +1,37 @@
+---
+title: 画像生成
+description: 非同期での画像生成、同期待機、画像編集のエンドポイント。
+---
+
+本番環境では `/v1/images/generations` を使って非同期の画像タスクを作成することを推奨します。
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A bright API dashboard rendered as a product hero image",
+    "size": "1k"
+  }'
+```
+
+エンドポイントはタスク情報を返します：
+
+```json
+{
+  "task_id": "task_123",
+  "status": "processing",
+  "poll_url": "/v1/tasks/task_123"
+}
+```
+
+## 同期待機エンドポイント
+
+`/v1/images/generations/sync` は生成結果が返るまで、または設定された最大待機時間に達するまで待機します。
+
+このエンドポイントは OpenAI Images スタイルとの互換性確保やデバッグ用途に適しています。本番システムでは非同期エンドポイントの利用を推奨します。
+
+## 画像編集
+
+`/v1/images/edits` は OpenAI スタイルの画像編集に使用します。参照画像に対応したモデルのみがこのエンドポイントを呼び出せます。

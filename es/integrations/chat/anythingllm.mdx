@@ -1,0 +1,71 @@
+---
+title: Uso en AnythingLLM
+description: Configura las API keys, las Base URL y los modelos recomendados de APIAny.AI en AnythingLLM.
+---
+
+[AnythingLLM](https://anythingllm.com/) puede conectarse a APIAny.AI mediante la configuración compatible con OpenAI. Una vez configurado, puedes usar modelos de chat, razonamiento, traducción y multimodales desde el mismo cliente.
+
+## Requisitos previos
+
+- AnythingLLM está instalado.
+- Has creado una API key en el [panel de APIAny.AI](https://apiany.ai/dashboard/api-keys).
+- Has elegido un ID de modelo, como `gpt-5.4-mini` o `gpt-4o-mini`.
+
+## Valores de configuración
+
+| Campo | Valor |
+| --- | --- |
+| LLM mode | `Generic OpenAI` |
+| Base URL | `https://apiany.ai/v1` |
+| API Key | Tu API key de APIAny.AI |
+| Modelo de chat | `gpt-5.4-mini` |
+
+
+## Configuración
+
+1. Abre los ajustes del espacio de trabajo y ve a la configuración de LLM.
+2. Selecciona Generic OpenAI.
+3. Introduce la Base URL, la API key, el nombre del modelo y la ventana de contexto.
+4. Guarda y ejecuta un chat de prueba en el espacio de trabajo.
+
+## Modelos recomendados
+
+| ID de modelo | Mejor para |
+| --- | --- |
+| `gpt-5.5` | La mejor primera opción para razonamiento complejo, programación y flujos de trabajo de producción. |
+| `gpt-5.4` | Modelo de propósito general potente para chat avanzado y tareas de agente. |
+| `gpt-5.4-mini` | Equilibrio entre velocidad, calidad y costo para el uso diario. |
+| `gpt-4o-mini` | Opción rápida y económica para chat sencillo, traducción y tareas ligeras. |
+| `claude-sonnet-4-6` | ID de modelo compatible con Claude para escritura extensa y flujos de programación. |
+| `gemini-3.5-flash` | ID de modelo compatible con Gemini para uso multimodal rápido. |
+
+## Capturas de pantalla del recorrido
+
+Las capturas de pantalla siguientes muestran las pantallas clave de configuración en AnythingLLM. Los nombres de API y los endpoints se han ajustado para APIAny.AI.
+
+### Paso 1
+
+![Captura de configuración de AnythingLLM 1](/images/integrations/anythingllm/main-interface.png)
+
+### Paso 2
+
+![Captura de configuración de AnythingLLM 2](/images/integrations/anythingllm/llm-provider-selection.png)
+
+### Paso 3
+
+![Captura de configuración de AnythingLLM 3](/images/integrations/anythingllm/api-configuration.png)
+
+
+## Solución de problemas
+
+### Errores 401 o de autenticación
+
+Asegúrate de que la API key se haya copiado por completo, no tenga espacios adicionales y esté habilitada en el panel de APIAny.AI.
+
+### El modelo no aparece en la aplicación
+
+Introduce el ID de modelo manualmente y confirma que está disponible en el [catálogo de modelos](/es/models/chat-models). Algunas herramientas no obtienen las listas de modelos automáticamente.
+
+### ¿Qué Base URL debo usar?
+
+La configuración compatible con OpenAI suele usar `https://apiany.ai/v1`; la configuración compatible con Claude suele usar `https://apiany.ai`; las herramientas que piden un endpoint completo usan `https://apiany.ai/v1/chat/completions`.

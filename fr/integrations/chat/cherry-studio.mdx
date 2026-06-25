@@ -1,0 +1,91 @@
+---
+title: Intégration de Cherry Studio
+description: Configurez vos clés API APIAny.AI, vos Base URL et les modèles recommandés dans Cherry Studio.
+---
+
+[Cherry Studio](https://www.cherry-ai.com/) peut se connecter à APIAny.AI via une configuration compatible OpenAI. Une fois la configuration terminée, vous pouvez utiliser des modèles de conversation, de raisonnement, de traduction et multimodaux depuis un seul et même client.
+
+## Prérequis
+
+- Cherry Studio est installé.
+- Vous avez créé une clé API dans le [tableau de bord APIAny.AI](https://apiany.ai/fr/dashboard/api-keys).
+- Vous avez choisi un identifiant de modèle, par exemple `gpt-5.4-mini` ou `gpt-4o-mini`.
+
+## Valeurs de configuration
+
+| Champ | Valeur |
+| --- | --- |
+| Name | `APIAny.AI` |
+| API Key | Votre clé API APIAny.AI |
+| API URL | `https://apiany.ai` |
+| Model | `gpt-5.4-mini`, `gpt-4o-mini` ou un autre modèle disponible |
+
+
+## Configuration
+
+1. Ouvrez les Paramètres et accédez à la configuration des services de modèles.
+2. Ajoutez un service personnalisé compatible OpenAI nommé APIAny.AI.
+3. Saisissez la clé API et l'API URL.
+4. Sélectionnez le modèle ajouté dans une nouvelle conversation et testez-le.
+
+## Modèles recommandés
+
+| Identifiant de modèle | Idéal pour |
+| --- | --- |
+| `gpt-5.5` | Premier choix pour le raisonnement complexe, le codage et les workflows de production. |
+| `gpt-5.4` | Modèle polyvalent performant pour la conversation avancée et les tâches d'agent. |
+| `gpt-5.4-mini` | Équilibre entre vitesse, qualité et coût pour un usage quotidien. |
+| `gpt-4o-mini` | Choix rapide et économique pour la conversation simple, la traduction et les tâches légères. |
+| `claude-sonnet-4-6` | Identifiant de modèle compatible Claude pour la rédaction longue et les workflows de codage. |
+| `gemini-3.5-flash` | Identifiant de modèle compatible Gemini pour un usage multimodal rapide. |
+
+## Captures d'écran du processus
+
+Les captures d'écran ci-dessous montrent les principaux écrans de configuration dans Cherry Studio. Les noms d'API et les endpoints ont été adaptés pour APIAny.AI.
+
+### Étape 1
+
+![Capture d'écran de configuration Cherry Studio 1](/images/integrations/cherry-studio/main-interface.png)
+
+### Étape 2
+
+![Capture d'écran de configuration Cherry Studio 2](/images/integrations/cherry-studio/settings-providers.png)
+
+### Étape 3
+
+![Capture d'écran de configuration Cherry Studio 3](/images/integrations/cherry-studio/add-provider-config.png)
+
+### Étape 4
+
+![Capture d'écran de configuration Cherry Studio 4](/images/integrations/cherry-studio/settings.png)
+
+### Étape 5
+
+![Capture d'écran de configuration Cherry Studio 5](/images/integrations/cherry-studio/provider-list.png)
+
+### Étape 6
+
+![Capture d'écran de configuration Cherry Studio 6](/images/integrations/cherry-studio/model-selection.png)
+
+### Étape 7
+
+![Capture d'écran de configuration Cherry Studio 7](/images/integrations/cherry-studio/new-chat.png)
+
+### Étape 8
+
+![Capture d'écran de configuration Cherry Studio 8](/images/integrations/cherry-studio/chat-interface.png)
+
+
+## Dépannage
+
+### Erreurs 401 ou d'authentification
+
+Vérifiez que la clé API a été copiée intégralement, sans espace superflu, et qu'elle est bien activée dans le tableau de bord APIAny.AI.
+
+### Le modèle n'apparaît pas dans l'application
+
+Saisissez l'identifiant de modèle manuellement et confirmez qu'il est disponible dans le [catalogue de modèles](/fr/models/chat-models). Certains outils ne récupèrent pas automatiquement la liste des modèles.
+
+### Quelle Base URL utiliser ?
+
+Les configurations compatibles OpenAI utilisent généralement `https://apiany.ai/v1` ; les configurations compatibles Claude utilisent généralement `https://apiany.ai` ; les outils qui demandent un endpoint complet utilisent `https://apiany.ai/v1/chat/completions`.

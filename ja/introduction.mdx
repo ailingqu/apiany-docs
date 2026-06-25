@@ -1,0 +1,57 @@
+---
+title: はじめに
+description: 画像、動画、チャット、マルチモーダル AI モデルのための統合 API ゲートウェイ。
+---
+
+APIAny.AI は、チャット、画像生成、動画生成、マルチモーダルアプリケーションにわたる本番環境の AI ワークフローに対して、開発者に 1 つの安定した API サーフェスを提供します。
+
+公開 API は安定したまま、APIAny.AI がモデルの実行、課金、タスク履歴、標準化されたレスポンスを一貫した開発者体験のもとで処理します。
+
+<CardGroup cols={2}>
+  <Card title="統合されたモデルアクセス" icon="route">
+    1 つの API Key と 1 つの安定した API サーフェスで、公開モデル ID を呼び出せます。
+  </Card>
+
+  <Card title="非同期メディアタスク" icon="clock">
+    長時間実行される画像・動画生成ジョブは、即座に `task_id` を返します。`GET /v1/tasks/{task_id}` をポーリングして、結果が準備できたら取得できます。
+  </Card>
+
+  <Card title="マルチフォーマットチャット" icon="message-square">
+    OpenAI 互換の `/v1/chat/completions` エンドポイントから始め、統合が進むにつれて Anthropic 互換の `/v1/messages` や Gemini 互換の `/v1beta/models/{model}:generateContent` エンドポイントを採用できます。
+  </Card>
+
+  <Card title="クレジットとトレーサビリティ" icon="receipt">
+    すべてのリクエストは、クレジット、タスク履歴、標準化された結果、使用量レコードに紐付けられます。
+  </Card>
+</CardGroup>
+
+## Base URL
+
+<Snippet file="ja/snippets/base-url.mdx" />
+
+## 公開 API の形態
+
+APIAny.AI は、予測可能で少数の公開呼び出しパターンを提供します:
+
+- **Chat completions** — `POST /v1/chat/completions`: OpenAI 互換のテキスト生成とチャット。
+- **Anthropic 互換 Messages** — `POST /v1/messages`: Anthropic Messages 互換のリクエスト・レスポンス形態。
+- **Gemini 互換のコンテンツ生成** — `POST /v1beta/models/{model}:generateContent`: Gemini generateContent 互換のリクエスト・レスポンス形態。`{model}` は公開 APIAny.AI モデル ID です。
+- **画像生成（非同期）** — `POST /v1/images/generations`: 非同期の画像生成タスクを作成し、`task_id` を受け取ります。
+- **画像生成（同期）** — `POST /v1/images/generations/sync`: シンプルなブロッキングワークフローに適している場合に、画像を生成して結果を待ちます。
+- **画像編集** — `POST /v1/images/edits`: モデルとプロンプトを使って、既存の画像に編集やインペインティングを適用します。
+- **動画生成（非同期）** — `POST /v1/videos/generations`: 非同期の動画生成タスクを作成し、`task_id` を受け取ります。
+- **動画生成（同期）** — `POST /v1/videos/generations/sync`: ブロッキングワークフローが許容できる場合に、動画を生成して結果を待ちます。
+- **タスク照会** — `GET /v1/tasks/{task_id}`: 任意の非同期画像・動画タスクの現在のステータスと最終結果を取得します。
+- **クレジット残高** — `GET /v1/credits/balance`: アカウントに残っているクレジット数をいつでも確認できます。
+
+<Tip>
+  画像・動画生成エンドポイントはデフォルトで非同期です。リクエストはメディアの準備が整うまでブロックせず、即座に `task_id` を返します。本番システムでは、非同期の作成エンドポイントを使い、その後タスクをポーリングする方式を推奨します。同期版（`/sync`）は、単一のリクエスト内で結果を待つことが許容できるシンプルな統合向けに利用できます。
+</Tip>
+
+## 仕組み
+
+公開モデル ID と API Key を付けてリクエストを送信します。APIAny.AI はモデルリクエストを実行し、使用量を記録し、標準化されたレスポンスを返します。公開モデル ID は安定した製品コントラクトであるため、モデルカタログが進化しても統合は同じ API 形態を保てます。
+
+{/* docs-updated */}
+
+Last updated: 2026-06-25 20:59 (UTC+8)

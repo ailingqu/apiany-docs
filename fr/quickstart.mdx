@@ -1,0 +1,52 @@
+---
+title: Démarrage rapide
+description: Effectuez votre première requête APIAny.AI.
+---
+
+## 1. Créer une clé API
+
+Ouvrez le tableau de bord APIAny.AI et créez une clé API de projet.
+
+<Snippet file="fr/snippets/auth-header.mdx" />
+
+## 2. Lister les modèles disponibles
+
+```bash
+curl https://apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 3. Lancer un chat completion
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "user", "content": "Write a concise product tagline for APIAny.AI." }
+    ]
+  }'
+```
+
+## 4. Créer une tâche d'image
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A clean product hero image for an AI API gateway",
+    "size": "1k"
+  }'
+```
+
+La réponse inclut un `task_id`. Interrogez la tâche jusqu'à ce qu'elle soit terminée :
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+

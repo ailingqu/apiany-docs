@@ -1,0 +1,37 @@
+---
+title: Bildgenerierung
+description: Bilder asynchron oder mit Sync-Wait-Kompatibilität generieren.
+---
+
+Verwende `/v1/images/generations` für die Bildgenerierung im Produktivbetrieb.
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A bright API dashboard rendered as a product hero image",
+    "size": "1k"
+  }'
+```
+
+Die Antwort liefert eine Task zurück:
+
+```json
+{
+  "task_id": "task_123",
+  "status": "processing",
+  "poll_url": "/v1/tasks/task_123"
+}
+```
+
+## Sync-Variante
+
+`/v1/images/generations/sync` erstellt eine Task und wartet bis zur konfigurierten maximalen Wartezeit.
+
+Verwende sie für Kompatibilität und Demos. Nutze für Produktiv-Workloads den asynchronen Endpoint.
+
+## Bildbearbeitung
+
+`/v1/images/edits` unterstützt OpenAI-typische Bildbearbeitungs-Workflows, sofern das ausgewählte Modell Referenzbilder unterstützt.

@@ -1,0 +1,59 @@
+---
+title: Messages
+description: Anthropic 호환 messages 엔드포인트.
+---
+
+클라이언트가 이미 Anthropic Messages 형식을 사용한다면 `/v1/messages`를 사용하세요.
+
+```bash
+curl https://apiany.ai/v1/messages \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "minimax-m3",
+    "max_tokens": 512,
+    "messages": [
+      { "role": "user", "content": "API 문서 섹션 제목 세 개를 작성해 주세요." }
+    ]
+  }'
+```
+
+APIAny.AI는 요청을 처리하고 Anthropic 호환 응답을 반환합니다.
+
+## 도구 사용
+
+`tools`(각각 `name`, `description`, `input_schema`를 가짐)로 도구를 선언하고
+`tool_choice`로 선택을 제어합니다. 멀티턴 `tool_use` / `tool_result`
+콘텐츠 블록을 지원합니다.
+
+```json
+{
+  "model": "minimax-m3",
+  "max_tokens": 512,
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "현재 날씨 가져오기",
+      "input_schema": {
+        "type": "object",
+        "properties": { "location": { "type": "string" } },
+        "required": ["location"]
+      }
+    }
+  ],
+  "tool_choice": { "type": "auto" },
+  "messages": [{ "role": "user", "content": "뉴욕 날씨는 어때?" }]
+}
+```
+
+## 스트리밍
+
+`stream: true`로 설정하면 Anthropic SSE 이벤트를 받습니다:
+`message_start`, `content_block_start`, `content_block_delta`,
+`content_block_stop`, `message_delta`, `message_stop`.
+
+## 파라미터
+
+지원: `model`, `messages`, `max_tokens`(필수), `system`,
+`temperature`, `top_p`, `top_k`, `stop_sequences`, `tools`, `tool_choice`,
+`stream`.

@@ -1,0 +1,40 @@
+---
+title: 채팅 모델
+description: 텍스트 생성 및 멀티모달 채팅 모델 동작.
+---
+
+채팅 모델은 다음 인터페이스를 통해 제공될 수 있습니다:
+
+- `/v1/chat/completions`
+- `/v1/messages`
+- `/v1beta/models/{model}:generateContent`
+
+가격에는 다음이 포함될 수 있습니다:
+
+- 입력 token.
+- 출력 token.
+- 캐시된 입력 token.
+- 최소 요청 크레딧.
+
+컨텍스트 윈도우와 최대 출력 길이는 모델 수준의 능력 메타데이터입니다.
+
+
+## 사용 가능한 모델
+
+| 모델 ID | 설명 |
+| --- | --- |
+| `gpt-5.5` | OpenAI GPT-5.5 — 고급 추론, 코딩, 복잡한 다단계 지시에 강한 플래그십 모델. |
+| `gpt-5.4` | OpenAI GPT-5.4 — 고급 추론, 코딩, 에이전트 워크플로에 강한 고성능 모델. |
+| `gpt-5.4-mini` | OpenAI GPT-5.4 mini — 속도, 품질, 비용의 균형, 대량 프로덕션 사용에 적합. |
+| `gpt-5.4-nano` | OpenAI GPT-5.4 nano — GPT-5.4 중 가장 빠르고 저비용 등급, 간단한 고처리량 작업에 적합. |
+| `gpt-4o-mini` | OpenAI GPT-4o mini — 빠르고 합리적인 멀티모달 모델, 일상 대화와 경량 작업에 적합. |
+| `claude-opus-4-8` | Anthropic Claude Opus 4.8 — 가장 까다로운 추론, 코딩, 장문 작업을 위한 프런티어 모델. |
+| `claude-sonnet-4-6` | Anthropic Claude Sonnet 4.6 — 균형 잡힌 프런티어 모델, 프로덕션 수준의 속도와 비용에서 강력한 추론 제공. |
+| `gemini-3.1-pro` | Google Gemini 3.1 Pro — 복잡한 추론, 긴 컨텍스트, 높은 요구의 프로덕션 워크로드에 적합한 최상위 멀티모달 모델. |
+| `gemini-3.5-flash` | Google Gemini 3.5 Flash — 빠르고 비용 효율적인 멀티모달 모델, 강력한 추론과 큰 컨텍스트 윈도우. |
+| `gemini-3.1-flash-lite` | Google Gemini 3.1 Flash Lite — 빠르고 경제적인 모델, 2.5 세대 대비 향상된 추론. |
+| `gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite — 초저비용, 저지연 모델, 대량 일상 작업에 적합. |
+| `deepseek-v4` | DeepSeek V4 — 강력한 추론과 코딩 성능, 매우 경쟁력 있는 가격. |
+| `deepseek-v4-flash` | DeepSeek V4 Flash — 지연 최적화된 DeepSeek V4 변형, 대량 저비용 추론에 적합. |
+| `glm-5.1` | Zhipu GLM-5.1 — 추론, 코딩, 에이전트 애플리케이션에 적합한 강력한 한/영(중/영) 이중 언어 모델. |
+| `minimax-m3` | MiniMax M3 — 긴 컨텍스트 추론, 도구 사용, 다국어 대화에 적합한 대규모 언어 모델. |

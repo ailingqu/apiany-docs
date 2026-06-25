@@ -1,0 +1,1659 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "APIAny.AI 공개 API",
+    "version": "1.0.0",
+    "description": "APIAny.AI의 모델 통합, 비동기 미디어 작업, 채팅 생성, 크레딧 조회 및 작업 조회를 위한 공개 API입니다."
+  },
+  "servers": [
+    {
+      "url": "https://apiany.ai",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Models",
+      "description": "공개 모델 카탈로그입니다."
+    },
+    {
+      "name": "Chat",
+      "description": "텍스트 생성 및 채팅 호환 엔드포인트입니다."
+    },
+    {
+      "name": "Images",
+      "description": "이미지 생성 및 이미지 편집 엔드포인트입니다."
+    },
+    {
+      "name": "Videos",
+      "description": "동영상 생성 엔드포인트입니다."
+    },
+    {
+      "name": "Tasks",
+      "description": "비동기 작업 조회입니다."
+    },
+    {
+      "name": "Account",
+      "description": "계정 및 크레딧 조회입니다."
+    }
+  ],
+  "paths": {
+    "/v1/models": {
+      "get": {
+        "operationId": "listModels",
+        "summary": "공개 모델 목록 조회",
+        "description": "현재 API 키로 볼 수 있는 APIAny.AI 공개 모델 카탈로그를 반환합니다.",
+        "tags": [
+          "Models"
+        ],
+        "responses": {
+          "200": {
+            "description": "모델 목록입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/credits/balance": {
+      "get": {
+        "operationId": "getCreditBalance",
+        "summary": "크레딧 잔액 조회",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "크레딧 잔액입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalanceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "description": "현재 API 키가 속한 계정의 사용 가능한 크레딧 잔액을 반환합니다."
+      }
+    },
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "summary": "채팅 완성 생성",
+        "description": "OpenAI 호환 Chat Completions 엔드포인트입니다. 현재는 비스트리밍 호출을 중심으로 합니다.",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "gpt-5.4",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Write a concise product tagline for APIAny.AI."
+                      }
+                    ],
+                    "temperature": 0.7
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI 호환 채팅 완성 응답입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/responses": {
+      "post": {
+        "operationId": "createResponse",
+        "summary": "Responses 응답 생성",
+        "description": "OpenAI Responses 호환 엔드포인트입니다. Responses 네이티브 input, reasoning 제어, web search 등 내장 도구, 그리고 stream=true일 때의 공식 Responses SSE를 지원합니다.",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponsesRequest"
+              },
+              "examples": {
+                "reasoning": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "이 API 설계를 검토하고 주요 위험 요소를 나열하세요.",
+                    "reasoning": {
+                      "effort": "high",
+                      "summary": "auto"
+                    },
+                    "text": {
+                      "verbosity": "medium"
+                    }
+                  }
+                },
+                "webSearch": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "OpenAI Responses API 문서에서 최근에 무엇이 바뀌었나요?",
+                    "tools": [
+                      {
+                        "type": "web_search_preview"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI 호환 Responses 응답입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesResponse"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "stream=true일 때 Responses SSE 이벤트 스트림을 반환합니다."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "operationId": "createMessage",
+        "summary": "Messages 응답 생성",
+        "description": "Anthropic 호환 Messages 엔드포인트입니다.",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnthropicMessagesRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "minimax-m3",
+                    "max_tokens": 512,
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Draft three API documentation section titles."
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Anthropic 호환 Messages 응답입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnthropicMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1beta/models/{model}:generateContent": {
+      "post": {
+        "operationId": "generateGeminiContent",
+        "summary": "Gemini 호환 콘텐츠 생성",
+        "description": "Gemini 호환 generateContent 엔드포인트입니다. 경로의 model은 APIAny.AI 공개 모델 ID입니다.",
+        "tags": [
+          "Chat"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "gemini-3.5-flash"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiGenerateContentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gemini 호환 응답입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiGenerateContentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "createImageGeneration",
+        "summary": "이미지 생성 작업 생성",
+        "description": "비동기 이미지 생성 작업을 생성하고 task_id를 반환합니다.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "textToImage": {
+                  "value": {
+                    "model": "nano-banana",
+                    "prompt": "A clean product hero image for an AI API gateway",
+                    "size": "1k"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "nano-banana-pro",
+                    "prompt": "Create a premium ecommerce hero image using these references",
+                    "size": "2k",
+                    "input_images": [
+                      "https://example.com/reference-1.png",
+                      "https://example.com/reference-2.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "작업이 생성되었습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations/sync": {
+      "post": {
+        "operationId": "createImageGenerationSync",
+        "summary": "이미지 생성 후 결과 대기",
+        "description": "이미지 작업을 생성하고 설정된 최대 대기 시간 내에서 작업 완료를 기다립니다.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI 호환 이미지 생성 결과입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "최대 대기 시간에 도달한 후에도 작업이 아직 처리 중입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/edits": {
+      "post": {
+        "operationId": "createImageEdit",
+        "summary": "이미지 편집 생성",
+        "description": "참조 이미지를 지원하는 모델을 위한 OpenAI 스타일 이미지 편집 엔드포인트입니다.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageEditRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI 호환 이미지 결과입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/upload": {
+      "post": {
+        "operationId": "uploadImageAsset",
+        "summary": "이미지 자산 업로드",
+        "description": "이미지 자산을 업로드하여 이미지 또는 동영상 생성의 참조 입력으로 사용합니다.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "업로드된 자산 URL입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/videos/generations": {
+      "post": {
+        "operationId": "createVideoGeneration",
+        "summary": "동영상 생성 작업 생성",
+        "description": "비동기 동영상 생성 작업을 생성하고 task_id를 반환합니다.",
+        "tags": [
+          "Videos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              },
+              "examples": {
+                "seedance": {
+                  "value": {
+                    "model": "seedance-2.0",
+                    "prompt": "A cinematic launch shot for an AI API platform",
+                    "duration": "10s",
+                    "resolution": "720p",
+                    "ratio": "16:9"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "veo3.1",
+                    "prompt": "Animate a product scene between the start and end frames",
+                    "input_images": [
+                      "https://example.com/start.png",
+                      "https://example.com/end.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "작업이 생성되었습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/videos/generations/sync": {
+      "post": {
+        "operationId": "createVideoGenerationSync",
+        "summary": "동영상 생성 후 결과 대기",
+        "description": "동영상 작업을 생성하고 설정된 최대 대기 시간 내에서 작업 완료를 기다립니다.",
+        "tags": [
+          "Videos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "완료된 동영상 작업입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "최대 대기 시간에 도달한 후에도 작업이 아직 처리 중입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/tasks/{task_id}": {
+      "get": {
+        "operationId": "getTask",
+        "summary": "작업 상세 조회",
+        "description": "비동기 이미지, 동영상 또는 향후 오디오 작업의 현재 상태와 최종 결과를 반환합니다.",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "task_123"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "작업 상세 정보입니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "작업을 찾을 수 없습니다.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API key"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "요청 파라미터가 유효하지 않습니다.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "API 키가 없거나 API 키가 유효하지 않습니다.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "요청이 속도 제한을 초과했습니다.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request",
+                  "auth_error",
+                  "rate_limit",
+                  "insufficient_quota",
+                  "content_policy",
+                  "timeout",
+                  "network_error",
+                  "service_error",
+                  "billable_error",
+                  "unknown"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ModelListResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "list"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Model"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "object": {
+            "type": "string",
+            "example": "model"
+          },
+          "type": {
+            "type": "string",
+            "example": "image"
+          },
+          "owned_by": {
+            "type": "string",
+            "example": "APIAny.AI"
+          },
+          "display_name": {
+            "type": "string",
+            "example": "Nano Banana"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "pricing": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "display_name",
+          "status"
+        ]
+      },
+      "CreditBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "credits": {
+            "type": "number",
+            "example": 206353
+          },
+          "currency": {
+            "type": "string",
+            "example": "credits"
+          }
+        },
+        "required": [
+          "credits",
+          "currency"
+        ]
+      },
+      "ChatCompletionRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.4"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            }
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "샘플링 온도입니다."
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "뉴클리어스 샘플링 누적 확률입니다."
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "응답의 최대 토큰 수입니다."
+          },
+          "stop": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ],
+            "description": "최대 4개의 정지 시퀀스입니다."
+          },
+          "n": { "type": "integer", "minimum": 1, "description": "생성할 후보 응답 수입니다." },
+          "frequency_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "presence_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "seed": { "type": "integer", "description": "가능한 한 재현 가능한 샘플링 시드입니다." },
+          "response_format": {
+            "type": "object",
+            "description": "JSON 객체 또는 JSON Schema 출력을 강제합니다. 예: { \"type\": \"json_object\" }.",
+            "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "모델이 호출할 수 있는 도구/함수 선언입니다.",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "description": "도구 선택: 'auto' | 'none' | 'required' | { type: 'function', function: { name } }.",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "object", "additionalProperties": true }
+            ]
+          },
+          "logprobs": { "type": "boolean" },
+          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
+          "logit_bias": { "type": "object", "additionalProperties": true },
+          "user": { "type": "string", "description": "오남용 모니터링을 위한 최종 사용자 식별자입니다." },
+          "stream": {
+            "type": "boolean",
+            "description": "true이면 SSE로 증분 델타를 스트리밍하며(OpenAI chat.completion.chunk), 'data: [DONE]'로 종료됩니다."
+          }
+        },
+        "required": [
+          "model",
+          "messages"
+        ]
+      },
+      "ChatMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "system",
+              "user",
+              "assistant",
+              "tool"
+            ]
+          },
+          "content": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ]
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "chat.completion"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "model": {
+            "type": "string"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "created",
+          "model",
+          "choices"
+        ]
+      },
+      "ResponsesRequest": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.5"
+          },
+          "input": {
+            "description": "Responses 입력입니다. 문자열일 수도 있고, message / tool-result 항목 배열일 수도 있습니다.",
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          },
+          "instructions": {
+            "type": "string",
+            "description": "시스템 또는 개발자 지침입니다."
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "최대 출력 토큰 수입니다."
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh"
+                ],
+                "description": "지원 모델의 reasoning 강도입니다."
+              },
+              "summary": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "concise",
+                  "detailed"
+                ]
+              }
+            }
+          },
+          "text": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "verbosity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "format": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "tools": {
+            "type": "array",
+            "description": "Responses tools로, function tools와 web_search_preview 등 내장 도구를 포함합니다.",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "tool_choice": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "true이면 OpenAI Responses SSE 이벤트를 반환합니다."
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "model",
+          "input"
+        ]
+      },
+      "ResponsesResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "response"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "output": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "output_text": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "model",
+          "output"
+        ]
+      },
+      "AnthropicMessagesRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "minimax-m3"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "assistant"
+                  ]
+                },
+                "content": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "생성할 최대 토큰 수입니다(필수)."
+          },
+          "system": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+            ],
+            "description": "시스템 프롬프트입니다."
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "응답에 주입되는 무작위성입니다(0–1)."
+          },
+          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
+          "top_k": { "type": "integer", "description": "각 토큰에 대해 확률이 가장 높은 K개 후보에서만 샘플링합니다." },
+          "stop_sequences": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "생성을 중단시키는 사용자 지정 시퀀스입니다."
+          },
+          "tools": {
+            "type": "array",
+            "description": "모델이 호출할 수 있는 도구이며, 각 도구는 name, description, input_schema(JSON Schema)를 가집니다.",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "도구 선택: { type: 'auto' } | { type: 'any' } | { type: 'tool', name }."
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "true이면 Anthropic SSE 이벤트 스트림으로 반환합니다(message_start / content_block_delta / message_delta / message_stop)."
+          }
+        },
+        "required": [
+          "model",
+          "messages",
+          "max_tokens"
+        ]
+      },
+      "AnthropicMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "message"
+          },
+          "role": {
+            "type": "string",
+            "example": "assistant"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "role",
+          "content",
+          "model"
+        ]
+      },
+      "GeminiGenerateContentRequest": {
+        "type": "object",
+        "properties": {
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string"
+                },
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "required": [
+                "parts"
+              ]
+            }
+          },
+          "generationConfig": {
+            "type": "object",
+            "description": "생성 설정입니다. 참고로, :generateContent 대신 :streamGenerateContent를 호출하면 Gemini SSE 스트림을 받을 수 있습니다.",
+            "properties": {
+              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+              "topP": { "type": "number" },
+              "topK": { "type": "integer" },
+              "maxOutputTokens": { "type": "integer" },
+              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "responseMimeType": {
+                "type": "string",
+                "description": "구조화된 출력에는 'application/json'과 같이 지정합니다."
+              },
+              "responseSchema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "구조화된 출력용 JSON Schema입니다(responseMimeType application/json과 함께 사용)."
+              },
+              "responseModalities": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "'IMAGE'를 포함하면 이미지 생성 결과를 반환합니다."
+              }
+            },
+            "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "모델이 호출할 수 있는 functionDeclarations를 포함하는 도구입니다.",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "systemInstruction": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "시스템 지침으로, Gemini Content 객체({ parts: [{ text }] }) 형식입니다."
+          }
+        },
+        "required": [
+          "contents"
+        ]
+      },
+      "GeminiGenerateContentResponse": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usageMetadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "candidates"
+        ]
+      },
+      "ImageGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "ImageEditRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary"
+          },
+          "mask": {
+            "type": "string",
+            "format": "binary"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          }
+        },
+        "required": [
+          "model",
+          "prompt",
+          "image"
+        ]
+      },
+      "VideoGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "seedance-2.0"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string",
+            "example": "10s"
+          },
+          "resolution": {
+            "type": "string",
+            "example": "720p"
+          },
+          "ratio": {
+            "type": "string",
+            "example": "16:9"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_videos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_audio": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "AsyncTaskCreateResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "poll_url": {
+            "type": "string",
+            "example": "/v1/tasks/task_123"
+          }
+        },
+        "required": [
+          "task_id",
+          "status",
+          "poll_url"
+        ]
+      },
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "expired"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "result": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MediaResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ErrorResponse/properties/error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "task_id",
+          "status"
+        ]
+      },
+      "MediaResult": {
+        "description": "완료된 작업의 결과입니다. 이미지 작업은 OpenAI 이미지 형식을 사용하며(이미지 주소는 data[0].url), 동영상 및 오디오 작업은 video_url/audio_url과 urls[] 배열을 제공합니다.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ImageTaskResult"
+          },
+          {
+            "$ref": "#/components/schemas/MediaUrlResult"
+          }
+        ]
+      },
+      "ImageTaskResult": {
+        "type": "object",
+        "description": "이미지 작업 결과입니다(OpenAI 이미지 형식). 이미지 주소는 data[0].url에 있습니다.",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MediaUrlResult": {
+        "type": "object",
+        "description": "동영상 또는 오디오 작업 결과입니다. 기본 주소는 video_url 또는 audio_url이며, 모든 산출물은 urls[]에도 함께 나열됩니다.",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "video_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "audio_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "output_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "OpenAIImageResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ]
+      },
+      "TokenUsage": {
+        "type": "object",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer"
+          },
+          "completion_tokens": {
+            "type": "integer"
+          },
+          "total_tokens": {
+            "type": "integer"
+          },
+          "input_tokens": {
+            "type": "integer"
+          },
+          "output_tokens": {
+            "type": "integer"
+          },
+          "cached_input_tokens": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

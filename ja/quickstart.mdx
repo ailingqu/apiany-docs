@@ -1,0 +1,52 @@
+---
+title: クイックスタート
+description: 最初の APIAny.AI リクエストを送信します。
+---
+
+## 1. API Key を作成する
+
+APIAny.AI のダッシュボードを開き、プロジェクト API Key を作成します。
+
+<Snippet file="ja/snippets/auth-header.mdx" />
+
+## 2. 利用可能なモデルを一覧表示する
+
+```bash
+curl https://apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 3. チャット補完を実行する
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "user", "content": "Write a concise product tagline for APIAny.AI." }
+    ]
+  }'
+```
+
+## 4. 画像タスクを作成する
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A clean product hero image for an AI API gateway",
+    "size": "1k"
+  }'
+```
+
+レスポンスには `task_id` が含まれます。タスクが完了するまでポーリングします:
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+

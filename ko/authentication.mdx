@@ -1,0 +1,37 @@
+---
+title: 인증
+description: 프로젝트 API 키로 공개 API 요청을 인증하세요.
+---
+
+APIAny.AI 공개 엔드포인트는 API 키를 사용합니다.
+
+<Snippet file="ko/snippets/auth-header.mdx" />
+
+## 보안 모델
+
+API 키는 프로젝트 자격 증명입니다. 비밀번호처럼 취급하세요:
+
+- 브라우저 측 코드에서 비밀 API 키를 노출하지 마세요.
+- 키는 서버 측 시크릿 매니저 또는 환경 변수에 저장하세요.
+- 키가 유출되면 교체하세요.
+- 개발, 스테이징, 프로덕션에 별도의 키를 사용하세요.
+
+## 예시
+
+```bash
+curl https://apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 오류
+
+인증 오류는 플랫폼 오류 형식을 사용합니다:
+
+```json
+{
+  "error": {
+    "type": "auth_error",
+    "message": "Invalid API key"
+  }
+}
+```

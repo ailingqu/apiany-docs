@@ -1,0 +1,23 @@
+---
+title: Videogenerierung
+description: Video-Tasks mit Polling generieren.
+---
+
+Verwende `/v1/videos/generations` für die Videoerstellung.
+
+```bash
+curl https://apiany.ai/v1/videos/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "A cinematic product launch shot for an AI API platform",
+    "duration": "10s",
+    "resolution": "720p",
+    "ratio": "16:9"
+  }'
+```
+
+## Sync-Variante
+
+`/v1/videos/generations/sync` wartet auf das Task-Ergebnis innerhalb derselben HTTP-Anfrage. Lang laufende Jobs sollten asynchrone Erstellung und Task-Polling verwenden.

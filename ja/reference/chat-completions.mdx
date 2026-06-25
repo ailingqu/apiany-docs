@@ -1,0 +1,48 @@
+---
+title: Chat Completions
+description: OpenAI 互換のチャット生成エンドポイント。
+---
+
+OpenAI 互換のテキスト生成には `/v1/chat/completions` を使用します。
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "system", "content": "You are concise." },
+      { "role": "user", "content": "API 集約とは何かを一文で説明してください。" }
+    ],
+    "temperature": 0.7
+  }'
+```
+
+## ストリーミング
+
+`stream: true` を設定すると Server-Sent Events で結果を受け取れます。各イベントは OpenAI の
+`chat.completion.chunk` であり、ストリームは `data: [DONE]` で終了します。
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{ "role": "user", "content": "こんにちは" }],
+    "stream": true
+  }'
+```
+
+## パラメータ
+
+OpenAI 標準のパラメータに対応しています：`temperature`、`top_p`、`max_tokens`、`stop`、`n`、
+`frequency_penalty`、`presence_penalty`、`seed`、`response_format`、`tools`、
+`tool_choice`、`logprobs`、`top_logprobs`、`logit_bias`、`user`、`stream`。
+
+## 補足
+
+- `model` は APIAny.AI の公開モデル ID です。
+- token usage データが利用できる場合、プラットフォームは OpenAI スタイルの `usage` オブジェクトに正規化します。

@@ -1,0 +1,23 @@
+---
+title: Génération de vidéos
+description: Génération de tâches vidéo avec polling.
+---
+
+Utilisez `/v1/videos/generations` pour la création de vidéos.
+
+```bash
+curl https://apiany.ai/v1/videos/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "A cinematic product launch shot for an AI API platform",
+    "duration": "10s",
+    "resolution": "720p",
+    "ratio": "16:9"
+  }'
+```
+
+## Variante synchrone
+
+`/v1/videos/generations/sync` attend le résultat de la tâche dans la même requête HTTP. Les tâches de longue durée devraient utiliser la création asynchrone et le polling de tâches.

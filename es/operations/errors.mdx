@@ -1,0 +1,60 @@
+---
+title: Errores
+description: Categorías de error estándar devueltas por APIAny.AI.
+---
+
+Cada endpoint de chat devuelve los errores con **la misma forma que el estándar
+de API con el que es compatible** (OpenAI, Anthropic o Gemini). Toda respuesta de
+error incluye además una cabecera `X-Request-Id` y devuelve únicamente la
+información que necesitas para depurar tu solicitud.
+
+## OpenAI — `/v1/chat/completions` (y endpoints de imagen/vídeo)
+
+```json
+{
+  "error": {
+    "message": "Insufficient credits",
+    "type": "insufficient_quota",
+    "code": "insufficient_credits",
+    "param": null
+  }
+}
+```
+
+## Anthropic — `/v1/messages`
+
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "authentication_error",
+    "message": "Invalid API key"
+  }
+}
+```
+
+## Gemini — `/v1beta/models/{model}:generateContent`
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "model is required",
+    "status": "INVALID_ARGUMENT"
+  }
+}
+```
+
+## Mapeo de estados
+
+El `type` / `status` del error se deriva del estado HTTP:
+
+| HTTP | OpenAI `type` | Anthropic `type` | Gemini `status` |
+|------|---------------|------------------|-----------------|
+| 400  | invalid_request_error | invalid_request_error | INVALID_ARGUMENT |
+| 401  | authentication_error  | authentication_error  | UNAUTHENTICATED  |
+| 403  | permission_error      | permission_error      | PERMISSION_DENIED |
+| 404  | not_found_error       | not_found_error       | NOT_FOUND        |
+| 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
+| 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
+| 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |

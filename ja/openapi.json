@@ -1,0 +1,1659 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "APIAny.AI 公開 API",
+    "version": "1.0.0",
+    "description": "APIAny.AI のモデル統合、非同期メディアタスク、チャット生成、クレジット照会、タスク照会のための公開 API。"
+  },
+  "servers": [
+    {
+      "url": "https://apiany.ai",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Models",
+      "description": "公開モデルカタログ。"
+    },
+    {
+      "name": "Chat",
+      "description": "テキスト生成およびチャット互換エンドポイント。"
+    },
+    {
+      "name": "Images",
+      "description": "画像生成および画像編集エンドポイント。"
+    },
+    {
+      "name": "Videos",
+      "description": "動画生成エンドポイント。"
+    },
+    {
+      "name": "Tasks",
+      "description": "非同期タスク照会。"
+    },
+    {
+      "name": "Account",
+      "description": "アカウントおよびクレジットの照会。"
+    }
+  ],
+  "paths": {
+    "/v1/models": {
+      "get": {
+        "operationId": "listModels",
+        "summary": "公開モデル一覧を取得",
+        "description": "現在の API Key で参照可能な APIAny.AI の公開モデルカタログを返します。",
+        "tags": [
+          "Models"
+        ],
+        "responses": {
+          "200": {
+            "description": "モデル一覧。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/credits/balance": {
+      "get": {
+        "operationId": "getCreditBalance",
+        "summary": "クレジット残高を照会",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "クレジット残高。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalanceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "description": "現在の API Key が属するアカウントの利用可能なクレジット残高を返します。"
+      }
+    },
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "summary": "チャット補完を作成",
+        "description": "OpenAI 互換の Chat Completions エンドポイント。現在は非ストリーミング呼び出しが中心です。",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "gpt-5.4",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Write a concise product tagline for APIAny.AI."
+                      }
+                    ],
+                    "temperature": 0.7
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI 互換のチャット補完レスポンス。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/responses": {
+      "post": {
+        "operationId": "createResponse",
+        "summary": "Responses レスポンスを作成",
+        "description": "OpenAI Responses 互換のエンドポイント。Responses ネイティブの input、reasoning 制御、web search などの組み込みツール、および stream=true 時の公式 Responses SSE に対応します。",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponsesRequest"
+              },
+              "examples": {
+                "reasoning": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "この API 設計をレビューし、主なリスクを列挙してください。",
+                    "reasoning": {
+                      "effort": "high",
+                      "summary": "auto"
+                    },
+                    "text": {
+                      "verbosity": "medium"
+                    }
+                  }
+                },
+                "webSearch": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "OpenAI Responses API のドキュメントで最近変わった点は何ですか？",
+                    "tools": [
+                      {
+                        "type": "web_search_preview"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI-compatible Responses response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesResponse"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "stream=true 時に Responses SSE イベントストリームを返します。"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "operationId": "createMessage",
+        "summary": "Messages レスポンスを作成",
+        "description": "Anthropic 互換の Messages エンドポイント。",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnthropicMessagesRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "minimax-m3",
+                    "max_tokens": 512,
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Draft three API documentation section titles."
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Anthropic 互換の Messages レスポンス。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnthropicMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1beta/models/{model}:generateContent": {
+      "post": {
+        "operationId": "generateGeminiContent",
+        "summary": "Gemini 互換コンテンツを生成",
+        "description": "Gemini 互換の generateContent エンドポイント。パス中の model は APIAny.AI の公開モデル ID です。",
+        "tags": [
+          "Chat"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "gemini-3.5-flash"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiGenerateContentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Gemini 互換レスポンス。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiGenerateContentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "createImageGeneration",
+        "summary": "画像生成タスクを作成",
+        "description": "非同期の画像生成タスクを作成し、task_id を返します。",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "textToImage": {
+                  "value": {
+                    "model": "nano-banana",
+                    "prompt": "A clean product hero image for an AI API gateway",
+                    "size": "1k"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "nano-banana-pro",
+                    "prompt": "Create a premium ecommerce hero image using these references",
+                    "size": "2k",
+                    "input_images": [
+                      "https://example.com/reference-1.png",
+                      "https://example.com/reference-2.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "タスクを作成しました。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations/sync": {
+      "post": {
+        "operationId": "createImageGenerationSync",
+        "summary": "画像生成を作成して結果を待機",
+        "description": "画像タスクを作成し、設定された最大待機時間までタスクの完了を待ちます。",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI 互換の画像生成結果。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "最大待機時間に達してもタスクがまだ処理中です。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/edits": {
+      "post": {
+        "operationId": "createImageEdit",
+        "summary": "画像編集を作成",
+        "description": "参照画像に対応するモデル向けの OpenAI スタイル画像編集エンドポイント。",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageEditRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OpenAI 互換の画像結果。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/upload": {
+      "post": {
+        "operationId": "uploadImageAsset",
+        "summary": "画像アセットをアップロード",
+        "description": "画像または動画生成の参照入力として使用する画像アセットをアップロードします。",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "アップロード後のアセット URL。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/videos/generations": {
+      "post": {
+        "operationId": "createVideoGeneration",
+        "summary": "動画生成タスクを作成",
+        "description": "非同期の動画生成タスクを作成し、task_id を返します。",
+        "tags": [
+          "Videos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              },
+              "examples": {
+                "seedance": {
+                  "value": {
+                    "model": "seedance-2.0",
+                    "prompt": "A cinematic launch shot for an AI API platform",
+                    "duration": "10s",
+                    "resolution": "720p",
+                    "ratio": "16:9"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "veo3.1",
+                    "prompt": "Animate a product scene between the start and end frames",
+                    "input_images": [
+                      "https://example.com/start.png",
+                      "https://example.com/end.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "タスクを作成しました。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/videos/generations/sync": {
+      "post": {
+        "operationId": "createVideoGenerationSync",
+        "summary": "動画生成を作成して結果を待機",
+        "description": "動画タスクを作成し、設定された最大待機時間までタスクの完了を待ちます。",
+        "tags": [
+          "Videos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "完了した動画タスク。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "最大待機時間に達してもタスクがまだ処理中です。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/tasks/{task_id}": {
+      "get": {
+        "operationId": "getTask",
+        "summary": "タスク詳細を照会",
+        "description": "非同期の画像、動画、または将来の音声タスクの現在の状態と最終結果を返します。",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "task_123"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "タスク詳細。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "タスクが存在しません。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API key"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "リクエストパラメータが無効です。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "API Key が指定されていないか、API Key が無効です。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "リクエストがレート制限を超えました。",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request",
+                  "auth_error",
+                  "rate_limit",
+                  "insufficient_quota",
+                  "content_policy",
+                  "timeout",
+                  "network_error",
+                  "service_error",
+                  "billable_error",
+                  "unknown"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ModelListResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "list"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Model"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "object": {
+            "type": "string",
+            "example": "model"
+          },
+          "type": {
+            "type": "string",
+            "example": "image"
+          },
+          "owned_by": {
+            "type": "string",
+            "example": "APIAny.AI"
+          },
+          "display_name": {
+            "type": "string",
+            "example": "Nano Banana"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "pricing": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "display_name",
+          "status"
+        ]
+      },
+      "CreditBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "credits": {
+            "type": "number",
+            "example": 206353
+          },
+          "currency": {
+            "type": "string",
+            "example": "credits"
+          }
+        },
+        "required": [
+          "credits",
+          "currency"
+        ]
+      },
+      "ChatCompletionRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.4"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            }
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "サンプリング温度。"
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "核サンプリングの累積確率。"
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "レスポンスの最大トークン数。"
+          },
+          "stop": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ],
+            "description": "最大 4 個の停止シーケンス。"
+          },
+          "n": { "type": "integer", "minimum": 1, "description": "生成する候補数。" },
+          "frequency_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "presence_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "seed": { "type": "integer", "description": "できる限り再現可能なサンプリングシード。" },
+          "response_format": {
+            "type": "object",
+            "description": "JSON オブジェクトまたは JSON Schema 出力を強制します（例: { \"type\": \"json_object\" }）。",
+            "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "モデルが呼び出せるツール／関数の宣言。",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "description": "ツール選択: 'auto' | 'none' | 'required' | { type: 'function', function: { name } }。",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "object", "additionalProperties": true }
+            ]
+          },
+          "logprobs": { "type": "boolean" },
+          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
+          "logit_bias": { "type": "object", "additionalProperties": true },
+          "user": { "type": "string", "description": "リスク監査のためのエンドユーザー識別子。" },
+          "stream": {
+            "type": "boolean",
+            "description": "true の場合、増分を SSE でストリーミング返却します（OpenAI chat.completion.chunk）。'data: [DONE]' で終了します。"
+          }
+        },
+        "required": [
+          "model",
+          "messages"
+        ]
+      },
+      "ChatMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "system",
+              "user",
+              "assistant",
+              "tool"
+            ]
+          },
+          "content": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ]
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "chat.completion"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "model": {
+            "type": "string"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "created",
+          "model",
+          "choices"
+        ]
+      },
+      "ResponsesRequest": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.5"
+          },
+          "input": {
+            "description": "Responses の入力。文字列、または message / tool-result item の配列を指定できます。",
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          },
+          "instructions": {
+            "type": "string",
+            "description": "システムまたは開発者向けの指示。"
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "最大出力トークン数。"
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh"
+                ],
+                "description": "対応モデルにおける reasoning の強度。"
+              },
+              "summary": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "concise",
+                  "detailed"
+                ]
+              }
+            }
+          },
+          "text": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "verbosity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "format": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "tools": {
+            "type": "array",
+            "description": "Responses tools。function tools と web_search_preview などの組み込みツールを含みます。",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "tool_choice": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "true の場合、OpenAI Responses SSE イベントを返します。"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "model",
+          "input"
+        ]
+      },
+      "ResponsesResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "response"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "output": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "output_text": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "model",
+          "output"
+        ]
+      },
+      "AnthropicMessagesRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "minimax-m3"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "assistant"
+                  ]
+                },
+                "content": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "生成する最大トークン数（必須）。"
+          },
+          "system": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+            ],
+            "description": "システムプロンプト。"
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "ランダム性（0〜1）。"
+          },
+          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
+          "top_k": { "type": "integer", "description": "各トークンで確率が最も高い上位 K 個の候補のみからサンプリングします。" },
+          "stop_sequences": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "カスタムの停止シーケンス。"
+          },
+          "tools": {
+            "type": "array",
+            "description": "モデルが呼び出せるツール。各ツールは name、description、input_schema（JSON Schema）を含みます。",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "ツール選択: { type: 'auto' } | { type: 'any' } | { type: 'tool', name }。"
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "true の場合、Anthropic SSE イベントストリームで返却します（message_start / content_block_delta / message_delta / message_stop）。"
+          }
+        },
+        "required": [
+          "model",
+          "messages",
+          "max_tokens"
+        ]
+      },
+      "AnthropicMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "message"
+          },
+          "role": {
+            "type": "string",
+            "example": "assistant"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "role",
+          "content",
+          "model"
+        ]
+      },
+      "GeminiGenerateContentRequest": {
+        "type": "object",
+        "properties": {
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string"
+                },
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "required": [
+                "parts"
+              ]
+            }
+          },
+          "generationConfig": {
+            "type": "object",
+            "description": "生成設定。なお、:generateContent ではなく :streamGenerateContent を呼び出すと Gemini SSE ストリームを取得できます。",
+            "properties": {
+              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+              "topP": { "type": "number" },
+              "topK": { "type": "integer" },
+              "maxOutputTokens": { "type": "integer" },
+              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "responseMimeType": {
+                "type": "string",
+                "description": "構造化出力に使用します（例: 'application/json'）。"
+              },
+              "responseSchema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "構造化出力用の JSON Schema（responseMimeType application/json と併用）。"
+              },
+              "responseModalities": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "'IMAGE' を含めると画像生成結果を返します。"
+              }
+            },
+            "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "functionDeclarations を含むツール宣言。",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "systemInstruction": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "システム指示。Gemini Content オブジェクト（{ parts: [{ text }] }）として指定します。"
+          }
+        },
+        "required": [
+          "contents"
+        ]
+      },
+      "GeminiGenerateContentResponse": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usageMetadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "candidates"
+        ]
+      },
+      "ImageGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "ImageEditRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary"
+          },
+          "mask": {
+            "type": "string",
+            "format": "binary"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          }
+        },
+        "required": [
+          "model",
+          "prompt",
+          "image"
+        ]
+      },
+      "VideoGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "seedance-2.0"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string",
+            "example": "10s"
+          },
+          "resolution": {
+            "type": "string",
+            "example": "720p"
+          },
+          "ratio": {
+            "type": "string",
+            "example": "16:9"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_videos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_audio": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "AsyncTaskCreateResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "poll_url": {
+            "type": "string",
+            "example": "/v1/tasks/task_123"
+          }
+        },
+        "required": [
+          "task_id",
+          "status",
+          "poll_url"
+        ]
+      },
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "expired"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "result": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MediaResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ErrorResponse/properties/error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "task_id",
+          "status"
+        ]
+      },
+      "MediaResult": {
+        "description": "完了したタスクの結果。画像タスクは OpenAI 画像形式を使用します（画像 URL は data[0].url）。動画および音声タスクは video_url/audio_url と urls[] 配列を提供します。",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ImageTaskResult"
+          },
+          {
+            "$ref": "#/components/schemas/MediaUrlResult"
+          }
+        ]
+      },
+      "ImageTaskResult": {
+        "type": "object",
+        "description": "画像タスクの結果（OpenAI 画像形式）。画像 URL は data[0].url にあります。",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MediaUrlResult": {
+        "type": "object",
+        "description": "動画または音声タスクの結果。主 URL は video_url または audio_url で、すべての出力は urls[] にも列挙されます。",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "video_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "audio_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "output_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "OpenAIImageResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ]
+      },
+      "TokenUsage": {
+        "type": "object",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer"
+          },
+          "completion_tokens": {
+            "type": "integer"
+          },
+          "total_tokens": {
+            "type": "integer"
+          },
+          "input_tokens": {
+            "type": "integer"
+          },
+          "output_tokens": {
+            "type": "integer"
+          },
+          "cached_input_tokens": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

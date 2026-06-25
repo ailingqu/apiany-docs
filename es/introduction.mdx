@@ -1,0 +1,57 @@
+---
+title: Introducción
+description: Una única puerta de enlace de API para modelos de imagen, video, chat y multimodales de IA.
+---
+
+APIAny.AI ofrece a los desarrolladores una única superficie de API estable para flujos de trabajo de IA en producción a través de chat, generación de imágenes, generación de video y aplicaciones multimodales.
+
+La API pública se mantiene estable mientras APIAny.AI se encarga de la ejecución de los modelos, la facturación, el historial de tareas y las respuestas estandarizadas, todo ello con una experiencia de desarrollo coherente.
+
+<CardGroup cols={2}>
+  <Card title="Acceso unificado a modelos" icon="route">
+    Llama a IDs de modelos públicos con una única API key y una única superficie de API estable.
+  </Card>
+
+  <Card title="Tareas de medios asíncronas" icon="clock">
+    Los trabajos de generación de imágenes y video de larga duración devuelven un `task_id` de inmediato. Consulta `GET /v1/tasks/{task_id}` para recuperar los resultados cuando estén listos.
+  </Card>
+
+  <Card title="Chat multiformato" icon="message-square">
+    Empieza con el endpoint compatible con OpenAI `/v1/chat/completions` y luego adopta los endpoints compatibles con Anthropic `/v1/messages` o compatibles con Gemini `/v1beta/models/{model}:generateContent` a medida que tu integración evoluciona.
+  </Card>
+
+  <Card title="Créditos y trazabilidad" icon="receipt">
+    Cada solicitud puede vincularse a créditos, historial de tareas, resultados estandarizados y registros de uso.
+  </Card>
+</CardGroup>
+
+## Base URL
+
+<Snippet file="es/snippets/base-url.mdx" />
+
+## Forma de la API pública
+
+APIAny.AI expone un conjunto pequeño y predecible de patrones de llamada públicos:
+
+- **Chat completions** — `POST /v1/chat/completions`: generación de texto y chat compatible con OpenAI.
+- **Messages compatible con Anthropic** — `POST /v1/messages`: forma de solicitud y respuesta compatible con Anthropic Messages.
+- **Generación de contenido compatible con Gemini** — `POST /v1beta/models/{model}:generateContent`: forma de solicitud y respuesta compatible con Gemini generateContent; `{model}` es el ID de modelo público de APIAny.AI.
+- **Generación de imágenes (asíncrona)** — `POST /v1/images/generations`: crea una tarea de generación de imágenes asíncrona y recibe un `task_id`.
+- **Generación de imágenes (síncrona)** — `POST /v1/images/generations/sync`: genera una imagen y espera el resultado cuando la solicitud encaja en un flujo de trabajo bloqueante simple.
+- **Edición de imágenes** — `POST /v1/images/edits`: aplica ediciones o inpainting a una imagen existente usando un modelo y un prompt.
+- **Generación de video (asíncrona)** — `POST /v1/videos/generations`: crea una tarea de generación de video asíncrona y recibe un `task_id`.
+- **Generación de video (síncrona)** — `POST /v1/videos/generations/sync`: genera un video y espera el resultado cuando un flujo de trabajo bloqueante es aceptable.
+- **Consulta de tareas** — `GET /v1/tasks/{task_id}`: recupera el estado actual y el resultado final de cualquier tarea asíncrona de imagen o video.
+- **Saldo de créditos** — `GET /v1/credits/balance`: comprueba en cualquier momento cuántos créditos quedan en tu cuenta.
+
+<Tip>
+  Los endpoints de generación de imágenes y video son asíncronos de forma predeterminada. Tu solicitud devuelve un `task_id` de inmediato en lugar de bloquearse hasta que el medio esté listo. Los sistemas en producción deberían preferir los endpoints de creación asíncronos seguidos de la consulta de tareas. Las variantes síncronas (`/sync`) están disponibles para integraciones simples donde es aceptable esperar el resultado en una sola solicitud.
+</Tip>
+
+## Cómo funciona
+
+Envía una solicitud con un ID de modelo público y tu API key. APIAny.AI ejecuta la solicitud del modelo, registra el uso y devuelve una respuesta estandarizada. Los IDs de modelos públicos son contratos de producto estables, por lo que tu integración puede mantener la misma forma de API a medida que el catálogo de modelos evoluciona.
+
+{/* docs-updated */}
+
+Last updated: 2026-06-25 20:59 (UTC+8)

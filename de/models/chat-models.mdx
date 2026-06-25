@@ -1,0 +1,40 @@
+---
+title: Chat-Modelle
+description: Verhalten von Modellen zur Textgenerierung und für multimodalen Chat.
+---
+
+Chat-Modelle können über folgende Schnittstellen bereitgestellt werden:
+
+- `/v1/chat/completions`
+- `/v1/messages`
+- `/v1beta/models/{model}:generateContent`
+
+Die Preisgestaltung kann Folgendes umfassen:
+
+- Input-Tokens.
+- Output-Tokens.
+- Zwischengespeicherte Input-Tokens.
+- Mindest-Credits pro Anfrage.
+
+Kontextfenster und maximale Output-Grenzen sind Capability-Metadaten auf Modellebene.
+
+
+## Verfügbare Modelle
+
+| Modell-ID | Beschreibung |
+| --- | --- |
+| `gpt-5.5` | OpenAI GPT-5.5 — Flaggschiff-Modell für fortgeschrittenes Reasoning, Coding und komplexe mehrstufige Anweisungen. |
+| `gpt-5.4` | OpenAI GPT-5.4 — leistungsstarkes Modell für fortgeschrittenes Reasoning, Coding und agentische Workflows. |
+| `gpt-5.4-mini` | OpenAI GPT-5.4 mini — ausgewogen in Geschwindigkeit, Qualität und Kosten für den Produktionseinsatz mit hohem Volumen. |
+| `gpt-5.4-nano` | OpenAI GPT-5.4 nano — die schnellste, kostengünstigste GPT-5.4-Stufe für einfache Aufgaben mit hohem Durchsatz. |
+| `gpt-4o-mini` | OpenAI GPT-4o mini — schnelles, erschwingliches multimodales Modell für alltäglichen Chat und leichtgewichtige Aufgaben. |
+| `claude-opus-4-8` | Anthropic Claude Opus 4.8 — Frontier-Modell für die anspruchsvollsten Reasoning-, Coding- und Langform-Arbeiten. |
+| `claude-sonnet-4-6` | Anthropic Claude Sonnet 4.6 — ein ausgewogenes Frontier-Modell mit starkem Reasoning bei produktionstauglicher Geschwindigkeit und Kosten. |
+| `gemini-3.1-pro` | Google Gemini 3.1 Pro — Spitzenmodell für multimodale Aufgaben mit komplexem Reasoning, langem Kontext und anspruchsvollen Produktions-Workloads. |
+| `gemini-3.5-flash` | Google Gemini 3.5 Flash — schnelles, kosteneffizientes multimodales Modell mit starkem Reasoning und großem Kontextfenster. |
+| `gemini-3.1-flash-lite` | Google Gemini 3.1 Flash Lite — schnelles, wirtschaftliches Modell mit verbessertem Reasoning gegenüber der 2.5-Generation. |
+| `gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite — extrem kostengünstiges, latenzarmes Modell für alltägliche Aufgaben mit hohem Volumen. |
+| `deepseek-v4` | DeepSeek V4 — starke Reasoning- und Coding-Leistung zu einem äußerst konkurrenzfähigen Preis. |
+| `deepseek-v4-flash` | DeepSeek V4 Flash — eine latenzoptimierte DeepSeek V4-Variante für kostengünstige Inferenz mit hohem Volumen. |
+| `glm-5.1` | Zhipu GLM-5.1 — ein leistungsfähiges zweisprachiges (Chinesisch/Englisch) Modell für Reasoning, Coding und Agent-Anwendungen. |
+| `minimax-m3` | MiniMax M3 — ein leistungsfähiges großes Sprachmodell für Reasoning mit langem Kontext, Tool-Nutzung und mehrsprachigen Chat. |

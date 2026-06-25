@@ -1,0 +1,51 @@
+---
+title: Schnellstart
+description: Senden Sie Ihre erste APIAny.AI-Anfrage.
+---
+
+## 1. Einen API-Key erstellen
+
+Öffnen Sie das APIAny.AI-Dashboard und erstellen Sie einen Projekt-API-Key.
+
+<Snippet file="de/snippets/auth-header.mdx" />
+
+## 2. Verfügbare Modelle auflisten
+
+```bash
+curl https://apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## 3. Eine Chat Completion ausführen
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "user", "content": "Write a concise product tagline for APIAny.AI." }
+    ]
+  }'
+```
+
+## 4. Eine Bildaufgabe erstellen
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A clean product hero image for an AI API gateway",
+    "size": "1k"
+  }'
+```
+
+Die Antwort enthält eine `task_id`. Fragen Sie die Aufgabe ab, bis sie abgeschlossen ist:
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```

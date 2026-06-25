@@ -1,0 +1,74 @@
+---
+title: Uso en Codex CLI
+description: Configura claves de API, Base URL y modelos recomendados de APIAny.AI en Codex CLI.
+---
+
+[Codex CLI](https://github.com/openai/codex) puede conectarse a APIAny.AI mediante variables de entorno o archivos de configuración locales. Es útil para flujos de trabajo de desarrollo en terminal, editor y automatizados.
+
+## Requisitos previos
+
+- Codex CLI está instalado.
+- Has creado una clave de API en el [panel de APIAny.AI](https://apiany.ai/dashboard/api-keys).
+- Has seleccionado un ID de modelo.
+
+## Instalación
+
+```bash
+npm install -g @openai/codex
+```
+
+## Configurar la clave de API
+
+Añade esto a `~/.codex/auth.json`:
+
+```json
+{
+  "OPENAI_API_KEY": "sk-xxxxxxxxxxxx"
+}
+```
+
+## Configurar config.toml
+
+Añade esto a `~/.codex/config.toml`:
+
+```toml
+model = "gpt-5.5"
+model_provider = "apiany"
+
+[model_providers.apiany]
+name = "APIAny.AI"
+base_url = "https://apiany.ai/v1"
+wire_api = "responses"
+requires_openai_auth = true
+```
+
+Reinicia tu terminal y luego ejecuta `codex` o haz una prueba con:
+
+```bash
+codex "Introduce yourself in one sentence"
+```
+
+## Modelos recomendados
+
+| ID de modelo | Ideal para |
+| --- | --- |
+| `gpt-5.5` | La mejor primera opción para razonamiento complejo, programación y flujos de trabajo de producción. |
+| `gpt-5.4` | Modelo de propósito general potente para tareas avanzadas de chat y de agente. |
+| `gpt-5.4-mini` | Equilibrio entre velocidad, calidad y costo para el uso diario. |
+| `gpt-4o-mini` | Opción rápida y económica para chat simple, traducción y tareas ligeras. |
+| `claude-sonnet-4-6` | ID de modelo compatible con Claude para escritura de texto largo y flujos de programación. |
+| `gemini-3.5-flash` | ID de modelo compatible con Gemini para uso multimodal rápido. |
+
+## Solución de problemas
+
+### Errores 401 o de autenticación
+
+Asegúrate de que la clave de API se haya copiado por completo, sin espacios adicionales, y de que esté habilitada en el panel de APIAny.AI.
+
+### El modelo no aparece en la aplicación
+
+Introduce el ID de modelo manualmente y confirma que está disponible en el [catálogo de modelos](/es/models/chat-models). Algunas herramientas no obtienen las listas de modelos automáticamente.
+
+### ¿Qué Base URL debo usar?
+
+Las configuraciones compatibles con OpenAI suelen usar `https://apiany.ai/v1`; las configuraciones compatibles con Claude suelen usar `https://apiany.ai`; las herramientas que piden un endpoint completo usan `https://apiany.ai/v1/chat/completions`.

@@ -1,0 +1,60 @@
+---
+title: Gemini generateContent
+description: Gemini 호환 콘텐츠 생성 엔드포인트.
+---
+
+Gemini 호환 통합에는 `/v1beta/models/{model}:generateContent`를 사용하세요.
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          { "text": "비동기 미디어 작업이 유용한 이유를 요약해 주세요." }
+        ]
+      }
+    ]
+  }'
+```
+
+경로의 model은 APIAny.AI의 공개 모델 ID입니다.
+
+## 스트리밍
+
+`:generateContent` 대신 `:streamGenerateContent`를 호출하면 증분
+`candidates` 청크로 구성된 Gemini SSE 스트림을 받습니다.
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" -N \
+  -d '{ "contents": [ { "parts": [ { "text": "안녕하세요" } ] } ] }'
+```
+
+## 구조화된 출력
+
+JSON 출력을 위해 `generationConfig.responseMimeType: "application/json"`과
+`responseSchema`를 함께 사용하세요.
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "이름과 나이 추출" }] }],
+  "generationConfig": {
+    "responseMimeType": "application/json",
+    "responseSchema": {
+      "type": "object",
+      "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+    }
+  }
+}
+```
+
+## 파라미터
+
+지원되는 `generationConfig`: `temperature`, `topP`, `topK`, `maxOutputTokens`,
+`stopSequences`, `responseMimeType`, `responseSchema`, `responseModalities`
+(이미지 출력을 위해 `IMAGE` 포함). 또한 최상위 `tools`(functionDeclarations)와
+`systemInstruction`을 지원합니다.

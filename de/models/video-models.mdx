@@ -1,0 +1,35 @@
+---
+title: Videomodelle
+description: Verhalten von Modellen zur Videogenerierung.
+---
+
+Videomodelle werden standardmäßig asynchron verarbeitet.
+
+Sie können unterschiedliche Kombinationen der folgenden Funktionen unterstützen:
+
+- Texteingabe.
+- Bildreferenz-Eingabe.
+- Videoreferenz-Eingabe.
+- Audioreferenz-Eingabe.
+- Auswahl der Dauer.
+- Auswahl der Auflösung.
+- Auswahl des Seitenverhältnisses.
+
+APIAny.AI validiert die öffentlichen Anfrageparameter vor der Ausführung, sodass nicht unterstützte Modelloptionen einen klaren Fehler zurückgeben.
+
+## Verfügbare Modelle
+
+| Modell-ID | Beschreibung |
+| --- | --- |
+| `veo3-1-quality` | Google Veo 3.1 Quality — High-Fidelity-Videogenerierung mit nativem Audio. |
+| `veo3-1-quality-4k` | Google Veo 3.1 Quality 4K — Videogenerierung mit höchster Fidelity in 4K und nativem Audio. |
+| `veo3-1-fast` | Google Veo 3.1 Fast — schnelle Text-zu-Video-Generierung mit nativem Audio. |
+| `veo3-1-fast-4k` | Google Veo 3.1 Fast 4K — schnelle Videogenerierung in 4K-Auflösung. |
+| `veo3-1-fast-ref` | Google Veo 3.1 Fast (Referenz) — schnelle Videogenerierung, geleitet durch Referenzbilder. |
+| `veo3-1-lite` | Google Veo 3.1 Lite — eine wirtschaftliche Veo 3.1-Stufe für Videogenerierung mit hohem Volumen. |
+| `seedance-2.0-pro` | Seedance 2.0 Pro — Premium-Stufe der Seedance-Videogenerierung mit höherer Fidelity und längeren Clips. |
+| `seedance-2.0` | Seedance 2.0 — hochwertige Text- und Bild-zu-Video-Generierung über Volcengine Ark. |
+| `seedance-1.5-pro` | Seedance 1.5 Pro — erweiterte Seedance-Videogenerierung mit verbesserter Bewegung und Detailtreue. |
+| `seedance-1.0` | Seedance 1.0 — schnelle, kosteneffiziente Text- und Bild-zu-Video-Generierung. |
+| `gemini-omni-t2v` | Google Gemini Omni Text-zu-Video-Generierung über APIPod. |
+| `gemini-omni-i2v` | Google Gemini Omni Bild-zu-Video-Generierung über APIPod mit 1-3 Referenzbildern. |

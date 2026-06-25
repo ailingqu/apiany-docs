@@ -1,0 +1,79 @@
+---
+title: Cline での利用
+description: Cline で APIAny.AI の API キー、Base URL、推奨モデルを設定します。
+---
+
+[Cline](https://cline.bot/) は、OpenAI 互換の設定を通じて APIAny.AI に接続できます。設定が完了すると、同じクライアントからチャット、推論、翻訳、マルチモーダルのモデルを利用できます。
+
+## 事前準備
+
+- Cline がインストール済みであること。
+- [APIAny.AI ダッシュボード](https://apiany.ai/dashboard/api-keys) で API キーを作成済みであること。
+- 使用するモデル ID（例: `gpt-5.4-mini` や `gpt-4o-mini`）を決めていること。
+
+## 設定値
+
+| 項目 | 値 |
+| --- | --- |
+| API mode | `OpenAI Compatible` |
+| Base URL | `https://apiany.ai/v1` |
+| API Key | あなたの APIAny.AI API キー |
+| モデル | `gpt-5.4` |
+
+
+## 設定手順
+
+1. VS Code で Cline をインストールして開きます。
+2. Cline の設定を開き、OpenAI Compatible を選択します。
+3. Base URL、API キー、モデル ID を入力します。
+4. 保存後、Cline に小さなコーディングタスクを実行させて接続を確認します。
+
+## 推奨モデル
+
+| モデル ID | 適した用途 |
+| --- | --- |
+| `gpt-5.5` | 複雑な推論、コーディング、本番ワークフローに最適な第一候補。 |
+| `gpt-5.4` | 高度なチャットやエージェントタスクに適した汎用性の高いモデル。 |
+| `gpt-5.4-mini` | 速度、品質、コストのバランスがよく、日常的な利用に適しています。 |
+| `gpt-4o-mini` | シンプルなチャット、翻訳、軽量タスクに適した高速で経済的な選択肢。 |
+| `claude-sonnet-4-6` | 長文ライティングやコーディングワークフロー向けの Claude 互換モデル ID。 |
+| `gemini-3.5-flash` | 高速なマルチモーダル利用向けの Gemini 互換モデル ID。 |
+
+## 操作スクリーンショット
+
+以下のスクリーンショットは Cline の主要な設定画面を示しています。API 名とエンドポイントは APIAny.AI 用に調整済みです。
+
+### ステップ 1
+
+![Cline setup screenshot 1](/images/integrations/cline/extension-install.png)
+
+### ステップ 2
+
+![Cline setup screenshot 2](/images/integrations/cline/sidebar-settings.png)
+
+### ステップ 3
+
+![Cline setup screenshot 3](/images/integrations/cline/api-config.png)
+
+### ステップ 4
+
+![Cline setup screenshot 4](/images/integrations/cline/chat-interface.png)
+
+### ステップ 5
+
+![Cline setup screenshot 5](/images/integrations/cline/code-refactor.png)
+
+
+## トラブルシューティング
+
+### 401 または認証エラー
+
+API キーが完全にコピーされていること、余分なスペースがないこと、APIAny.AI ダッシュボードで有効になっていることを確認してください。
+
+### モデルがアプリに表示されない
+
+モデル ID を手動で入力し、[モデルカタログ](/ja/models/chat-models) で利用可能であることを確認してください。一部のツールはモデル一覧を自動取得しません。
+
+### どの Base URL を使えばよいですか
+
+OpenAI 互換の設定では通常 `https://apiany.ai/v1` を使用します。Claude 互換の設定では通常 `https://apiany.ai` を使用します。完全なエンドポイントを求めるツールでは `https://apiany.ai/v1/chat/completions` を使用します。

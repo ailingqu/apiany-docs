@@ -1,0 +1,28 @@
+---
+title: Bildmodelle
+description: Verhalten von Modellen zur Bildgenerierung und -bearbeitung.
+---
+
+Bildmodelle unterstützen eine oder mehrere der folgenden Funktionen:
+
+- Text zu Bild.
+- Bild zu Bild mit Referenz-Assets.
+- OpenAI-kompatible Bildgenerierung.
+- OpenAI-kompatible Bildbearbeitung.
+- Gemini-kompatible Bild-Workflows.
+
+Modellspezifische Dimensionen, unterstützte Bildgrößen und Grenzwerte für Referenzbilder werden durch das Capability-Registry der Plattform definiert und auf den Modellseiten widergespiegelt.
+
+Produktionsintegrationen sollten `/v1/images/generations` bevorzugen und `/v1/tasks/{task_id}` abfragen.
+
+
+## Verfügbare Modelle
+
+| Modell-ID | Beschreibung |
+| --- | --- |
+| `gpt-image-2` | GPT-Image 2-kompatible Bildgenerierung und -bearbeitung. |
+| `nano-banana-pro` | Nano Banana Pro High-Fidelity-Bildgenerierung. |
+| `nano-banana-2` | Nano Banana 2 hochwertige Bildgenerierung. |
+| `nano-banana` | Nano Banana Bildgenerierung für zuverlässigen Produktionseinsatz. |
+| `z-image` | Schnelle Z-Image-Generierung für latenzarme Bildaufgaben. |
+| `seedance-5.0` | Seedance 5.0 Bildgenerierung über Volcengine Ark. |

@@ -1,0 +1,37 @@
+---
+title: 이미지 생성
+description: 비동기 이미지 생성, 동기 대기 호환 및 이미지 편집 엔드포인트.
+---
+
+프로덕션 이미지 생성에는 `/v1/images/generations`를 사용하세요.
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A bright API dashboard rendered as a product hero image",
+    "size": "1k"
+  }'
+```
+
+응답은 task를 반환합니다.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "processing",
+  "poll_url": "/v1/tasks/task_123"
+}
+```
+
+## 동기 변형
+
+`/v1/images/generations/sync`는 task를 생성하고 설정된 최대 대기 시간까지 기다립니다.
+
+호환성 확보와 데모 용도로 사용하세요. 프로덕션 워크로드에는 비동기 엔드포인트를 사용하세요.
+
+## 이미지 편집
+
+`/v1/images/edits`는 선택한 모델이 참조 이미지를 지원하는 경우 OpenAI 스타일의 이미지 편집 워크플로를 지원합니다.

@@ -1,0 +1,86 @@
+---
+title: Cursor での利用
+description: Cursor で APIAny.AI の API キー、Base URL、推奨モデルを設定します。
+---
+
+[Cursor](https://cursor.com/) は、OpenAI 互換の設定を通じて APIAny.AI に接続できます。設定が完了すると、同じクライアントからチャット、推論、翻訳、マルチモーダルのモデルを利用できます。
+
+## 事前準備
+
+- Cursor がインストール済みであること。
+- [APIAny.AI ダッシュボード](https://apiany.ai/dashboard/api-keys) で API キーを作成済みであること。
+- 使用するモデル ID（例: `gpt-5.4-mini` や `gpt-4o-mini`）を決めていること。
+
+## 設定値
+
+| 項目 | 値 |
+| --- | --- |
+| OpenAI API Key | あなたの APIAny.AI API キー |
+| Override OpenAI Base URL | `https://apiany.ai/v1` |
+| モデル | `gpt-5.4-mini`, `gpt-5.5` |
+
+
+## 設定手順
+
+1. Cursor の設定で Models セクションを開きます。
+2. OpenAI API キーの設定を有効にします。
+3. API キーを入力し、OpenAI Base URL を APIAny.AI の URL で上書きします。
+4. 必要なモデル ID を追加し、Chat または Composer でテストします。
+
+## 推奨モデル
+
+| モデル ID | 適した用途 |
+| --- | --- |
+| `gpt-5.5` | 複雑な推論、コーディング、本番ワークフローに最適な第一候補。 |
+| `gpt-5.4` | 高度なチャットやエージェントタスクに適した汎用性の高いモデル。 |
+| `gpt-5.4-mini` | 速度、品質、コストのバランスがよく、日常的な利用に適しています。 |
+| `gpt-4o-mini` | シンプルなチャット、翻訳、軽量タスクに適した高速で経済的な選択肢。 |
+| `claude-sonnet-4-6` | 長文ライティングやコーディングワークフロー向けの Claude 互換モデル ID。 |
+| `gemini-3.5-flash` | 高速なマルチモーダル利用向けの Gemini 互換モデル ID。 |
+
+## 操作スクリーンショット
+
+以下のスクリーンショットは Cursor の主要な設定画面を示しています。API 名とエンドポイントは APIAny.AI 用に調整済みです。
+
+### ステップ 1
+
+![Cursor setup screenshot 1](/images/integrations/cursor/main-interface.png)
+
+### ステップ 2
+
+![Cursor setup screenshot 2](/images/integrations/cursor/settings-models.png)
+
+### ステップ 3
+
+![Cursor setup screenshot 3](/images/integrations/cursor/api-config.png)
+
+### ステップ 4
+
+![Cursor setup screenshot 4](/images/integrations/cursor/api-model.png)
+
+### ステップ 5
+
+![Cursor setup screenshot 5](/images/integrations/cursor/ai-chat.png)
+
+### ステップ 6
+
+![Cursor setup screenshot 6](/images/integrations/cursor/autocomplete.png)
+
+### ステップ 7
+
+![Cursor setup screenshot 7](/images/integrations/cursor/quick-edit.png)
+
+
+## トラブルシューティング
+
+### 401 または認証エラー
+
+API キーが完全にコピーされていること、余分なスペースがないこと、APIAny.AI ダッシュボードで有効になっていることを確認してください。
+
+### モデルがアプリに表示されない
+
+モデル ID を手動で入力し、[モデルカタログ](/ja/models/chat-models) で利用可能であることを確認してください。一部のツールはモデル一覧を自動取得しません。
+
+### どの Base URL を使えばよいですか
+
+OpenAI 互換の設定では通常 `https://apiany.ai/v1` を使用します。Claude 互換の設定では通常 `https://apiany.ai` を使用します。完全なエンドポイントを求めるツールでは `https://apiany.ai/v1/chat/completions` を使用します。

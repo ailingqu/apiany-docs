@@ -1,0 +1,76 @@
+---
+title: Integration in Claude Code
+description: APIAny.AI API Key, Base URL und empfohlene Modelle in Claude Code konfigurieren.
+---
+
+[Claude Code](https://claude.ai/code) kann sich über Umgebungsvariablen oder lokale Konfigurationsdateien mit APIAny.AI verbinden. Geeignet für Terminal-, Editor- und automatisierte Entwicklungsworkflows.
+
+## Voraussetzungen
+
+- Claude Code ist installiert.
+- Du hast im [APIAny.AI Dashboard](https://apiany.ai/de/dashboard/api-keys) einen API Key erstellt.
+- Du hast eine Modell-ID ausgewählt.
+
+## Installation
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+## Konfiguration mit settings.json
+
+Füge Folgendes in `~/.claude/settings.json` ein:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://apiany.ai",
+    "ANTHROPIC_AUTH_TOKEN": "sk-xxxxxxxxxxxx",
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  }
+}
+```
+
+Starte Claude Code nach dem Speichern neu. Du kannst auch mit temporären Umgebungsvariablen testen:
+
+```bash
+export ANTHROPIC_BASE_URL="https://apiany.ai"
+export ANTHROPIC_API_KEY="sk-xxxxxxxxxxxx"
+export ANTHROPIC_MODEL="claude-sonnet-4-6"
+claude
+```
+
+## Empfohlene Modelle
+
+| Modell-ID | Am besten geeignet für |
+| --- | --- |
+| `gpt-5.5` | Beste erste Wahl für komplexes Reasoning, Coding und produktionsreife Workflows. |
+| `gpt-5.4` | Starkes Allzweckmodell für anspruchsvolle Chats und Agent-Aufgaben. |
+| `gpt-5.4-mini` | Ausgewogenes Verhältnis von Geschwindigkeit, Qualität und Kosten für den täglichen Einsatz. |
+| `gpt-4o-mini` | Schnelle und wirtschaftliche Wahl für einfache Chats, Übersetzungen und leichtgewichtige Aufgaben. |
+| `claude-sonnet-4-6` | Claude-kompatible Modell-ID für umfangreiche Schreib- und Coding-Workflows. |
+| `gemini-3.5-flash` | Gemini-kompatible Modell-ID für schnelle multimodale Nutzung. |
+
+## Anleitung mit Screenshots
+
+Die folgenden Screenshots zeigen die wichtigsten Konfigurationsschritte in Claude Code. API-Namen und Endpunkte wurden für APIAny.AI angepasst.
+
+### Schritt 1
+
+![Claude Code Konfigurations-Screenshot 1](/images/integrations/claude-code/claude-code-cli.png)
+
+
+## Fehlerbehebung
+
+### 401 oder Authentifizierungsfehler
+
+Stelle sicher, dass der API Key vollständig kopiert wurde, keine überflüssigen Leerzeichen enthält und im APIAny.AI Dashboard aktiviert ist.
+
+### Das Modell erscheint nicht in der App
+
+Gib die Modell-ID manuell ein und prüfe, ob sie im [Modellkatalog](/de/models/chat-models) verfügbar ist. Manche Tools rufen Modelllisten nicht automatisch ab.
+
+### Welche Base URL soll ich verwenden?
+
+OpenAI-kompatible Einstellungen verwenden in der Regel `https://apiany.ai/v1`; Claude-kompatible Einstellungen verwenden in der Regel `https://apiany.ai`; Tools, die einen vollständigen Endpunkt verlangen, verwenden `https://apiany.ai/v1/chat/completions`.

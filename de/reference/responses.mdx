@@ -1,0 +1,84 @@
+---
+title: Responses
+description: OpenAI-kompatibler Responses-Endpoint mit Reasoning und integrierten Tools.
+---
+
+Verwende `/v1/responses`, wenn dein Client bereits das Format der OpenAI Responses API
+spricht oder wenn du Responses-native Funktionen wie Reasoning-Steuerung,
+Websuche-Tools und offizielle Responses-Server-Sent-Events benötigst.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "Schreibe einen kurzen Umsetzungsplan, um eine Suche zu einer Doku-Website hinzuzufügen.",
+    "reasoning": { "effort": "medium" },
+    "text": { "verbosity": "medium" }
+  }'
+```
+
+## Reasoning-Steuerung
+
+`gpt-5.5` und `gpt-5.4` akzeptieren Responses-Reasoning-Steuerung. Verwende
+`reasoning.effort`, um die Reasoning-Stärke festzulegen:
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "Prüfe dieses API-Design und liste die wichtigsten Risiken auf.",
+  "reasoning": {
+    "effort": "high",
+    "summary": "auto"
+  }
+}
+```
+
+Unterstützte `reasoning.effort`-Werte sind `none`, `minimal`, `low`, `medium`,
+`high` und `xhigh`.
+
+## Websuche
+
+Übergib OpenAI-Responses-Tools direkt. Für webbasierte Antworten füge ein
+Websuche-Tool in `tools` ein:
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "Was hat sich in den neuesten Docs der OpenAI Responses API geändert?",
+  "tools": [
+    { "type": "web_search_preview" }
+  ]
+}
+```
+
+APIAny.AI leitet Responses-native Tools an kompatible Modelle weiter, die sie
+unterstützen. Function-Tools werden ebenfalls unterstützt.
+
+## Streaming
+
+Setze `stream: true`, um den Responses-SSE-Eventstream zu empfangen. Die Events folgen
+dem OpenAI-Responses-Format, etwa `response.created`,
+`response.output_text.delta`, Tool-Events und `response.completed`.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "Entwirf drei prägnante Release-Notes-Stichpunkte.",
+    "reasoning": { "effort": "low" },
+    "stream": true
+  }'
+```
+
+## Hinweise
+
+- Das `model` ist eine öffentliche APIAny.AI-Modell-ID.
+- `max_output_tokens` ist das Responses-typische Limit für Ausgabe-Tokens.
+- Responses-native Felder wie `reasoning`, `text`, `tools`,
+  `tool_choice`, `include`, `previous_response_id` und `store` werden weitergeleitet,
+  wenn das ausgewählte Modell sie unterstützt.

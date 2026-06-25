@@ -1,0 +1,71 @@
+---
+title: タスク照会
+description: 画像、動画、および今後の音声などの非同期ジョブを照会します。
+---
+
+`/v1/tasks/{task_id}` を使って非同期タスクの状態を照会します。
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## ステータス値
+
+- `pending`
+- `processing`
+- `completed`
+- `failed`
+- `expired`
+
+## 成功したタスク
+
+`result` の構造はタスクの種類によって異なります。
+
+**画像**タスクは OpenAI の画像形式を返します——画像 URL は `result.data[0].url` にあります：
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "gpt-image-2",
+  "type": "image",
+  "result": {
+    "created": 1781597831,
+    "data": [
+      { "url": "https://s.apiany.ai/.../result.png" }
+    ]
+  },
+  "error": null
+}
+```
+
+**動画**と**音声**タスクは主 URL を `result.video_url` / `result.audio_url` に返し、すべての出力は `result.urls[]` にも列挙されます：
+
+```json
+{
+  "task_id": "task_456",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://s.apiany.ai/.../result.mp4",
+    "urls": ["https://s.apiany.ai/.../result.mp4"]
+  },
+  "error": null
+}
+```
+
+## 失敗したタスク
+
+```json
+{
+  "task_id": "task_123",
+  "status": "failed",
+  "error": {
+    "type": "service_error",
+    "message": "タスクを完了できませんでした。"
+  }
+}
+```

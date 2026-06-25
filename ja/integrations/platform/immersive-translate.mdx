@@ -1,0 +1,79 @@
+---
+title: Immersive Translate での利用
+description: Immersive Translate で APIAny.AI の API キー、Base URL、推奨モデルを設定します。
+---
+
+[Immersive Translate](https://immersivetranslate.com/) は OpenAI 互換の設定を通じて APIAny.AI に接続できます。設定が完了すると、同じクライアントから対話、推論、翻訳、マルチモーダルのモデルを利用できます。
+
+## 事前準備
+
+- Immersive Translate がインストール済みであること。
+- [APIAny.AI ダッシュボード](https://apiany.ai/ja/dashboard/api-keys)で API キーを作成済みであること。
+- 利用するモデル ID（例: `gpt-5.4-mini` または `gpt-4o-mini`）を決めていること。
+
+## 設定値
+
+| 項目 | 設定内容 |
+| --- | --- |
+| Service name | `APIAny.AI` |
+| APIKEY | あなたの APIAny.AI API キー |
+| Custom API endpoint | `https://apiany.ai/v1/chat/completions` |
+| モデル | `gpt-4o-mini` または `gpt-5.4-mini` |
+
+
+## 設定手順
+
+1. Immersive Translate 拡張機能の設定を開きます。
+2. 翻訳サービスに移動し、カスタムの OpenAI 互換サービスを追加します。
+3. サービス名、APIKEY、完全なエンドポイント、モデルを入力します。
+4. 保存して拡張機能パネルに戻り、APIAny.AI を選択して翻訳を開始します。
+
+## 推奨モデル
+
+| モデル ID | 適した用途 |
+| --- | --- |
+| `gpt-5.5` | 複雑な推論、コーディング、本番ワークフローに最適な第一候補。 |
+| `gpt-5.4` | 高度な対話やエージェントタスク向けの強力な汎用モデル。 |
+| `gpt-5.4-mini` | 速度、品質、コストのバランスが良く、日常的な利用に適しています。 |
+| `gpt-4o-mini` | シンプルな対話、翻訳、軽量タスクに適した、高速かつ経済的な選択肢。 |
+| `claude-sonnet-4-6` | 長文の執筆やコーディングワークフロー向けの Claude 互換モデル ID。 |
+| `gemini-3.5-flash` | 高速なマルチモーダル利用向けの Gemini 互換モデル ID。 |
+
+## 操作スクリーンショット
+
+以下のスクリーンショットは Immersive Translate の主要な設定画面を示しています。スクリーンショット内の API 名とエンドポイントは APIAny.AI 向けに調整されています。
+
+### ステップ 1
+
+![Immersive Translate setup screenshot 1](/images/integrations/immersive-translate/extension-icon.png)
+
+### ステップ 2
+
+![Immersive Translate setup screenshot 2](/images/integrations/immersive-translate/settings-services.png)
+
+### ステップ 3
+
+![Immersive Translate setup screenshot 3](/images/integrations/immersive-translate/openai-config.png)
+
+### ステップ 4
+
+![Immersive Translate setup screenshot 4](/images/integrations/immersive-translate/webpage-translation.png)
+
+### ステップ 5
+
+![Immersive Translate setup screenshot 5](/images/integrations/immersive-translate/pdf-translation.png)
+
+
+## トラブルシューティング
+
+### 401 または認証エラー
+
+API キーが完全にコピーされ、前後に余分なスペースがなく、APIAny.AI ダッシュボードで有効になっていることを確認してください。
+
+### アプリにモデルが表示されない
+
+モデル ID を手動で入力し、[モデルカタログ](/ja/models/chat-models)で利用可能であることを確認してください。一部のツールはモデルリストを自動取得しません。
+
+### どの Base URL を使えばよいか
+
+OpenAI 互換の設定では通常 `https://apiany.ai/v1` を使用します。Claude 互換の設定では通常 `https://apiany.ai` を使用します。完全なエンドポイントを求めるツールでは `https://apiany.ai/v1/chat/completions` を使用します。

@@ -1,0 +1,37 @@
+---
+title: Generación de imágenes
+description: Genera imágenes de forma asíncrona o con compatibilidad de espera síncrona.
+---
+
+Usa `/v1/images/generations` para la generación de imágenes en producción.
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nano-banana",
+    "prompt": "A bright API dashboard rendered as a product hero image",
+    "size": "1k"
+  }'
+```
+
+La respuesta devuelve una tarea:
+
+```json
+{
+  "task_id": "task_123",
+  "status": "processing",
+  "poll_url": "/v1/tasks/task_123"
+}
+```
+
+## Variante síncrona
+
+`/v1/images/generations/sync` crea una tarea y espera hasta el tiempo máximo de espera configurado.
+
+Úsala para compatibilidad y demos. Usa el endpoint asíncrono para cargas de trabajo de producción.
+
+## Edición de imágenes
+
+`/v1/images/edits` admite flujos de edición de imágenes estilo OpenAI cuando el modelo seleccionado admite imágenes de referencia.

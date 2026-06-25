@@ -1,0 +1,71 @@
+---
+title: Tâches
+description: Interroger les tâches longues d'images, de vidéos et, à l'avenir, d'audio.
+---
+
+Utilisez `/v1/tasks/{task_id}` pour interroger l'état d'une tâche asynchrone.
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## Valeurs de statut
+
+- `pending`
+- `processing`
+- `completed`
+- `failed`
+- `expired`
+
+## Tâche terminée
+
+La forme de `result` dépend du type de tâche.
+
+Les tâches **image** renvoient le format d'image OpenAI — l'URL de l'image se trouve dans `result.data[0].url` :
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "gpt-image-2",
+  "type": "image",
+  "result": {
+    "created": 1781597831,
+    "data": [
+      { "url": "https://s.apiany.ai/.../result.png" }
+    ]
+  },
+  "error": null
+}
+```
+
+Les tâches **vidéo** et **audio** renvoient l'URL principale dans `result.video_url` / `result.audio_url`, et chaque sortie est aussi listée dans `result.urls[]` :
+
+```json
+{
+  "task_id": "task_456",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://s.apiany.ai/.../result.mp4",
+    "urls": ["https://s.apiany.ai/.../result.mp4"]
+  },
+  "error": null
+}
+```
+
+## Tâche échouée
+
+```json
+{
+  "task_id": "task_123",
+  "status": "failed",
+  "error": {
+    "type": "service_error",
+    "message": "La tâche n'a pas pu être terminée."
+  }
+}
+```

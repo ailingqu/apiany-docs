@@ -1,0 +1,1659 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API pública de APIAny.AI",
+    "version": "1.0.0",
+    "description": "API pública de APIAny.AI para agregación de modelos, tareas multimedia asíncronas, generación de conversaciones, consulta de créditos y consulta de tareas."
+  },
+  "servers": [
+    {
+      "url": "https://apiany.ai",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Models",
+      "description": "Catálogo público de modelos."
+    },
+    {
+      "name": "Chat",
+      "description": "Endpoints de generación de texto y compatibles con conversaciones."
+    },
+    {
+      "name": "Images",
+      "description": "Endpoints de generación y edición de imágenes."
+    },
+    {
+      "name": "Videos",
+      "description": "Endpoints de generación de vídeo."
+    },
+    {
+      "name": "Tasks",
+      "description": "Consulta de tareas asíncronas."
+    },
+    {
+      "name": "Account",
+      "description": "Cuenta y consulta de créditos."
+    }
+  ],
+  "paths": {
+    "/v1/models": {
+      "get": {
+        "operationId": "listModels",
+        "summary": "Obtener la lista pública de modelos",
+        "description": "Devuelve el catálogo público de modelos de APIAny.AI visible para la API Key actual.",
+        "tags": [
+          "Models"
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de modelos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/credits/balance": {
+      "get": {
+        "operationId": "getCreditBalance",
+        "summary": "Consultar el saldo de créditos",
+        "tags": [
+          "Account"
+        ],
+        "responses": {
+          "200": {
+            "description": "Saldo de créditos.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreditBalanceResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "description": "Devuelve el saldo de créditos disponible de la cuenta a la que pertenece la API Key actual."
+      }
+    },
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "summary": "Crear una compleción de conversación",
+        "description": "Endpoint de Chat Completions compatible con OpenAI. Actualmente se utiliza principalmente con llamadas sin streaming.",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatCompletionRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "gpt-5.4",
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Write a concise product tagline for APIAny.AI."
+                      }
+                    ],
+                    "temperature": 0.7
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta de compleción de conversación compatible con OpenAI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatCompletionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/responses": {
+      "post": {
+        "operationId": "createResponse",
+        "summary": "Crear una respuesta de Responses",
+        "description": "Endpoint compatible con OpenAI Responses. Admite el input nativo de Responses, controles de reasoning, herramientas integradas como web search y el SSE oficial de Responses cuando stream=true.",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponsesRequest"
+              },
+              "examples": {
+                "reasoning": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "Revisa este diseño de API y enumera los principales riesgos.",
+                    "reasoning": {
+                      "effort": "high",
+                      "summary": "auto"
+                    },
+                    "text": {
+                      "verbosity": "medium"
+                    }
+                  }
+                },
+                "webSearch": {
+                  "value": {
+                    "model": "gpt-5.5",
+                    "input": "¿Qué cambió recientemente en la documentación de la API OpenAI Responses?",
+                    "tools": [
+                      {
+                        "type": "web_search_preview"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta de Responses compatible con OpenAI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponsesResponse"
+                }
+              },
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "description": "Cuando stream=true se devuelve un flujo de eventos SSE de Responses."
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "operationId": "createMessage",
+        "summary": "Crear una respuesta de Messages",
+        "description": "Endpoint de Messages compatible con Anthropic.",
+        "tags": [
+          "Chat"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnthropicMessagesRequest"
+              },
+              "examples": {
+                "basic": {
+                  "value": {
+                    "model": "minimax-m3",
+                    "max_tokens": 512,
+                    "messages": [
+                      {
+                        "role": "user",
+                        "content": "Draft three API documentation section titles."
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta de Messages compatible con Anthropic.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnthropicMessagesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1beta/models/{model}:generateContent": {
+      "post": {
+        "operationId": "generateGeminiContent",
+        "summary": "Generar contenido compatible con Gemini",
+        "description": "Endpoint generateContent compatible con Gemini. El model de la ruta es el ID público del modelo de APIAny.AI.",
+        "tags": [
+          "Chat"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "gemini-3.5-flash"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeminiGenerateContentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Respuesta compatible con Gemini.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeminiGenerateContentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations": {
+      "post": {
+        "operationId": "createImageGeneration",
+        "summary": "Crear una tarea de generación de imágenes",
+        "description": "Crea una tarea asíncrona de generación de imágenes y devuelve el task_id.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "textToImage": {
+                  "value": {
+                    "model": "nano-banana",
+                    "prompt": "A clean product hero image for an AI API gateway",
+                    "size": "1k"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "nano-banana-pro",
+                    "prompt": "Create a premium ecommerce hero image using these references",
+                    "size": "2k",
+                    "input_images": [
+                      "https://example.com/reference-1.png",
+                      "https://example.com/reference-2.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Tarea creada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/images/generations/sync": {
+      "post": {
+        "operationId": "createImageGenerationSync",
+        "summary": "Crear una generación de imágenes y esperar el resultado",
+        "description": "Crea una tarea de imágenes y espera a que se complete dentro del tiempo máximo de espera configurado.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de generación de imágenes compatible con OpenAI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "La tarea sigue procesándose tras alcanzar el tiempo máximo de espera.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/edits": {
+      "post": {
+        "operationId": "createImageEdit",
+        "summary": "Crear una edición de imágenes",
+        "description": "Endpoint de edición de imágenes al estilo de OpenAI, para modelos que admiten imágenes de referencia.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageEditRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Resultado de imágenes compatible con OpenAI.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/images/upload": {
+      "post": {
+        "operationId": "uploadImageAsset",
+        "summary": "Subir un recurso de imagen",
+        "description": "Sube un recurso de imagen para usarlo como entrada de referencia en la generación de imágenes o vídeo.",
+        "tags": [
+          "Images"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "URL del recurso subido.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/videos/generations": {
+      "post": {
+        "operationId": "createVideoGeneration",
+        "summary": "Crear una tarea de generación de vídeo",
+        "description": "Crea una tarea asíncrona de generación de vídeo y devuelve el task_id.",
+        "tags": [
+          "Videos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              },
+              "examples": {
+                "seedance": {
+                  "value": {
+                    "model": "seedance-2.0",
+                    "prompt": "A cinematic launch shot for an AI API platform",
+                    "duration": "10s",
+                    "resolution": "720p",
+                    "ratio": "16:9"
+                  }
+                },
+                "withReferences": {
+                  "value": {
+                    "model": "veo3.1",
+                    "prompt": "Animate a product scene between the start and end frames",
+                    "input_images": [
+                      "https://example.com/start.png",
+                      "https://example.com/end.png"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Tarea creada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/videos/generations/sync": {
+      "post": {
+        "operationId": "createVideoGenerationSync",
+        "summary": "Crear una generación de vídeo y esperar el resultado",
+        "description": "Crea una tarea de vídeo y espera a que se complete dentro del tiempo máximo de espera configurado.",
+        "tags": [
+          "Videos"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VideoGenerationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tarea de vídeo completada.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "La tarea sigue procesándose tras alcanzar el tiempo máximo de espera.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          }
+        }
+      }
+    },
+    "/v1/tasks/{task_id}": {
+      "get": {
+        "operationId": "getTask",
+        "summary": "Consultar el detalle de una tarea",
+        "description": "Devuelve el estado actual y el resultado final de una tarea asíncrona de imagen, vídeo o, en el futuro, de audio.",
+        "tags": [
+          "Tasks"
+        ],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "task_123"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalle de la tarea.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "description": "La tarea no existe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "API key"
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Parámetros de solicitud no válidos.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Falta la API Key o la API Key no es válida.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "RateLimited": {
+        "description": "La solicitud superó el límite de frecuencia.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request",
+                  "auth_error",
+                  "rate_limit",
+                  "insufficient_quota",
+                  "content_policy",
+                  "timeout",
+                  "network_error",
+                  "service_error",
+                  "billable_error",
+                  "unknown"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "type",
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ModelListResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "list"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Model"
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "object": {
+            "type": "string",
+            "example": "model"
+          },
+          "type": {
+            "type": "string",
+            "example": "image"
+          },
+          "owned_by": {
+            "type": "string",
+            "example": "APIAny.AI"
+          },
+          "display_name": {
+            "type": "string",
+            "example": "Nano Banana"
+          },
+          "status": {
+            "type": "string",
+            "example": "active"
+          },
+          "pricing": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "type",
+          "display_name",
+          "status"
+        ]
+      },
+      "CreditBalanceResponse": {
+        "type": "object",
+        "properties": {
+          "credits": {
+            "type": "number",
+            "example": 206353
+          },
+          "currency": {
+            "type": "string",
+            "example": "credits"
+          }
+        },
+        "required": [
+          "credits",
+          "currency"
+        ]
+      },
+      "ChatCompletionRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.4"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChatMessage"
+            }
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2,
+            "description": "Temperatura de muestreo."
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Masa de probabilidad acumulada del muestreo por núcleo (nucleus)."
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Número máximo de tokens en la respuesta."
+          },
+          "stop": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ],
+            "description": "Hasta 4 secuencias de parada."
+          },
+          "n": { "type": "integer", "minimum": 1, "description": "Número de candidatos a generar." },
+          "frequency_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "presence_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
+          "seed": { "type": "integer", "description": "Semilla de muestreo lo más reproducible posible." },
+          "response_format": {
+            "type": "object",
+            "description": "Fuerza la salida como objeto JSON o JSON Schema, p. ej. { \"type\": \"json_object\" }.",
+            "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "Declaraciones de herramientas/funciones que el modelo puede invocar.",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "description": "Selección de herramienta: 'auto' | 'none' | 'required' | { type: 'function', function: { name } }.",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "object", "additionalProperties": true }
+            ]
+          },
+          "logprobs": { "type": "boolean" },
+          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
+          "logit_bias": { "type": "object", "additionalProperties": true },
+          "user": { "type": "string", "description": "Identificador del usuario final, para auditoría de riesgos." },
+          "stream": {
+            "type": "boolean",
+            "description": "Cuando es true, los incrementos se devuelven en streaming mediante SSE (OpenAI chat.completion.chunk) y terminan con 'data: [DONE]'."
+          }
+        },
+        "required": [
+          "model",
+          "messages"
+        ]
+      },
+      "ChatMessage": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "system",
+              "user",
+              "assistant",
+              "tool"
+            ]
+          },
+          "content": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "role",
+          "content"
+        ]
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "chat.completion"
+          },
+          "created": {
+            "type": "integer"
+          },
+          "model": {
+            "type": "string"
+          },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "created",
+          "model",
+          "choices"
+        ]
+      },
+      "ResponsesRequest": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "gpt-5.5"
+          },
+          "input": {
+            "description": "Input de Responses. Puede ser una cadena o un array de items message / tool-result.",
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            ]
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Instrucciones del sistema o del desarrollador."
+          },
+          "max_output_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Número máximo de tokens de salida."
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 2
+          },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh"
+                ],
+                "description": "Intensidad de reasoning para los modelos compatibles."
+              },
+              "summary": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "concise",
+                  "detailed"
+                ]
+              }
+            }
+          },
+          "text": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "verbosity": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high"
+                ]
+              },
+              "format": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          },
+          "tools": {
+            "type": "array",
+            "description": "Herramientas de Responses, incluidas las function tools y herramientas integradas como web_search_preview.",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "tool_choice": {
+            "oneOf": [
+              { "type": "string" },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
+            ]
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "Cuando es true, se devuelven eventos SSE de OpenAI Responses."
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "model",
+          "input"
+        ]
+      },
+      "ResponsesResponse": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "response"
+          },
+          "created_at": {
+            "type": "integer"
+          },
+          "status": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "output": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "output_text": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "model",
+          "output"
+        ]
+      },
+      "AnthropicMessagesRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "minimax-m3"
+          },
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "enum": [
+                    "user",
+                    "assistant"
+                  ]
+                },
+                "content": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true
+                      }
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "role",
+                "content"
+              ]
+            }
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Número máximo de tokens a generar (obligatorio)."
+          },
+          "system": {
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+            ],
+            "description": "Prompt del sistema."
+          },
+          "temperature": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Aleatoriedad (0–1)."
+          },
+          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
+          "top_k": { "type": "integer", "description": "Muestrea solo entre los K candidatos de mayor probabilidad." },
+          "stop_sequences": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Secuencias de parada personalizadas."
+          },
+          "tools": {
+            "type": "array",
+            "description": "Herramientas que el modelo puede invocar; cada una incluye name, description e input_schema (JSON Schema).",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "tool_choice": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Selección de herramienta: { type: 'auto' } | { type: 'any' } | { type: 'tool', name }."
+          },
+          "stream": {
+            "type": "boolean",
+            "description": "Cuando es true, se devuelve un flujo de eventos SSE de Anthropic (message_start / content_block_delta / message_delta / message_stop)."
+          }
+        },
+        "required": [
+          "model",
+          "messages",
+          "max_tokens"
+        ]
+      },
+      "AnthropicMessagesResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "message"
+          },
+          "role": {
+            "type": "string",
+            "example": "assistant"
+          },
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "model": {
+            "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "role",
+          "content",
+          "model"
+        ]
+      },
+      "GeminiGenerateContentRequest": {
+        "type": "object",
+        "properties": {
+          "contents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {
+                  "type": "string"
+                },
+                "parts": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              },
+              "required": [
+                "parts"
+              ]
+            }
+          },
+          "generationConfig": {
+            "type": "object",
+            "description": "Configuración de generación. Además: llamar a :streamGenerateContent (en lugar de :generateContent) permite obtener un flujo SSE de Gemini.",
+            "properties": {
+              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+              "topP": { "type": "number" },
+              "topK": { "type": "integer" },
+              "maxOutputTokens": { "type": "integer" },
+              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "responseMimeType": {
+                "type": "string",
+                "description": "P. ej. 'application/json' para salida estructurada."
+              },
+              "responseSchema": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "JSON Schema para salida estructurada (junto con responseMimeType application/json)."
+              },
+              "responseModalities": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Incluye 'IMAGE' para devolver resultados de generación de imágenes."
+              }
+            },
+            "additionalProperties": true
+          },
+          "tools": {
+            "type": "array",
+            "description": "Declaraciones de herramientas con functionDeclarations.",
+            "items": { "type": "object", "additionalProperties": true }
+          },
+          "systemInstruction": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Instrucción del sistema, como objeto Content de Gemini ({ parts: [{ text }] })."
+          }
+        },
+        "required": [
+          "contents"
+        ]
+      },
+      "GeminiGenerateContentResponse": {
+        "type": "object",
+        "properties": {
+          "candidates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "usageMetadata": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "candidates"
+        ]
+      },
+      "ImageGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "ImageEditRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nano-banana"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary"
+          },
+          "mask": {
+            "type": "string",
+            "format": "binary"
+          },
+          "size": {
+            "type": "string",
+            "example": "1k"
+          }
+        },
+        "required": [
+          "model",
+          "prompt",
+          "image"
+        ]
+      },
+      "VideoGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "seedance-2.0"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "duration": {
+            "type": "string",
+            "example": "10s"
+          },
+          "resolution": {
+            "type": "string",
+            "example": "720p"
+          },
+          "ratio": {
+            "type": "string",
+            "example": "16:9"
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_videos": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "input_audio": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "AsyncTaskCreateResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "poll_url": {
+            "type": "string",
+            "example": "/v1/tasks/task_123"
+          }
+        },
+        "required": [
+          "task_id",
+          "status",
+          "poll_url"
+        ]
+      },
+      "TaskResponse": {
+        "type": "object",
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "example": "task_123"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "completed",
+              "failed",
+              "expired"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "result": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MediaResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ErrorResponse/properties/error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "task_id",
+          "status"
+        ]
+      },
+      "MediaResult": {
+        "description": "Resultado de la tarea completada. Las tareas de imagen usan el formato de imagen de OpenAI (la URL de la imagen está en data[0].url); las tareas de vídeo y audio exponen video_url/audio_url junto con un array urls[].",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ImageTaskResult"
+          },
+          {
+            "$ref": "#/components/schemas/MediaUrlResult"
+          }
+        ]
+      },
+      "ImageTaskResult": {
+        "type": "object",
+        "description": "Resultado de la tarea de imagen (formato de imagen de OpenAI); la URL de la imagen está en data[0].url.",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "data"
+        ]
+      },
+      "MediaUrlResult": {
+        "type": "object",
+        "description": "Resultado de la tarea de vídeo o audio. La URL principal es video_url o audio_url; todos los productos se listan además en urls[].",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "video_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "audio_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "output_url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "urls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          }
+        }
+      },
+      "OpenAIImageResponse": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "type": "integer"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "b64_json": {
+                  "type": "string"
+                },
+                "revised_prompt": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "usage": {
+            "$ref": "#/components/schemas/TokenUsage"
+          }
+        },
+        "required": [
+          "created",
+          "data"
+        ]
+      },
+      "TokenUsage": {
+        "type": "object",
+        "properties": {
+          "prompt_tokens": {
+            "type": "integer"
+          },
+          "completion_tokens": {
+            "type": "integer"
+          },
+          "total_tokens": {
+            "type": "integer"
+          },
+          "input_tokens": {
+            "type": "integer"
+          },
+          "output_tokens": {
+            "type": "integer"
+          },
+          "cached_input_tokens": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

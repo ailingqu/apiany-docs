@@ -1,0 +1,28 @@
+---
+title: 이미지 모델
+description: 이미지 생성 및 이미지 편집 모델 동작.
+---
+
+이미지 모델은 다음 기능 중 하나 이상을 지원할 수 있습니다:
+
+- 텍스트 투 이미지.
+- 참조 에셋을 사용한 이미지 투 이미지.
+- OpenAI 호환 이미지 생성.
+- OpenAI 호환 이미지 편집.
+- Gemini 호환 이미지 워크플로.
+
+지원되는 구체적인 크기, 이미지 사이즈 지원, 참조 이미지 개수 제한은 플랫폼 모델 능력 레지스트리에서 정의되며 모델 상세 페이지에 반영됩니다.
+
+프로덕션 통합에서는 `/v1/images/generations`로 작업을 생성하고 `/v1/tasks/{task_id}`로 결과를 폴링하는 것을 권장합니다.
+
+
+## 사용 가능한 모델
+
+| 모델 ID | 설명 |
+| --- | --- |
+| `gpt-image-2` | GPT-Image 2 호환 이미지 생성 및 편집. |
+| `nano-banana-pro` | Nano Banana Pro 고충실도 이미지 생성. |
+| `nano-banana-2` | Nano Banana 2 고품질 이미지 생성. |
+| `nano-banana` | Nano Banana 이미지 생성, 안정적인 프로덕션 사용에 적합. |
+| `z-image` | 빠른 Z-Image 생성, 저지연 이미지 작업에 적합. |
+| `seedance-5.0` | Volcengine Ark를 통한 Seedance 5.0 이미지 생성. |

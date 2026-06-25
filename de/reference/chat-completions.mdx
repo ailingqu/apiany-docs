@@ -1,0 +1,49 @@
+---
+title: Chat completions
+description: OpenAI-kompatibler Chat-Endpoint.
+---
+
+Verwende `/v1/chat/completions` für OpenAI-kompatible Textgenerierung.
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "system", "content": "You are concise." },
+      { "role": "user", "content": "Erkläre API-Aggregation in einem Satz." }
+    ],
+    "temperature": 0.7
+  }'
+```
+
+## Streaming
+
+Setze `stream: true`, um Server-Sent Events zu empfangen. Jedes Event ist ein OpenAI
+`chat.completion.chunk`, und der Stream endet mit `data: [DONE]`.
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{ "role": "user", "content": "Hallo" }],
+    "stream": true
+  }'
+```
+
+## Parameter
+
+OpenAI-Standardparameter werden akzeptiert, darunter `temperature`, `top_p`,
+`max_tokens`, `stop`, `n`, `frequency_penalty`, `presence_penalty`, `seed`,
+`response_format`, `tools`, `tool_choice`, `logprobs`, `top_logprobs`,
+`logit_bias`, `user` und `stream`.
+
+## Hinweise
+
+- Das `model` ist eine öffentliche APIAny.AI-Modell-ID.
+- Der Token-Verbrauch wird in das OpenAI-typische `usage`-Objekt normalisiert, sofern Verbrauchsdaten verfügbar sind.

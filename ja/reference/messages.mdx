@@ -1,0 +1,58 @@
+---
+title: Messages
+description: Anthropic 互換の Messages エンドポイント。
+---
+
+クライアントが既に Anthropic Messages 形式を使用している場合は、`/v1/messages` を呼び出します。
+
+```bash
+curl https://apiany.ai/v1/messages \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "minimax-m3",
+    "max_tokens": 512,
+    "messages": [
+      { "role": "user", "content": "API ドキュメントのセクションタイトルを3つ作成してください。" }
+    ]
+  }'
+```
+
+APIAny.AI はリクエストを処理し、Anthropic 互換のレスポンスを返します。
+
+## ツール呼び出し
+
+`tools`（それぞれ `name`、`description`、`input_schema` を含む）でツールを宣言し、
+`tool_choice` で選択を制御します。複数ターンの `tool_use` / `tool_result`
+コンテンツブロックに対応しています。
+
+```json
+{
+  "model": "minimax-m3",
+  "max_tokens": 512,
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "現在の天気を取得する",
+      "input_schema": {
+        "type": "object",
+        "properties": { "location": { "type": "string" } },
+        "required": ["location"]
+      }
+    }
+  ],
+  "tool_choice": { "type": "auto" },
+  "messages": [{ "role": "user", "content": "ニューヨークの天気は？" }]
+}
+```
+
+## ストリーミング
+
+`stream: true` を設定すると Anthropic の SSE イベントストリームで返ります：
+`message_start`、`content_block_start`、`content_block_delta`、
+`content_block_stop`、`message_delta`、`message_stop`。
+
+## パラメータ
+
+対応：`model`、`messages`、`max_tokens`（必須）、`system`、`temperature`、
+`top_p`、`top_k`、`stop_sequences`、`tools`、`tool_choice`、`stream`。

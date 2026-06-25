@@ -1,0 +1,60 @@
+---
+title: Gemini generateContent
+description: Endpoint de generación de contenido compatible con Gemini.
+---
+
+Usa `/v1beta/models/{model}:generateContent` para integraciones compatibles con Gemini.
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          { "text": "Resume por qué son útiles las tareas asíncronas de medios." }
+        ]
+      }
+    ]
+  }'
+```
+
+El modelo de la ruta es un ID de modelo público de APIAny.AI.
+
+## Streaming
+
+Llama a `:streamGenerateContent` en lugar de `:generateContent` para recibir un
+flujo de server-sent events de Gemini con fragmentos incrementales de `candidates`.
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" -N \
+  -d '{ "contents": [ { "parts": [ { "text": "Hola" } ] } ] }'
+```
+
+## Salida estructurada
+
+Usa `generationConfig.responseMimeType: "application/json"` junto con
+`responseSchema` para obtener salida en JSON:
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "Extract name and age" }] }],
+  "generationConfig": {
+    "responseMimeType": "application/json",
+    "responseSchema": {
+      "type": "object",
+      "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+    }
+  }
+}
+```
+
+## Parámetros
+
+`generationConfig` admitidos: `temperature`, `topP`, `topK`, `maxOutputTokens`,
+`stopSequences`, `responseMimeType`, `responseSchema`, `responseModalities`
+(incluye `IMAGE` para salida de imagen). También `tools` de nivel superior (functionDeclarations)
+y `systemInstruction`.

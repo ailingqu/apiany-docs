@@ -1,0 +1,76 @@
+---
+title: Claude Code での利用
+description: Claude Code で APIAny.AI の API キー、Base URL、推奨モデルを設定します。
+---
+
+[Claude Code](https://claude.ai/code) は、環境変数またはローカル設定ファイルを通じて APIAny.AI に接続できます。ターミナル、エディタ、自動化された開発ワークフローでの利用に適しています。
+
+## 事前準備
+
+- Claude Code がインストール済みであること。
+- [APIAny.AI ダッシュボード](https://apiany.ai/dashboard/api-keys) で API キーを作成済みであること。
+- 使用するモデル ID を決めていること。
+
+## インストール
+
+```bash
+npm install -g @anthropic-ai/claude-code
+```
+
+## settings.json で設定する
+
+`~/.claude/settings.json` に次の内容を記述します:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://apiany.ai",
+    "ANTHROPIC_AUTH_TOKEN": "sk-xxxxxxxxxxxx",
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  }
+}
+```
+
+保存後に Claude Code を再起動してください。一時的な環境変数でテストすることもできます:
+
+```bash
+export ANTHROPIC_BASE_URL="https://apiany.ai"
+export ANTHROPIC_API_KEY="sk-xxxxxxxxxxxx"
+export ANTHROPIC_MODEL="claude-sonnet-4-6"
+claude
+```
+
+## 推奨モデル
+
+| モデル ID | 適した用途 |
+| --- | --- |
+| `gpt-5.5` | 複雑な推論、コーディング、本番ワークフローに最適な第一候補。 |
+| `gpt-5.4` | 高度なチャットやエージェントタスクに適した汎用性の高いモデル。 |
+| `gpt-5.4-mini` | 速度、品質、コストのバランスがよく、日常的な利用に適しています。 |
+| `gpt-4o-mini` | シンプルなチャット、翻訳、軽量タスクに適した高速で経済的な選択肢。 |
+| `claude-sonnet-4-6` | 長文ライティングやコーディングワークフロー向けの Claude 互換モデル ID。 |
+| `gemini-3.5-flash` | 高速なマルチモーダル利用向けの Gemini 互換モデル ID。 |
+
+## 操作スクリーンショット
+
+以下のスクリーンショットは Claude Code の主要な設定画面を示しています。API 名とエンドポイントは APIAny.AI 用に調整済みです。
+
+### ステップ 1
+
+![Claude Code setup screenshot 1](/images/integrations/claude-code/claude-code-cli.png)
+
+
+## トラブルシューティング
+
+### 401 または認証エラー
+
+API キーが完全にコピーされていること、余分なスペースがないこと、APIAny.AI ダッシュボードで有効になっていることを確認してください。
+
+### モデルがアプリに表示されない
+
+モデル ID を手動で入力し、[モデルカタログ](/ja/models/chat-models) で利用可能であることを確認してください。一部のツールはモデル一覧を自動取得しません。
+
+### どの Base URL を使えばよいですか
+
+OpenAI 互換の設定では通常 `https://apiany.ai/v1` を使用します。Claude 互換の設定では通常 `https://apiany.ai` を使用します。完全なエンドポイントを求めるツールでは `https://apiany.ai/v1/chat/completions` を使用します。

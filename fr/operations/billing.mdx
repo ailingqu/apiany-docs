@@ -1,0 +1,28 @@
+---
+title: Facturation et crédits
+description: Comment APIAny.AI estime, réserve, règle et rembourse les crédits.
+---
+
+APIAny.AI utilise les crédits comme unité de facturation au niveau du compte.
+
+Le déroulement à l'exécution est le suivant :
+
+1. Estimer les crédits avant l'exécution d'une requête.
+2. Réserver ou déduire le montant estimé.
+3. Exécuter la requête via l'exécution de modèle d'APIAny.AI.
+4. Régler la consommation réelle une fois la requête terminée.
+5. Rembourser les échecs non facturables conformément à la politique d'erreur du modèle.
+
+## Types de tarification
+
+Les modèles peuvent être facturés par :
+
+- Requête
+- Image
+- Seconde de vidéo
+- Tokens d'entrée
+- Tokens de sortie
+- Tokens d'entrée mis en cache
+- Plancher minimum par requête
+
+Le catalogue de modèles public affiche les prix visibles par l'utilisateur. Les coûts de la plateforme et les détails de règlement ne sont pas présentés aux appelants.

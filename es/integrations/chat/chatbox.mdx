@@ -1,0 +1,84 @@
+---
+title: Uso en Chatbox
+description: Configura las API keys, las Base URL y los modelos recomendados de APIAny.AI en Chatbox.
+---
+
+[Chatbox](https://chatboxai.app/) puede conectarse a APIAny.AI mediante la configuración compatible con OpenAI. Una vez configurado, puedes usar modelos de chat, razonamiento, traducción y multimodales desde el mismo cliente.
+
+## Requisitos previos
+
+- Chatbox está instalado.
+- Has creado una API key en el [panel de APIAny.AI](https://apiany.ai/dashboard/api-keys).
+- Has elegido un ID de modelo, como `gpt-5.4-mini` o `gpt-4o-mini`.
+
+## Valores de configuración
+
+| Campo | Valor |
+| --- | --- |
+| OpenAI API Key | Tu API key de APIAny.AI |
+| OpenAI API Host | `https://apiany.ai/v1` |
+| Claude API Host | `https://apiany.ai/v1` |
+| Gemini API Host | `https://apiany.ai` |
+| Modelo | `gpt-5.4-mini`, `claude-sonnet-4-6`, `gemini-3.5-flash` |
+
+
+## Configuración
+
+1. Abre Chatbox y ve a Ajustes.
+2. Elige la página de configuración de OpenAI API, Claude API o Gemini API.
+3. Introduce la API key, el API host y el ID de modelo.
+4. Guarda la configuración y envía un mensaje de prueba.
+
+## Modelos recomendados
+
+| ID de modelo | Mejor para |
+| --- | --- |
+| `gpt-5.5` | La mejor primera opción para razonamiento complejo, programación y flujos de trabajo de producción. |
+| `gpt-5.4` | Modelo de propósito general potente para chat avanzado y tareas de agente. |
+| `gpt-5.4-mini` | Equilibrio entre velocidad, calidad y costo para el uso diario. |
+| `gpt-4o-mini` | Opción rápida y económica para chat sencillo, traducción y tareas ligeras. |
+| `claude-sonnet-4-6` | ID de modelo compatible con Claude para escritura extensa y flujos de programación. |
+| `gemini-3.5-flash` | ID de modelo compatible con Gemini para uso multimodal rápido. |
+
+## Capturas de pantalla del recorrido
+
+Las capturas de pantalla siguientes muestran las pantallas clave de configuración en Chatbox. Los nombres de API y los endpoints se han ajustado para APIAny.AI.
+
+### Paso 1
+
+![Captura de configuración de Chatbox 1](/images/integrations/chatbox/main-interface.png)
+
+### Paso 2
+
+![Captura de configuración de Chatbox 2](/images/integrations/chatbox/settings-page.png)
+
+### Paso 3
+
+![Captura de configuración de Chatbox 3](/images/integrations/chatbox/api-config.png)
+
+### Paso 4
+
+![Captura de configuración de Chatbox 4](/images/integrations/chatbox/claude.png)
+
+### Paso 5
+
+![Captura de configuración de Chatbox 5](/images/integrations/chatbox/gemini.png)
+
+### Paso 6
+
+![Captura de configuración de Chatbox 6](/images/integrations/chatbox/chat-interface.png)
+
+
+## Solución de problemas
+
+### Errores 401 o de autenticación
+
+Asegúrate de que la API key se haya copiado por completo, no tenga espacios adicionales y esté habilitada en el panel de APIAny.AI.
+
+### El modelo no aparece en la aplicación
+
+Introduce el ID de modelo manualmente y confirma que está disponible en el [catálogo de modelos](/es/models/chat-models). Algunas herramientas no obtienen las listas de modelos automáticamente.
+
+### ¿Qué Base URL debo usar?
+
+La configuración compatible con OpenAI suele usar `https://apiany.ai/v1`; la configuración compatible con Claude suele usar `https://apiany.ai`; las herramientas que piden un endpoint completo usan `https://apiany.ai/v1/chat/completions`.

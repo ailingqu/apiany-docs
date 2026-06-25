@@ -1,0 +1,57 @@
+---
+title: Introduction
+description: Une seule passerelle API pour les modèles d'IA d'image, de vidéo, de chat et multimodaux.
+---
+
+APIAny.AI offre aux développeurs une surface API stable et unique pour les workflows d'IA en production, couvrant le chat, la génération d'images, la génération de vidéos et les applications multimodales.
+
+L'API publique reste stable tandis qu'APIAny.AI gère l'exécution des modèles, la facturation, l'historique des tâches et les réponses standardisées, le tout au sein d'une expérience développeur cohérente.
+
+<CardGroup cols={2}>
+  <Card title="Accès unifié aux modèles" icon="route">
+    Appelez les ID de modèles publics avec une seule clé API et une seule surface API stable.
+  </Card>
+
+  <Card title="Tâches média asynchrones" icon="clock">
+    Les tâches de génération d'images et de vidéos de longue durée renvoient immédiatement un `task_id`. Interrogez `GET /v1/tasks/{task_id}` pour récupérer les résultats lorsqu'ils sont prêts.
+  </Card>
+
+  <Card title="Chat multi-formats" icon="message-square">
+    Commencez avec l'endpoint `/v1/chat/completions` compatible OpenAI, puis adoptez les endpoints `/v1/messages` compatible Anthropic ou `/v1beta/models/{model}:generateContent` compatible Gemini à mesure que votre intégration évolue.
+  </Card>
+
+  <Card title="Crédits et traçabilité" icon="receipt">
+    Chaque requête peut être associée aux crédits, à l'historique des tâches, aux résultats standardisés et aux relevés d'utilisation.
+  </Card>
+</CardGroup>
+
+## Base URL
+
+<Snippet file="fr/snippets/base-url.mdx" />
+
+## Forme de l'API publique
+
+APIAny.AI expose un ensemble réduit et prévisible de schémas d'appel publics :
+
+- **Chat completions** — `POST /v1/chat/completions` : génération de texte et chat compatibles OpenAI.
+- **Messages compatibles Anthropic** — `POST /v1/messages` : schéma de requête et de réponse compatible Anthropic Messages.
+- **Génération de contenu compatible Gemini** — `POST /v1beta/models/{model}:generateContent` : schéma de requête et de réponse compatible Gemini generateContent ; `{model}` est l'ID de modèle public APIAny.AI.
+- **Génération d'images (async)** — `POST /v1/images/generations` : crée une tâche asynchrone de génération d'images et reçoit un `task_id`.
+- **Génération d'images (sync)** — `POST /v1/images/generations/sync` : génère une image et attend le résultat lorsque la requête correspond à un workflow bloquant simple.
+- **Édition d'images** — `POST /v1/images/edits` : applique des modifications ou de l'inpainting à une image existante à l'aide d'un modèle et d'un prompt.
+- **Génération de vidéos (async)** — `POST /v1/videos/generations` : crée une tâche asynchrone de génération de vidéos et reçoit un `task_id`.
+- **Génération de vidéos (sync)** — `POST /v1/videos/generations/sync` : génère une vidéo et attend le résultat lorsqu'un workflow bloquant est acceptable.
+- **Suivi de tâche** — `GET /v1/tasks/{task_id}` : récupère le statut actuel et le résultat final de toute tâche asynchrone d'image ou de vidéo.
+- **Solde de crédits** — `GET /v1/credits/balance` : vérifie à tout moment le nombre de crédits restants sur votre compte.
+
+<Tip>
+  Les endpoints de génération d'images et de vidéos sont asynchrones par défaut. Votre requête renvoie immédiatement un `task_id` au lieu de bloquer jusqu'à ce que le média soit prêt. Les systèmes en production devraient privilégier les endpoints de création asynchrones suivis d'une interrogation de tâche. Des variantes synchrones (`/sync`) sont disponibles pour les intégrations simples où attendre le résultat dans une seule requête est acceptable.
+</Tip>
+
+## Fonctionnement
+
+Envoyez une requête avec un ID de modèle public et votre clé API. APIAny.AI exécute la requête du modèle, enregistre l'utilisation et renvoie une réponse standardisée. Les ID de modèles publics sont des contrats produit stables, de sorte que votre intégration peut conserver la même forme d'API à mesure que le catalogue de modèles évolue.
+
+{/* docs-updated */}
+
+Last updated: 2026-06-25 20:59 (UTC+8)

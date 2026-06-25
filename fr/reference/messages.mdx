@@ -1,0 +1,59 @@
+---
+title: Messages
+description: Endpoint messages compatible Anthropic.
+---
+
+Utilisez `/v1/messages` lorsque votre client utilise déjà le format Anthropic Messages.
+
+```bash
+curl https://apiany.ai/v1/messages \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "minimax-m3",
+    "max_tokens": 512,
+    "messages": [
+      { "role": "user", "content": "Rédigez trois titres de sections pour une documentation d'API." }
+    ]
+  }'
+```
+
+APIAny.AI traite la requête et renvoie une réponse compatible Anthropic.
+
+## Utilisation des outils
+
+Déclarez les outils avec `tools` (chacun ayant `name`, `description`, `input_schema`) et
+contrôlez la sélection avec `tool_choice`. Les blocs de contenu `tool_use` / `tool_result`
+multi-tours sont pris en charge.
+
+```json
+{
+  "model": "minimax-m3",
+  "max_tokens": 512,
+  "tools": [
+    {
+      "name": "get_weather",
+      "description": "Obtenir la météo actuelle",
+      "input_schema": {
+        "type": "object",
+        "properties": { "location": { "type": "string" } },
+        "required": ["location"]
+      }
+    }
+  ],
+  "tool_choice": { "type": "auto" },
+  "messages": [{ "role": "user", "content": "Quel temps fait-il à New York ?" }]
+}
+```
+
+## Streaming
+
+Définissez `stream: true` pour recevoir les server-sent events Anthropic :
+`message_start`, `content_block_start`, `content_block_delta`,
+`content_block_stop`, `message_delta`, `message_stop`.
+
+## Paramètres
+
+Pris en charge : `model`, `messages`, `max_tokens` (requis), `system`,
+`temperature`, `top_p`, `top_k`, `stop_sequences`, `tools`, `tool_choice`
+et `stream`.

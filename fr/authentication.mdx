@@ -1,0 +1,38 @@
+---
+title: Authentification
+description: Authentifiez les requêtes API publiques avec des clés API de projet.
+---
+
+Les endpoints publics d'APIAny.AI utilisent des clés API.
+
+<Snippet file="fr/snippets/auth-header.mdx" />
+
+## Modèle de sécurité
+
+Les clés API sont des identifiants de projet. Traitez-les comme des mots de passe :
+
+- N'exposez pas les clés API secrètes dans le code côté navigateur.
+- Stockez les clés dans un gestionnaire de secrets côté serveur ou dans une variable d'environnement.
+- Renouvelez les clés en cas de fuite.
+- Utilisez des clés distinctes pour le développement, la préproduction et la production.
+
+## Exemple
+
+```bash
+curl https://apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## Erreurs
+
+Les erreurs d'authentification utilisent le format d'erreur de la plateforme :
+
+```json
+{
+  "error": {
+    "type": "auth_error",
+    "message": "Invalid API key"
+  }
+}
+```
+

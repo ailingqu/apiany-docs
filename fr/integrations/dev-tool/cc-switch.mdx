@@ -1,0 +1,86 @@
+---
+title: Utilisation dans CC-Switch
+description: Configurez les clés API APIAny.AI, les Base URL et les modèles recommandés dans CC-Switch.
+---
+
+[CC-Switch](https://github.com/farion1231/cc-switch) peut se connecter à APIAny.AI via des variables d'environnement ou des fichiers de configuration locaux. Pratique pour les workflows de développement en terminal, éditeur et automatisés.
+
+## Prérequis
+
+- CC-Switch est installé.
+- Vous avez créé une clé API dans le [tableau de bord APIAny.AI](https://apiany.ai/dashboard/api-keys).
+- Vous avez choisi un ID de modèle.
+
+## Configurer Claude Code
+
+Dans CC-Switch, basculez vers Claude Code, ajoutez une configuration et saisissez :
+
+| Champ | Valeur |
+| --- | --- |
+| Name | `APIAny.AI` |
+| Endpoint URL | `https://apiany.ai` |
+| API Key | `sk-xxxxxxxxxxxx` |
+| API Format | `Anthropic Messages` |
+
+## Configurer Codex
+
+Renseignez auth.json avec :
+
+```json
+{
+  "OPENAI_API_KEY": "sk-xxxxxxxxxxxx"
+}
+```
+
+Puis renseignez config.toml avec :
+
+```toml
+model = "gpt-5.5"
+model_provider = "apiany"
+
+[model_providers.apiany]
+name = "APIAny.AI"
+base_url = "https://apiany.ai/v1"
+wire_api = "responses"
+requires_openai_auth = true
+```
+
+Enregistrez la configuration et activez APIAny.AI dans CC-Switch.
+
+## Modèles recommandés
+
+| ID de modèle | Idéal pour |
+| --- | --- |
+| `gpt-5.5` | Meilleur premier choix pour le raisonnement complexe, le codage et les workflows de production. |
+| `gpt-5.4` | Modèle généraliste puissant pour le chat avancé et les tâches d'agent. |
+| `gpt-5.4-mini` | Équilibre entre vitesse, qualité et coût pour un usage quotidien. |
+| `gpt-4o-mini` | Choix rapide et économique pour le chat simple, la traduction et les tâches légères. |
+| `claude-sonnet-4-6` | ID de modèle compatible Claude pour la rédaction de longs textes et les workflows de codage. |
+| `gemini-3.5-flash` | ID de modèle compatible Gemini pour un usage multimodal rapide. |
+
+## Captures d'écran du parcours
+
+Les captures ci-dessous montrent les principaux écrans de configuration dans CC-Switch. Les noms d'API et les endpoints ont été adaptés pour APIAny.AI.
+
+### Étape 1
+
+![CC-Switch setup screenshot 1](/images/integrations/cc-switch/step-2.png)
+
+### Étape 2
+
+![CC-Switch setup screenshot 2](/images/integrations/cc-switch/step-1.png)
+
+
+## Dépannage
+
+### Erreurs 401 ou d'authentification
+
+Assurez-vous que la clé API est copiée intégralement, sans espaces superflus, et qu'elle est activée dans le tableau de bord APIAny.AI.
+
+### Le modèle n'apparaît pas dans l'application
+
+Saisissez l'ID de modèle manuellement et vérifiez qu'il est disponible dans le [catalogue de modèles](/fr/models/chat-models). Certains outils ne récupèrent pas automatiquement la liste des modèles.
+
+### Quelle Base URL utiliser ?
+
+Les configurations compatibles OpenAI utilisent généralement `https://apiany.ai/v1` ; les configurations compatibles Claude utilisent généralement `https://apiany.ai` ; les outils demandant un endpoint complet utilisent `https://apiany.ai/v1/chat/completions`.

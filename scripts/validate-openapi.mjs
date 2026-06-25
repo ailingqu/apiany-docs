@@ -1,7 +1,15 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const specPaths = ['openapi.json', 'zh/openapi.json'];
+const specPaths = [
+  'openapi.json',
+  'fr/openapi.json',
+  'de/openapi.json',
+  'zh/openapi.json',
+  'ja/openapi.json',
+  'ko/openapi.json',
+  'es/openapi.json',
+];
 
 async function validateSpec(relativePath) {
   const specPath = resolve(process.cwd(), relativePath);

@@ -1,0 +1,23 @@
+---
+title: 비디오 생성
+description: 폴링 방식으로 비디오 작업을 생성합니다.
+---
+
+비디오 생성에는 `/v1/videos/generations`를 사용하세요.
+
+```bash
+curl https://apiany.ai/v1/videos/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "A cinematic product launch shot for an AI API platform",
+    "duration": "10s",
+    "resolution": "720p",
+    "ratio": "16:9"
+  }'
+```
+
+## 동기 변형
+
+`/v1/videos/generations/sync`는 동일한 HTTP 요청 내에서 task 결과를 기다립니다. 장시간 실행되는 작업은 비동기 생성과 task 폴링을 사용하세요.

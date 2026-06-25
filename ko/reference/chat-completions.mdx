@@ -1,0 +1,49 @@
+---
+title: Chat Completions
+description: OpenAI 호환 대화 생성 엔드포인트.
+---
+
+OpenAI 호환 텍스트 생성에는 `/v1/chat/completions`를 사용하세요.
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [
+      { "role": "system", "content": "You are concise." },
+      { "role": "user", "content": "API 집계를 한 문장으로 설명해 주세요." }
+    ],
+    "temperature": 0.7
+  }'
+```
+
+## 스트리밍
+
+`stream: true`로 설정하면 SSE(server-sent events)로 응답을 받습니다. 각 이벤트는 OpenAI
+`chat.completion.chunk`이며, 스트림은 `data: [DONE]`으로 끝납니다.
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.4",
+    "messages": [{ "role": "user", "content": "안녕하세요" }],
+    "stream": true
+  }'
+```
+
+## 파라미터
+
+`temperature`, `top_p`, `max_tokens`, `stop`, `n`, `frequency_penalty`,
+`presence_penalty`, `seed`, `response_format`, `tools`, `tool_choice`,
+`logprobs`, `top_logprobs`, `logit_bias`, `user`, `stream` 등 OpenAI 표준
+파라미터를 지원합니다.
+
+## 참고
+
+- `model`은 APIAny.AI의 공개 모델 ID입니다.
+- 사용량 데이터가 있는 경우 토큰 사용량은 OpenAI 스타일의 `usage` 객체로 정규화됩니다.

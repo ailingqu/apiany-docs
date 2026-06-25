@@ -1,0 +1,35 @@
+---
+title: 비디오 모델
+description: 비디오 생성 모델 동작.
+---
+
+비디오 모델은 기본적으로 비동기 작업으로 처리됩니다.
+
+모델마다 다음의 서로 다른 조합을 지원할 수 있습니다:
+
+- 텍스트 입력.
+- 이미지 참조 입력.
+- 비디오 참조 입력.
+- 오디오 참조 입력.
+- 길이 옵션.
+- 해상도 옵션.
+- 종횡비 옵션.
+
+APIAny.AI는 실행 전에 공개 요청 파라미터를 검증하므로, 지원되지 않는 모델 옵션은 명확한 오류를 반환합니다.
+
+## 사용 가능한 모델
+
+| 모델 ID | 설명 |
+| --- | --- |
+| `veo3-1-quality` | Google Veo 3.1 Quality — 고충실도 비디오 생성, 네이티브 오디오 포함. |
+| `veo3-1-quality-4k` | Google Veo 3.1 Quality 4K — 최고 충실도 4K 비디오 생성, 네이티브 오디오 포함. |
+| `veo3-1-fast` | Google Veo 3.1 Fast — 빠른 텍스트 투 비디오 생성, 네이티브 오디오 포함. |
+| `veo3-1-fast-4k` | Google Veo 3.1 Fast 4K — 빠른 비디오 생성, 4K 해상도로 출력. |
+| `veo3-1-fast-ref` | Google Veo 3.1 Fast(참조 이미지) — 참조 이미지로 가이드되는 빠른 비디오 생성. |
+| `veo3-1-lite` | Google Veo 3.1 Lite — 경제적인 등급, 대량 비디오 생성에 적합. |
+| `seedance-2.0-pro` | Seedance 2.0 Pro — 프리미엄 등급 Seedance 비디오 생성, 더 높은 충실도와 더 긴 클립. |
+| `seedance-2.0` | Seedance 2.0 — Volcengine Ark를 통한 고품질 텍스트/이미지 투 비디오. |
+| `seedance-1.5-pro` | Seedance 1.5 Pro — 향상된 Seedance 비디오 생성, 모션과 디테일 개선. |
+| `seedance-1.0` | Seedance 1.0 — 빠르고 저비용의 텍스트/이미지 투 비디오. |
+| `gemini-omni-t2v` | APIPod를 통한 Google Gemini Omni 텍스트 투 비디오. |
+| `gemini-omni-i2v` | APIPod를 통한 Google Gemini Omni 이미지 투 비디오, 1-3장의 참조 이미지 지원. |

@@ -1,0 +1,86 @@
+---
+title: Uso en Cursor
+description: Configura claves de API, Base URL y modelos recomendados de APIAny.AI en Cursor.
+---
+
+[Cursor](https://cursor.com/) puede conectarse a APIAny.AI mediante la configuración compatible con OpenAI. Una vez configurado, puedes usar modelos de chat, razonamiento, traducción y multimodales desde el mismo cliente.
+
+## Requisitos previos
+
+- Cursor está instalado.
+- Has creado una clave de API en el [panel de APIAny.AI](https://apiany.ai/dashboard/api-keys).
+- Has seleccionado un ID de modelo, como `gpt-5.4-mini` o `gpt-4o-mini`.
+
+## Valores de configuración
+
+| Campo | Valor |
+| --- | --- |
+| OpenAI API Key | Tu clave de API de APIAny.AI |
+| Override OpenAI Base URL | `https://apiany.ai/v1` |
+| Model | `gpt-5.4-mini`, `gpt-5.5` |
+
+
+## Configuración
+
+1. Abre la sección Models en la configuración de Cursor.
+2. Activa la configuración de la OpenAI API key.
+3. Introduce la clave de API y reemplaza la OpenAI Base URL con la URL de APIAny.AI.
+4. Añade los ID de modelo que necesites y pruébalos en Chat o Composer.
+
+## Modelos recomendados
+
+| ID de modelo | Ideal para |
+| --- | --- |
+| `gpt-5.5` | La mejor primera opción para razonamiento complejo, programación y flujos de trabajo de producción. |
+| `gpt-5.4` | Modelo de propósito general potente para tareas avanzadas de chat y de agente. |
+| `gpt-5.4-mini` | Equilibrio entre velocidad, calidad y costo para el uso diario. |
+| `gpt-4o-mini` | Opción rápida y económica para chat simple, traducción y tareas ligeras. |
+| `claude-sonnet-4-6` | ID de modelo compatible con Claude para escritura de texto largo y flujos de programación. |
+| `gemini-3.5-flash` | ID de modelo compatible con Gemini para uso multimodal rápido. |
+
+## Capturas del proceso
+
+Las capturas siguientes muestran las pantallas de configuración clave en Cursor. Los nombres de API y los endpoints se han ajustado para APIAny.AI.
+
+### Paso 1
+
+![Captura 1 de configuración de Cursor](/images/integrations/cursor/main-interface.png)
+
+### Paso 2
+
+![Captura 2 de configuración de Cursor](/images/integrations/cursor/settings-models.png)
+
+### Paso 3
+
+![Captura 3 de configuración de Cursor](/images/integrations/cursor/api-config.png)
+
+### Paso 4
+
+![Captura 4 de configuración de Cursor](/images/integrations/cursor/api-model.png)
+
+### Paso 5
+
+![Captura 5 de configuración de Cursor](/images/integrations/cursor/ai-chat.png)
+
+### Paso 6
+
+![Captura 6 de configuración de Cursor](/images/integrations/cursor/autocomplete.png)
+
+### Paso 7
+
+![Captura 7 de configuración de Cursor](/images/integrations/cursor/quick-edit.png)
+
+
+## Solución de problemas
+
+### Errores 401 o de autenticación
+
+Asegúrate de que la clave de API se haya copiado por completo, sin espacios adicionales, y de que esté habilitada en el panel de APIAny.AI.
+
+### El modelo no aparece en la aplicación
+
+Introduce el ID de modelo manualmente y confirma que está disponible en el [catálogo de modelos](/es/models/chat-models). Algunas herramientas no obtienen las listas de modelos automáticamente.
+
+### ¿Qué Base URL debo usar?
+
+Las configuraciones compatibles con OpenAI suelen usar `https://apiany.ai/v1`; las configuraciones compatibles con Claude suelen usar `https://apiany.ai`; las herramientas que piden un endpoint completo usan `https://apiany.ai/v1/chat/completions`.

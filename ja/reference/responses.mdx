@@ -1,0 +1,84 @@
+---
+title: Responses
+description: reasoning と組み込みツールに対応した OpenAI 互換の Responses エンドポイント。
+---
+
+クライアントが既に OpenAI Responses API 形式を使用している場合や、reasoning 強度の制御、
+Web 検索ツール、公式の Responses Server-Sent Events といった Responses ネイティブ機能が必要な場合は、
+`/v1/responses` を使用します。
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "ドキュメントサイトに検索機能を追加するための簡単な実装計画を書いてください。",
+    "reasoning": { "effort": "medium" },
+    "text": { "verbosity": "medium" }
+  }'
+```
+
+## Reasoning の制御
+
+`gpt-5.5` と `gpt-5.4` は Responses の reasoning 制御に対応しています。
+`reasoning.effort` を使って思考の強度を設定します：
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "この API 設計をレビューし、主なリスクを列挙してください。",
+  "reasoning": {
+    "effort": "high",
+    "summary": "auto"
+  }
+}
+```
+
+`reasoning.effort` で指定できる値は `none`、`minimal`、`low`、`medium`、`high`、
+`xhigh` です。
+
+## Web 検索
+
+OpenAI Responses の tools をそのまま渡せます。Web に接続した回答が必要な場合は、`tools` に
+Web 検索ツールを含めます：
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "最新の OpenAI Responses API ドキュメントでは何が変わりましたか？",
+  "tools": [
+    { "type": "web_search_preview" }
+  ]
+}
+```
+
+APIAny.AI は Responses ネイティブのツールを、それらに対応する互換モデルへ転送します。Function
+tools にも対応しています。
+
+## ストリーミング
+
+`stream: true` を設定すると Responses の SSE イベントストリームを受け取れます。イベントは OpenAI
+Responses 形式に従い、例えば `response.created`、`response.output_text.delta`、
+ツールイベント、`response.completed` などがあります。
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "簡潔なリリースノートを3項目作成してください。",
+    "reasoning": { "effort": "low" },
+    "stream": true
+  }'
+```
+
+## 補足
+
+- `model` は APIAny.AI の公開モデル ID です。
+- `max_output_tokens` は Responses スタイルの出力トークン上限です。
+- `reasoning`、`text`、`tools`、`tool_choice`、`include`、
+  `previous_response_id`、`store` などの Responses ネイティブフィールドは、選択したモデルが
+  対応している場合に転送されます。

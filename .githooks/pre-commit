@@ -4,4 +4,5 @@
 # Enable once with: git config core.hooksPath .githooks  (pnpm install does this).
 
 node scripts/update-docs-version.mjs || exit 1
-git add introduction.mdx zh/introduction.mdx
+git add introduction.mdx fr/introduction.mdx de/introduction.mdx zh/introduction.mdx \
+  ja/introduction.mdx ko/introduction.mdx es/introduction.mdx

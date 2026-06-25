@@ -1,0 +1,38 @@
+---
+title: 認証
+description: プロジェクト API Key を使って公開 API リクエストを認証します。
+---
+
+APIAny.AI の公開エンドポイントは API Key を使用します。
+
+<Snippet file="ja/snippets/auth-header.mdx" />
+
+## セキュリティモデル
+
+API Key はプロジェクトの認証情報です。パスワードと同様に扱ってください:
+
+- シークレット API Key をブラウザ側のコードに公開しないでください。
+- キーはサーバー側のシークレットマネージャーまたは環境変数に保存してください。
+- キーが漏洩した場合はローテーションしてください。
+- 開発、ステージング、本番では別々のキーを使用してください。
+
+## 例
+
+```bash
+curl https://apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## エラー
+
+認証エラーはプラットフォームのエラー形式を使用します:
+
+```json
+{
+  "error": {
+    "type": "auth_error",
+    "message": "Invalid API key"
+  }
+}
+```
+

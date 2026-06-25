@@ -1,0 +1,57 @@
+---
+title: 소개
+description: 이미지, 비디오, 채팅, 멀티모달 AI 모델을 위한 하나의 API 게이트웨이.
+---
+
+APIAny.AI는 채팅, 이미지 생성, 비디오 생성, 멀티모달 애플리케이션에 걸친 프로덕션 AI 워크플로를 위해 개발자에게 하나의 안정적인 API 인터페이스를 제공합니다.
+
+공개 API는 안정적으로 유지되며, APIAny.AI가 모델 실행, 과금, 작업 기록, 표준화된 응답을 일관된 개발자 경험으로 처리합니다.
+
+<CardGroup cols={2}>
+  <Card title="통합 모델 접근" icon="route">
+    하나의 API 키와 하나의 안정적인 API 인터페이스로 공개 모델 ID를 호출하세요.
+  </Card>
+
+  <Card title="비동기 미디어 작업" icon="clock">
+    오래 걸리는 이미지 및 비디오 생성 작업은 즉시 `task_id`를 반환합니다. `GET /v1/tasks/{task_id}`를 폴링하여 결과가 준비되면 가져오세요.
+  </Card>
+
+  <Card title="다중 포맷 채팅" icon="message-square">
+    OpenAI 호환 `/v1/chat/completions` 엔드포인트로 시작한 다음, 통합이 발전함에 따라 Anthropic 호환 `/v1/messages` 또는 Gemini 호환 `/v1beta/models/{model}:generateContent` 엔드포인트를 도입하세요.
+  </Card>
+
+  <Card title="크레딧 및 추적성" icon="receipt">
+    모든 요청은 크레딧, 작업 기록, 표준화된 결과, 사용량 기록과 연결할 수 있습니다.
+  </Card>
+</CardGroup>
+
+## Base URL
+
+<Snippet file="ko/snippets/base-url.mdx" />
+
+## 공개 API 형태
+
+APIAny.AI는 작고 예측 가능한 공개 호출 패턴 집합을 제공합니다:
+
+- **채팅 완성** — `POST /v1/chat/completions`: OpenAI 호환 텍스트 생성 및 채팅.
+- **Anthropic 호환 메시지** — `POST /v1/messages`: Anthropic Messages 호환 요청 및 응답 형태.
+- **Gemini 호환 콘텐츠 생성** — `POST /v1beta/models/{model}:generateContent`: Gemini generateContent 호환 요청 및 응답 형태이며, `{model}`은 공개 APIAny.AI 모델 ID입니다.
+- **이미지 생성 (비동기)** — `POST /v1/images/generations`: 비동기 이미지 생성 작업을 만들고 `task_id`를 받습니다.
+- **이미지 생성 (동기)** — `POST /v1/images/generations/sync`: 요청이 단순한 블로킹 워크플로에 적합할 때 이미지를 생성하고 결과를 기다립니다.
+- **이미지 편집** — `POST /v1/images/edits`: 모델과 프롬프트를 사용하여 기존 이미지에 편집 또는 인페인팅을 적용합니다.
+- **비디오 생성 (비동기)** — `POST /v1/videos/generations`: 비동기 비디오 생성 작업을 만들고 `task_id`를 받습니다.
+- **비디오 생성 (동기)** — `POST /v1/videos/generations/sync`: 블로킹 워크플로가 허용될 때 비디오를 생성하고 결과를 기다립니다.
+- **작업 조회** — `GET /v1/tasks/{task_id}`: 모든 비동기 이미지 또는 비디오 작업의 현재 상태와 최종 결과를 가져옵니다.
+- **크레딧 잔액** — `GET /v1/credits/balance`: 계정에 남은 크레딧이 얼마인지 언제든지 확인합니다.
+
+<Tip>
+  이미지 및 비디오 생성 엔드포인트는 기본적으로 비동기입니다. 요청은 미디어가 준비될 때까지 블로킹하지 않고 즉시 `task_id`를 반환합니다. 프로덕션 시스템에서는 비동기 생성 엔드포인트를 먼저 사용한 후 작업 폴링을 하는 것이 좋습니다. 단일 요청에서 결과를 기다리는 것이 허용되는 간단한 통합을 위해 동기 변형(`/sync`)을 사용할 수 있습니다.
+</Tip>
+
+## 작동 방식
+
+공개 모델 ID와 API 키로 요청을 보내세요. APIAny.AI가 모델 요청을 실행하고 사용량을 기록한 다음 표준화된 응답을 반환합니다. 공개 모델 ID는 안정적인 제품 계약이므로, 모델 카탈로그가 발전하더라도 통합은 동일한 API 형태를 유지할 수 있습니다.
+
+{/* docs-updated */}
+
+Last updated: 2026-06-25 20:59 (UTC+8)

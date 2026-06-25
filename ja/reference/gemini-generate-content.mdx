@@ -1,0 +1,60 @@
+---
+title: Gemini generateContent
+description: Gemini 互換のコンテンツ生成エンドポイント。
+---
+
+Gemini 互換の連携には `/v1beta/models/{model}:generateContent` を使用します。
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          { "text": "メディア生成タスクが非同期処理に向いている理由を説明してください。" }
+        ]
+      }
+    ]
+  }'
+```
+
+パス中の `model` は APIAny.AI の公開モデル ID です。
+
+## ストリーミング
+
+パス中の `:generateContent` を `:streamGenerateContent` に置き換えると、Gemini の SSE ストリーム
+（増分の `candidates` をチャンクごとに返す）を取得できます。
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" -N \
+  -d '{ "contents": [ { "parts": [ { "text": "こんにちは" } ] } ] }'
+```
+
+## 構造化出力
+
+`generationConfig.responseMimeType: "application/json"` を `responseSchema` と組み合わせると、
+JSON 出力が得られます：
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "名前と年齢を抽出する" }] }],
+  "generationConfig": {
+    "responseMimeType": "application/json",
+    "responseSchema": {
+      "type": "object",
+      "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+    }
+  }
+}
+```
+
+## パラメータ
+
+対応している `generationConfig`：`temperature`、`topP`、`topK`、`maxOutputTokens`、
+`stopSequences`、`responseMimeType`、`responseSchema`、`responseModalities`
+（`IMAGE` を含めると画像を返します）。さらにトップレベルの `tools`（functionDeclarations）と
+`systemInstruction` にも対応しています。

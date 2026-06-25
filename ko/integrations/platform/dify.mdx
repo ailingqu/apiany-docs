@@ -1,0 +1,115 @@
+---
+title: Dify 연동
+description: Dify에서 APIAny.AI API Key, Base URL 및 권장 모델을 설정합니다.
+---
+
+[Dify](https://dify.ai/)는 OpenAI 호환 설정을 통해 APIAny.AI에 연결할 수 있습니다. 설정을 마치면 동일한 클라이언트에서 대화, 추론, 번역, 멀티모달 모델을 사용할 수 있습니다.
+
+## 준비 사항
+
+- Dify가 설치되어 있어야 합니다.
+- [APIAny.AI 대시보드](https://apiany.ai/ko/dashboard/api-keys)에서 API Key를 생성해야 합니다.
+- 사용할 모델 ID를 준비합니다. 예: `gpt-5.4-mini` 또는 `gpt-4o-mini`.
+
+## 설정 값
+
+| 필드 | 입력 내용 |
+| --- | --- |
+| Model type | `OpenAI-API-compatible` |
+| API endpoint | `https://apiany.ai/v1` |
+| API Key | 사용자의 APIAny.AI API Key |
+| 모델 | `gpt-5.4-mini` |
+
+
+## 설정 단계
+
+1. Dify 워크스페이스의 모델 설정을 엽니다.
+2. OpenAI API 호환 모델을 추가합니다.
+3. API endpoint, API Key, 모델 ID를 입력합니다.
+4. 앱을 생성하고 해당 모델을 선택한 후 미리보기를 실행합니다.
+
+## 권장 모델
+
+| 모델 ID | 적합한 용도 |
+| --- | --- |
+| `gpt-5.5` | 복잡한 추론, 코딩, 프로덕션 워크플로에 가장 적합하며 우선 추천합니다. |
+| `gpt-5.4` | 고급 대화와 에이전트 작업에 강력한 범용 모델입니다. |
+| `gpt-5.4-mini` | 속도, 품질, 비용이 균형 잡혀 일상적인 사용에 적합합니다. |
+| `gpt-4o-mini` | 간단한 대화, 번역, 가벼운 작업에 빠르고 경제적인 선택입니다. |
+| `claude-sonnet-4-6` | 장문 작성과 코딩 워크플로를 위한 Claude 호환 모델 ID입니다. |
+| `gemini-3.5-flash` | 빠른 멀티모달 사용을 위한 Gemini 호환 모델 ID입니다. |
+
+## 단계별 스크린샷
+
+아래 스크린샷은 Dify의 주요 설정 화면을 보여줍니다. 스크린샷의 API 이름과 엔드포인트는 APIAny.AI에 맞게 조정되었습니다.
+
+### 단계 1
+
+![Dify 설정 스크린샷 1](/images/integrations/dify/main-interface.png)
+
+### 단계 2
+
+![Dify 설정 스크린샷 2](/images/integrations/dify/model-provider-menu.png)
+
+### 단계 3
+
+![Dify 설정 스크린샷 3](/images/integrations/dify/openai-custom-api.png)
+
+### 단계 4
+
+![Dify 설정 스크린샷 4](/images/integrations/dify/openai-custom-setting.png)
+
+### 단계 5
+
+![Dify 설정 스크린샷 5](/images/integrations/dify/openai-model-list.png)
+
+### 단계 6
+
+![Dify 설정 스크린샷 6](/images/integrations/dify/custom-model-section.png)
+
+### 단계 7
+
+![Dify 설정 스크린샷 7](/images/integrations/dify/add-provider-dialog.png)
+
+### 단계 8
+
+![Dify 설정 스크린샷 8](/images/integrations/dify/create-app.png)
+
+### 단계 9
+
+![Dify 설정 스크린샷 9](/images/integrations/dify/model-selection.png)
+
+### 단계 10
+
+![Dify 설정 스크린샷 10](/images/integrations/dify/model-parameters.png)
+
+### 단계 11
+
+![Dify 설정 스크린샷 11](/images/integrations/dify/prompt-editor.png)
+
+### 단계 12
+
+![Dify 설정 스크린샷 12](/images/integrations/dify/app-preview.png)
+
+### 단계 13
+
+![Dify 설정 스크린샷 13](/images/integrations/dify/publish-options.png)
+
+### 단계 14
+
+![Dify 설정 스크린샷 14](/images/integrations/dify/app-logs.png)
+
+
+## 문제 해결
+
+### 401 또는 인증 오류
+
+API Key가 완전하게 복사되었는지, 앞뒤에 불필요한 공백이 없는지, APIAny.AI 대시보드에서 활성화되어 있는지 확인하세요.
+
+### 앱에 모델이 표시되지 않음
+
+모델 ID를 직접 입력하고 [모델 카탈로그](/ko/models/chat-models)에서 사용 가능한지 확인하세요. 일부 도구는 모델 목록을 자동으로 가져오지 않습니다.
+
+### 어떤 Base URL을 사용해야 하나요?
+
+OpenAI 호환 설정은 일반적으로 `https://apiany.ai/v1`을 사용하고, Claude 호환 설정은 일반적으로 `https://apiany.ai`를 사용하며, 전체 엔드포인트를 요구하는 도구는 `https://apiany.ai/v1/chat/completions`를 사용합니다.

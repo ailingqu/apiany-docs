@@ -1,0 +1,115 @@
+---
+title: Intégration de Dify
+description: Configurez vos clés API APIAny.AI, vos Base URL et les modèles recommandés dans Dify.
+---
+
+[Dify](https://dify.ai/) peut se connecter à APIAny.AI via une configuration compatible OpenAI. Une fois la configuration terminée, vous pouvez utiliser des modèles de conversation, de raisonnement, de traduction et multimodaux depuis un seul et même client.
+
+## Prérequis
+
+- Dify est installé.
+- Vous avez créé une clé API dans le [tableau de bord APIAny.AI](https://apiany.ai/fr/dashboard/api-keys).
+- Vous avez choisi un identifiant de modèle, par exemple `gpt-5.4-mini` ou `gpt-4o-mini`.
+
+## Valeurs de configuration
+
+| Champ | Valeur |
+| --- | --- |
+| Model type | `OpenAI-API-compatible` |
+| API endpoint | `https://apiany.ai/v1` |
+| API Key | Votre clé API APIAny.AI |
+| Model | `gpt-5.4-mini` |
+
+
+## Configuration
+
+1. Ouvrez les paramètres de modèles dans votre espace de travail Dify.
+2. Ajoutez un modèle compatible OpenAI API.
+3. Saisissez l'API endpoint, la clé API et l'identifiant de modèle.
+4. Créez une application, sélectionnez le modèle et lancez un aperçu.
+
+## Modèles recommandés
+
+| Identifiant de modèle | Idéal pour |
+| --- | --- |
+| `gpt-5.5` | Premier choix pour le raisonnement complexe, le codage et les workflows de production. |
+| `gpt-5.4` | Modèle polyvalent performant pour la conversation avancée et les tâches d'agent. |
+| `gpt-5.4-mini` | Équilibre entre vitesse, qualité et coût pour un usage quotidien. |
+| `gpt-4o-mini` | Choix rapide et économique pour la conversation simple, la traduction et les tâches légères. |
+| `claude-sonnet-4-6` | Identifiant de modèle compatible Claude pour la rédaction longue et les workflows de codage. |
+| `gemini-3.5-flash` | Identifiant de modèle compatible Gemini pour un usage multimodal rapide. |
+
+## Captures d'écran du processus
+
+Les captures d'écran ci-dessous montrent les principaux écrans de configuration dans Dify. Les noms d'API et les endpoints ont été adaptés pour APIAny.AI.
+
+### Étape 1
+
+![Capture d'écran de configuration Dify 1](/images/integrations/dify/main-interface.png)
+
+### Étape 2
+
+![Capture d'écran de configuration Dify 2](/images/integrations/dify/model-provider-menu.png)
+
+### Étape 3
+
+![Capture d'écran de configuration Dify 3](/images/integrations/dify/openai-custom-api.png)
+
+### Étape 4
+
+![Capture d'écran de configuration Dify 4](/images/integrations/dify/openai-custom-setting.png)
+
+### Étape 5
+
+![Capture d'écran de configuration Dify 5](/images/integrations/dify/openai-model-list.png)
+
+### Étape 6
+
+![Capture d'écran de configuration Dify 6](/images/integrations/dify/custom-model-section.png)
+
+### Étape 7
+
+![Capture d'écran de configuration Dify 7](/images/integrations/dify/add-provider-dialog.png)
+
+### Étape 8
+
+![Capture d'écran de configuration Dify 8](/images/integrations/dify/create-app.png)
+
+### Étape 9
+
+![Capture d'écran de configuration Dify 9](/images/integrations/dify/model-selection.png)
+
+### Étape 10
+
+![Capture d'écran de configuration Dify 10](/images/integrations/dify/model-parameters.png)
+
+### Étape 11
+
+![Capture d'écran de configuration Dify 11](/images/integrations/dify/prompt-editor.png)
+
+### Étape 12
+
+![Capture d'écran de configuration Dify 12](/images/integrations/dify/app-preview.png)
+
+### Étape 13
+
+![Capture d'écran de configuration Dify 13](/images/integrations/dify/publish-options.png)
+
+### Étape 14
+
+![Capture d'écran de configuration Dify 14](/images/integrations/dify/app-logs.png)
+
+
+## Dépannage
+
+### Erreurs 401 ou d'authentification
+
+Vérifiez que la clé API a été copiée intégralement, sans espace superflu, et qu'elle est bien activée dans le tableau de bord APIAny.AI.
+
+### Le modèle n'apparaît pas dans l'application
+
+Saisissez l'identifiant de modèle manuellement et confirmez qu'il est disponible dans le [catalogue de modèles](/fr/models/chat-models). Certains outils ne récupèrent pas automatiquement la liste des modèles.
+
+### Quelle Base URL utiliser ?
+
+Les configurations compatibles OpenAI utilisent généralement `https://apiany.ai/v1` ; les configurations compatibles Claude utilisent généralement `https://apiany.ai` ; les outils qui demandent un endpoint complet utilisent `https://apiany.ai/v1/chat/completions`.

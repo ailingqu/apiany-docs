@@ -1,0 +1,19 @@
+---
+title: Límites de tasa
+description: Límites de solicitudes y comportamiento de las cuotas.
+---
+
+APIAny.AI aplica la validación de la API key, las comprobaciones de acceso al modelo, las comprobaciones de créditos y los límites de tasa antes de ejecutar una solicitud de modelo.
+
+Cuando una solicitud supera un límite configurado, la API devuelve:
+
+```json
+{
+  "error": {
+    "type": "rate_limit",
+    "message": "Rate limit exceeded"
+  }
+}
+```
+
+Usa API keys separadas para distintas aplicaciones o entornos, de modo que los límites y el uso sigan siendo fáciles de inspeccionar.

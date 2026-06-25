@@ -1,0 +1,79 @@
+---
+title: Intégration d'Immersive Translate
+description: Configurez vos clés API APIAny.AI, vos Base URL et les modèles recommandés dans Immersive Translate.
+---
+
+[Immersive Translate](https://immersivetranslate.com/) peut se connecter à APIAny.AI via une configuration compatible OpenAI. Une fois la configuration terminée, vous pouvez utiliser des modèles de conversation, de raisonnement, de traduction et multimodaux depuis un seul et même client.
+
+## Prérequis
+
+- Immersive Translate est installé.
+- Vous avez créé une clé API dans le [tableau de bord APIAny.AI](https://apiany.ai/fr/dashboard/api-keys).
+- Vous avez choisi un identifiant de modèle, par exemple `gpt-5.4-mini` ou `gpt-4o-mini`.
+
+## Valeurs de configuration
+
+| Champ | Valeur |
+| --- | --- |
+| Service name | `APIAny.AI` |
+| APIKEY | Votre clé API APIAny.AI |
+| Custom API endpoint | `https://apiany.ai/v1/chat/completions` |
+| Model | `gpt-4o-mini` ou `gpt-5.4-mini` |
+
+
+## Configuration
+
+1. Ouvrez les paramètres de l'extension Immersive Translate.
+2. Accédez aux services de traduction et ajoutez un service personnalisé compatible OpenAI.
+3. Saisissez le nom du service, l'APIKEY, l'endpoint complet et le modèle.
+4. Enregistrez, revenez au panneau de l'extension et sélectionnez APIAny.AI pour commencer à traduire.
+
+## Modèles recommandés
+
+| Identifiant de modèle | Idéal pour |
+| --- | --- |
+| `gpt-5.5` | Premier choix pour le raisonnement complexe, le codage et les workflows de production. |
+| `gpt-5.4` | Modèle polyvalent performant pour la conversation avancée et les tâches d'agent. |
+| `gpt-5.4-mini` | Équilibre entre vitesse, qualité et coût pour un usage quotidien. |
+| `gpt-4o-mini` | Choix rapide et économique pour la conversation simple, la traduction et les tâches légères. |
+| `claude-sonnet-4-6` | Identifiant de modèle compatible Claude pour la rédaction longue et les workflows de codage. |
+| `gemini-3.5-flash` | Identifiant de modèle compatible Gemini pour un usage multimodal rapide. |
+
+## Captures d'écran du processus
+
+Les captures d'écran ci-dessous montrent les principaux écrans de configuration dans Immersive Translate. Les noms d'API et les endpoints ont été adaptés pour APIAny.AI.
+
+### Étape 1
+
+![Capture d'écran de configuration Immersive Translate 1](/images/integrations/immersive-translate/extension-icon.png)
+
+### Étape 2
+
+![Capture d'écran de configuration Immersive Translate 2](/images/integrations/immersive-translate/settings-services.png)
+
+### Étape 3
+
+![Capture d'écran de configuration Immersive Translate 3](/images/integrations/immersive-translate/openai-config.png)
+
+### Étape 4
+
+![Capture d'écran de configuration Immersive Translate 4](/images/integrations/immersive-translate/webpage-translation.png)
+
+### Étape 5
+
+![Capture d'écran de configuration Immersive Translate 5](/images/integrations/immersive-translate/pdf-translation.png)
+
+
+## Dépannage
+
+### Erreurs 401 ou d'authentification
+
+Vérifiez que la clé API a été copiée intégralement, sans espace superflu, et qu'elle est bien activée dans le tableau de bord APIAny.AI.
+
+### Le modèle n'apparaît pas dans l'application
+
+Saisissez l'identifiant de modèle manuellement et confirmez qu'il est disponible dans le [catalogue de modèles](/fr/models/chat-models). Certains outils ne récupèrent pas automatiquement la liste des modèles.
+
+### Quelle Base URL utiliser ?
+
+Les configurations compatibles OpenAI utilisent généralement `https://apiany.ai/v1` ; les configurations compatibles Claude utilisent généralement `https://apiany.ai` ; les outils qui demandent un endpoint complet utilisent `https://apiany.ai/v1/chat/completions`.

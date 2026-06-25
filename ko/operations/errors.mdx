@@ -1,0 +1,59 @@
+---
+title: 오류 처리
+description: APIAny.AI가 반환하는 표준 오류 분류.
+---
+
+각 채팅 엔드포인트는 **호환되는 API 표준(OpenAI, Anthropic, Gemini)과 동일한
+구조**로 오류를 반환합니다. 모든 오류 응답에는 `X-Request-Id` 헤더가 포함되며,
+요청을 디버깅하는 데 필요한 정보만 반환합니다.
+
+## OpenAI — `/v1/chat/completions` (및 이미지/영상 엔드포인트)
+
+```json
+{
+  "error": {
+    "message": "Insufficient credits",
+    "type": "insufficient_quota",
+    "code": "insufficient_credits",
+    "param": null
+  }
+}
+```
+
+## Anthropic — `/v1/messages`
+
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "authentication_error",
+    "message": "Invalid API key"
+  }
+}
+```
+
+## Gemini — `/v1beta/models/{model}:generateContent`
+
+```json
+{
+  "error": {
+    "code": 400,
+    "message": "model is required",
+    "status": "INVALID_ARGUMENT"
+  }
+}
+```
+
+## 상태 코드 매핑
+
+오류의 `type` / `status`는 HTTP 상태 코드에서 파생됩니다.
+
+| HTTP | OpenAI `type` | Anthropic `type` | Gemini `status` |
+|------|---------------|------------------|-----------------|
+| 400  | invalid_request_error | invalid_request_error | INVALID_ARGUMENT |
+| 401  | authentication_error  | authentication_error  | UNAUTHENTICATED  |
+| 403  | permission_error      | permission_error      | PERMISSION_DENIED |
+| 404  | not_found_error       | not_found_error       | NOT_FOUND        |
+| 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
+| 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
+| 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |

@@ -1,0 +1,40 @@
+---
+title: Modelos de chat
+description: Comportamiento de los modelos de generación de texto y chat multimodal.
+---
+
+Los modelos de chat se pueden exponer a través de:
+
+- `/v1/chat/completions`
+- `/v1/messages`
+- `/v1beta/models/{model}:generateContent`
+
+El precio puede incluir:
+
+- Tokens de entrada.
+- Tokens de salida.
+- Tokens de entrada en caché.
+- Créditos mínimos por solicitud.
+
+La ventana de contexto y los límites máximos de salida son metadatos de capacidad a nivel de modelo.
+
+
+## Modelos disponibles
+
+| Model ID | Descripción |
+| --- | --- |
+| `gpt-5.5` | OpenAI GPT-5.5 — modelo insignia para razonamiento avanzado, programación e instrucciones complejas de varios pasos. |
+| `gpt-5.4` | OpenAI GPT-5.4 — modelo de alta capacidad para razonamiento avanzado, programación y flujos de trabajo de agentes. |
+| `gpt-5.4-mini` | OpenAI GPT-5.4 mini — equilibrio de velocidad, calidad y costo para uso en producción de alto volumen. |
+| `gpt-5.4-nano` | OpenAI GPT-5.4 nano — el nivel de GPT-5.4 más rápido y de menor costo para tareas simples de alto rendimiento. |
+| `gpt-4o-mini` | OpenAI GPT-4o mini — modelo multimodal rápido y económico para chat cotidiano y tareas ligeras. |
+| `claude-opus-4-8` | Anthropic Claude Opus 4.8 — modelo de frontera para el razonamiento, la programación y el trabajo de formato largo más exigentes. |
+| `claude-sonnet-4-6` | Anthropic Claude Sonnet 4.6 — un modelo de frontera equilibrado que ofrece un razonamiento sólido a velocidad y costo de producción. |
+| `gemini-3.1-pro` | Google Gemini 3.1 Pro — modelo multimodal de primer nivel para razonamiento complejo, contexto largo y cargas de trabajo de producción exigentes. |
+| `gemini-3.5-flash` | Google Gemini 3.5 Flash — modelo multimodal rápido y rentable con razonamiento sólido y una gran ventana de contexto. |
+| `gemini-3.1-flash-lite` | Google Gemini 3.1 Flash Lite — modelo rápido y económico con razonamiento mejorado respecto a la generación 2.5. |
+| `gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite — modelo de costo ultrabajo y baja latencia para tareas cotidianas de alto volumen. |
+| `deepseek-v4` | DeepSeek V4 — sólido rendimiento en razonamiento y programación a un precio muy competitivo. |
+| `deepseek-v4-flash` | DeepSeek V4 Flash — una variante de DeepSeek V4 optimizada para latencia, para inferencia de alto volumen y bajo costo. |
+| `glm-5.1` | Zhipu GLM-5.1 — un modelo bilingüe (chino/inglés) capaz para razonamiento, programación y aplicaciones de agentes. |
+| `minimax-m3` | MiniMax M3 — un modelo de lenguaje grande capaz para razonamiento de contexto largo, uso de herramientas y chat multilingüe. |

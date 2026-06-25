@@ -1,0 +1,79 @@
+---
+title: Uso en Cline
+description: Configura claves de API, Base URL y modelos recomendados de APIAny.AI en Cline.
+---
+
+[Cline](https://cline.bot/) puede conectarse a APIAny.AI mediante la configuración compatible con OpenAI. Una vez configurado, puedes usar modelos de chat, razonamiento, traducción y multimodales desde el mismo cliente.
+
+## Requisitos previos
+
+- Cline está instalado.
+- Has creado una clave de API en el [panel de APIAny.AI](https://apiany.ai/dashboard/api-keys).
+- Has seleccionado un ID de modelo, como `gpt-5.4-mini` o `gpt-4o-mini`.
+
+## Valores de configuración
+
+| Campo | Valor |
+| --- | --- |
+| API mode | `OpenAI Compatible` |
+| Base URL | `https://apiany.ai/v1` |
+| API Key | Tu clave de API de APIAny.AI |
+| Model | `gpt-5.4` |
+
+
+## Configuración
+
+1. Instala y abre Cline en VS Code.
+2. Abre la configuración de Cline y elige OpenAI Compatible.
+3. Introduce la Base URL, la clave de API y el ID de modelo.
+4. Guarda y pídele a Cline que ejecute una pequeña tarea de programación para verificar la conexión.
+
+## Modelos recomendados
+
+| ID de modelo | Ideal para |
+| --- | --- |
+| `gpt-5.5` | La mejor primera opción para razonamiento complejo, programación y flujos de trabajo de producción. |
+| `gpt-5.4` | Modelo de propósito general potente para tareas avanzadas de chat y de agente. |
+| `gpt-5.4-mini` | Equilibrio entre velocidad, calidad y costo para el uso diario. |
+| `gpt-4o-mini` | Opción rápida y económica para chat simple, traducción y tareas ligeras. |
+| `claude-sonnet-4-6` | ID de modelo compatible con Claude para escritura de texto largo y flujos de programación. |
+| `gemini-3.5-flash` | ID de modelo compatible con Gemini para uso multimodal rápido. |
+
+## Capturas del proceso
+
+Las capturas siguientes muestran las pantallas de configuración clave en Cline. Los nombres de API y los endpoints se han ajustado para APIAny.AI.
+
+### Paso 1
+
+![Captura 1 de configuración de Cline](/images/integrations/cline/extension-install.png)
+
+### Paso 2
+
+![Captura 2 de configuración de Cline](/images/integrations/cline/sidebar-settings.png)
+
+### Paso 3
+
+![Captura 3 de configuración de Cline](/images/integrations/cline/api-config.png)
+
+### Paso 4
+
+![Captura 4 de configuración de Cline](/images/integrations/cline/chat-interface.png)
+
+### Paso 5
+
+![Captura 5 de configuración de Cline](/images/integrations/cline/code-refactor.png)
+
+
+## Solución de problemas
+
+### Errores 401 o de autenticación
+
+Asegúrate de que la clave de API se haya copiado por completo, sin espacios adicionales, y de que esté habilitada en el panel de APIAny.AI.
+
+### El modelo no aparece en la aplicación
+
+Introduce el ID de modelo manualmente y confirma que está disponible en el [catálogo de modelos](/es/models/chat-models). Algunas herramientas no obtienen las listas de modelos automáticamente.
+
+### ¿Qué Base URL debo usar?
+
+Las configuraciones compatibles con OpenAI suelen usar `https://apiany.ai/v1`; las configuraciones compatibles con Claude suelen usar `https://apiany.ai`; las herramientas que piden un endpoint completo usan `https://apiany.ai/v1/chat/completions`.

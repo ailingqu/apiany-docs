@@ -1,0 +1,26 @@
+---
+title: モデルカタログ
+description: APIAny.AI の公開モデル ID とモデルファミリー。
+---
+
+APIAny.AI は公開モデル ID を提供します。これらの ID は、アプリケーション統合時に利用できる安定した製品契約です。
+
+現在公開されているモデルファミリーは以下のとおりです。
+
+- 画像生成モデル（例: Z-Image、Nano Banana、GPT Image、Seedance 画像モデル）。
+- 動画生成モデル（例: Seedance、Veo、Wan、Gemini Omni）。
+- チャットモデル（例: Gemini、GPT、DeepSeek、MiniMax）。
+
+## 公開モデル ID
+
+呼び出し時は、ダッシュボードおよびモデルページに表示されるモデル ID を使用します。
+
+```json
+{
+  "model": "gpt-5.4"
+}
+```
+
+## モデルの利用
+
+API リクエストで公開モデル ID を使用すると、APIAny.AI はそのモデルファミリーに対応した標準レスポンスを返します。

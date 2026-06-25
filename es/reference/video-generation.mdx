@@ -1,0 +1,23 @@
+---
+title: Generación de vídeo
+description: Genera tareas de vídeo con sondeo.
+---
+
+Usa `/v1/videos/generations` para la creación de vídeo.
+
+```bash
+curl https://apiany.ai/v1/videos/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "A cinematic product launch shot for an AI API platform",
+    "duration": "10s",
+    "resolution": "720p",
+    "ratio": "16:9"
+  }'
+```
+
+## Variante síncrona
+
+`/v1/videos/generations/sync` espera el resultado de la tarea en la misma solicitud HTTP. Los trabajos de larga duración deben usar la creación asíncrona y el sondeo de tareas.

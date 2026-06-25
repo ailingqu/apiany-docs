@@ -1,0 +1,38 @@
+---
+title: Autenticación
+description: Autentica las solicitudes a la API pública con API keys de proyecto.
+---
+
+Los endpoints públicos de APIAny.AI usan API keys.
+
+<Snippet file="es/snippets/auth-header.mdx" />
+
+## Modelo de seguridad
+
+Las API keys son credenciales de proyecto. Trátalas como contraseñas:
+
+- No expongas API keys secretas en código del lado del navegador.
+- Almacena las keys en un gestor de secretos del lado del servidor o en una variable de entorno.
+- Rota las keys si se filtran.
+- Usa keys separadas para desarrollo, staging y producción.
+
+## Ejemplo
+
+```bash
+curl https://apiany.ai/v1/models \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+## Errores
+
+Los errores de autenticación usan el formato de error de la plataforma:
+
+```json
+{
+  "error": {
+    "type": "auth_error",
+    "message": "Invalid API key"
+  }
+}
+```
+

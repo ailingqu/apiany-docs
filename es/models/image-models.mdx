@@ -1,0 +1,28 @@
+---
+title: Modelos de imagen
+description: Comportamiento de los modelos de generación y edición de imágenes.
+---
+
+Los modelos de imagen admiten una o varias de estas capacidades:
+
+- Texto a imagen.
+- Imagen a imagen con activos de referencia.
+- Generación de imágenes compatible con OpenAI.
+- Edición de imágenes compatible con OpenAI.
+- Flujos de trabajo de imagen compatibles con Gemini.
+
+Las dimensiones específicas de cada modelo, los tamaños de imagen compatibles y los límites de imágenes de referencia los define el registro de capacidades de la plataforma y se reflejan en las páginas de modelos.
+
+Las integraciones de producción deberían preferir `/v1/images/generations` y consultar `/v1/tasks/{task_id}`.
+
+
+## Modelos disponibles
+
+| Model ID | Descripción |
+| --- | --- |
+| `gpt-image-2` | Generación y edición de imágenes compatible con GPT-Image 2. |
+| `nano-banana-pro` | Generación de imágenes de alta fidelidad con Nano Banana Pro. |
+| `nano-banana-2` | Generación de imágenes de alta calidad con Nano Banana 2. |
+| `nano-banana` | Generación de imágenes Nano Banana para un uso de producción fiable. |
+| `z-image` | Generación rápida con Z-Image para tareas de imagen de baja latencia. |
+| `seedance-5.0` | Generación de imágenes Seedance 5.0 a través de Volcengine Ark. |

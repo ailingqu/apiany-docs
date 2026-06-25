@@ -1,0 +1,60 @@
+---
+title: Gemini generateContent
+description: Gemini-kompatibler Endpoint zur Inhaltsgenerierung.
+---
+
+Verwende `/v1beta/models/{model}:generateContent` für Gemini-kompatible Integrationen.
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:generateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [
+      {
+        "parts": [
+          { "text": "Fasse zusammen, warum asynchrone Medien-Tasks nützlich sind." }
+        ]
+      }
+    ]
+  }'
+```
+
+Das Modell im Pfad ist eine öffentliche APIAny.AI-Modell-ID.
+
+## Streaming
+
+Rufe `:streamGenerateContent` statt `:generateContent` auf, um einen
+Gemini-Server-Sent-Eventstream mit inkrementellen `candidates`-Chunks zu empfangen.
+
+```bash
+curl https://apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" -N \
+  -d '{ "contents": [ { "parts": [ { "text": "Hallo" } ] } ] }'
+```
+
+## Strukturierte Ausgabe
+
+Verwende `generationConfig.responseMimeType: "application/json"` zusammen mit
+`responseSchema` für JSON-Ausgabe:
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "Name und Alter extrahieren" }] }],
+  "generationConfig": {
+    "responseMimeType": "application/json",
+    "responseSchema": {
+      "type": "object",
+      "properties": { "name": { "type": "string" }, "age": { "type": "integer" } }
+    }
+  }
+}
+```
+
+## Parameter
+
+Unterstützte `generationConfig`: `temperature`, `topP`, `topK`, `maxOutputTokens`,
+`stopSequences`, `responseMimeType`, `responseSchema`, `responseModalities`
+(füge `IMAGE` für Bildausgabe hinzu). Außerdem auf oberster Ebene `tools` (functionDeclarations)
+und `systemInstruction`.

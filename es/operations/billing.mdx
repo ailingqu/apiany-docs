@@ -1,0 +1,28 @@
+---
+title: Facturación y créditos
+description: Cómo APIAny.AI estima, reserva, liquida y reembolsa créditos.
+---
+
+APIAny.AI utiliza créditos como unidad de facturación a nivel de cuenta.
+
+El flujo en tiempo de ejecución es:
+
+1. Estimar los créditos antes de que se ejecute una solicitud.
+2. Reservar o descontar el importe estimado.
+3. Ejecutar la solicitud a través de la ejecución de modelos de APIAny.AI.
+4. Liquidar el uso real tras la finalización.
+5. Reembolsar los fallos no facturables según la política de errores del modelo.
+
+## Tipos de precio
+
+Los modelos se pueden tarificar por:
+
+- Solicitud
+- Imagen
+- Segundo de vídeo
+- Tokens de entrada
+- Tokens de salida
+- Tokens de entrada en caché
+- Importe mínimo por solicitud
+
+El catálogo público de modelos muestra los precios visibles para el usuario. Los detalles de coste de la plataforma y de liquidación no se muestran a quienes realizan las llamadas.

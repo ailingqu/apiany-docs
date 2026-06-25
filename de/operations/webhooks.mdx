@@ -1,0 +1,31 @@
+---
+title: Webhooks
+description: Asynchrone Callbacks bei Aufgabenabschluss empfangen.
+---
+
+Asynchrone Medienaufgaben können eine Callback-URL enthalten, wenn dies für den API-Schlüssel oder die Anfrage aktiviert ist.
+
+Callbacks werden von der Plattform erneut versucht, wenn die Zustellung fehlschlägt.
+
+Der Callback-Body hat dieselbe Struktur wie das Aufgabendetail. Das `result` unterscheidet sich
+je nach Aufgabentyp: Bildergebnisse enthalten `result.data[0].url`, während Video-/Audioergebnisse
+`result.video_url` / `result.audio_url` (und `result.urls[]`) enthalten.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://.../video.mp4",
+    "urls": ["https://.../video.mp4"]
+  }
+}
+```
+
+## Empfehlung
+
+Überprüfe in werthaltigen Workflows immer den Aufgabenstatus über `/v1/tasks/{task_id}`, bevor du einen Webhook als endgültig behandelst.
+

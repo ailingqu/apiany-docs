@@ -1,0 +1,84 @@
+---
+title: Responses
+description: Endpoint Responses compatible con OpenAI, con reasoning y herramientas integradas.
+---
+
+Usa `/v1/responses` cuando tu cliente ya utiliza el formato de la OpenAI Responses API,
+o cuando necesitas funciones nativas de Responses como los controles de reasoning,
+las herramientas de búsqueda web y los server-sent events oficiales de Responses.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "Escribe un breve plan de implementación para añadir búsqueda a un sitio de documentación.",
+    "reasoning": { "effort": "medium" },
+    "text": { "verbosity": "medium" }
+  }'
+```
+
+## Controles de reasoning
+
+`gpt-5.5` y `gpt-5.4` aceptan los controles de reasoning de Responses. Usa
+`reasoning.effort` para establecer la intensidad del reasoning:
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "Revisa este diseño de API y enumera los principales riesgos.",
+  "reasoning": {
+    "effort": "high",
+    "summary": "auto"
+  }
+}
+```
+
+Los valores admitidos para `reasoning.effort` son `none`, `minimal`, `low`, `medium`,
+`high` y `xhigh`.
+
+## Búsqueda web
+
+Pasa las herramientas de OpenAI Responses directamente. Para respuestas conectadas a la web, incluye una herramienta de
+búsqueda web en `tools`:
+
+```json
+{
+  "model": "gpt-5.5",
+  "input": "¿Qué cambió en la documentación más reciente de la OpenAI Responses API?",
+  "tools": [
+    { "type": "web_search_preview" }
+  ]
+}
+```
+
+APIAny.AI reenvía las herramientas nativas de Responses a los modelos compatibles que las
+admiten. También se admiten las function tools.
+
+## Streaming
+
+Establece `stream: true` para recibir el flujo de eventos SSE de Responses. Los eventos siguen
+el formato de OpenAI Responses, como `response.created`,
+`response.output_text.delta`, eventos de herramientas y `response.completed`.
+
+```bash
+curl https://apiany.ai/v1/responses \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "gpt-5.5",
+    "input": "Redacta tres viñetas concisas de notas de versión.",
+    "reasoning": { "effort": "low" },
+    "stream": true
+  }'
+```
+
+## Notas
+
+- El `model` es un ID de modelo público de APIAny.AI.
+- `max_output_tokens` es el límite de tokens de salida estilo Responses.
+- Los campos nativos de Responses como `reasoning`, `text`, `tools`,
+  `tool_choice`, `include`, `previous_response_id` y `store` se reenvían
+  cuando el modelo seleccionado los admite.

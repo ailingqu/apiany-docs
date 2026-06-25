@@ -1,0 +1,31 @@
+---
+title: Webhooks
+description: 非同期タスクの完了コールバックを受け取る。
+---
+
+非同期メディアタスクでは、API キーまたはリクエストで有効化されている場合に callback URL を指定できます。
+
+配信に失敗した場合、コールバックはプラットフォームによって再試行されます。
+
+コールバックのボディはタスク詳細と同じ形式です。`result` はタスクの種類によって異なります。画像の結果は
+`result.data[0].url` を持ち、動画/音声の結果は `result.video_url` /
+`result.audio_url`（および `result.urls[]`）を持ちます。
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://.../video.mp4",
+    "urls": ["https://.../video.mp4"]
+  }
+}
+```
+
+## 推奨事項
+
+高価値のワークフローでは、webhook を最終結果として扱う前に、必ず `/v1/tasks/{task_id}` でタスクのステータスを確認してください。
+

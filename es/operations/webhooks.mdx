@@ -1,0 +1,32 @@
+---
+title: Webhooks
+description: Recibe callbacks de finalización de tareas asíncronas.
+---
+
+Las tareas de medios asíncronas pueden incluir una callback URL cuando está habilitada para la API key o la solicitud.
+
+La plataforma reintenta los callbacks cuando falla la entrega.
+
+El cuerpo del callback tiene la misma forma que el detalle de la tarea. El `result`
+varía según el tipo de tarea: los resultados de imagen llevan `result.data[0].url`,
+mientras que los resultados de vídeo/audio llevan `result.video_url` /
+`result.audio_url` (y `result.urls[]`).
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "seedance-2.0",
+  "type": "video",
+  "result": {
+    "status": "completed",
+    "video_url": "https://.../video.mp4",
+    "urls": ["https://.../video.mp4"]
+  }
+}
+```
+
+## Recomendación
+
+En flujos de trabajo de alto valor, verifica siempre el estado de la tarea mediante `/v1/tasks/{task_id}` antes de tratar un webhook como definitivo.
+

@@ -1,0 +1,57 @@
+---
+title: Einführung
+description: Ein API-Gateway für Bild-, Video-, Chat- und multimodale KI-Modelle.
+---
+
+APIAny.AI bietet Entwicklern eine stabile API-Oberfläche für produktive KI-Workflows in den Bereichen Chat, Bildgenerierung, Videogenerierung und multimodale Anwendungen.
+
+Die öffentliche API bleibt stabil, während APIAny.AI die Modellausführung, Abrechnung, Aufgabenverlauf und standardisierte Antworten hinter einer konsistenten Entwicklererfahrung übernimmt.
+
+<CardGroup cols={2}>
+  <Card title="Einheitlicher Modellzugang" icon="route">
+    Rufen Sie öffentliche Modell-IDs mit einem API-Key und einer stabilen API-Oberfläche auf.
+  </Card>
+
+  <Card title="Asynchrone Medienaufgaben" icon="clock">
+    Langlaufende Bild- und Videogenerierungsaufträge geben sofort eine `task_id` zurück. Fragen Sie `GET /v1/tasks/{task_id}` ab, um die Ergebnisse abzurufen, sobald sie bereit sind.
+  </Card>
+
+  <Card title="Multi-Format-Chat" icon="message-square">
+    Beginnen Sie mit dem OpenAI-kompatiblen `/v1/chat/completions`-Endpoint und übernehmen Sie im Verlauf Ihrer Integration den Anthropic-kompatiblen `/v1/messages`- oder den Gemini-kompatiblen `/v1beta/models/{model}:generateContent`-Endpoint.
+  </Card>
+
+  <Card title="Credits und Nachvollziehbarkeit" icon="receipt">
+    Jede Anfrage lässt sich mit Credits, Aufgabenverlauf, standardisierten Ergebnissen und Nutzungsaufzeichnungen verknüpfen.
+  </Card>
+</CardGroup>
+
+## Base URL
+
+<Snippet file="de/snippets/base-url.mdx" />
+
+## Öffentliche API-Struktur
+
+APIAny.AI stellt eine kleine, vorhersehbare Menge öffentlicher Aufrufmuster bereit:
+
+- **Chat Completions** — `POST /v1/chat/completions`: OpenAI-kompatible Text- und Chat-Generierung.
+- **Anthropic-kompatible Messages** — `POST /v1/messages`: Anthropic-Messages-kompatible Anfrage- und Antwortstruktur.
+- **Gemini-kompatible Inhaltsgenerierung** — `POST /v1beta/models/{model}:generateContent`: Gemini-generateContent-kompatible Anfrage- und Antwortstruktur; `{model}` ist die öffentliche APIAny.AI-Modell-ID.
+- **Bildgenerierung (asynchron)** — `POST /v1/images/generations`: Erstellt eine asynchrone Bildgenerierungsaufgabe und liefert eine `task_id`.
+- **Bildgenerierung (synchron)** — `POST /v1/images/generations/sync`: Generiert ein Bild und wartet auf das Ergebnis, wenn die Anfrage zu einem einfachen blockierenden Workflow passt.
+- **Bildbearbeitung** — `POST /v1/images/edits`: Wendet mit einem Modell und einem Prompt Bearbeitungen oder Inpainting auf ein vorhandenes Bild an.
+- **Videogenerierung (asynchron)** — `POST /v1/videos/generations`: Erstellt eine asynchrone Videogenerierungsaufgabe und liefert eine `task_id`.
+- **Videogenerierung (synchron)** — `POST /v1/videos/generations/sync`: Generiert ein Video und wartet auf das Ergebnis, wenn ein blockierender Workflow akzeptabel ist.
+- **Aufgabenabfrage** — `GET /v1/tasks/{task_id}`: Ruft den aktuellen Status und das Endergebnis jeder asynchronen Bild- oder Videoaufgabe ab.
+- **Credit-Guthaben** — `GET /v1/credits/balance`: Prüfen Sie jederzeit, wie viele Credits auf Ihrem Konto verbleiben.
+
+<Tip>
+  Endpoints für Bild- und Videogenerierung sind standardmäßig asynchron. Ihre Anfrage gibt sofort eine `task_id` zurück, anstatt zu blockieren, bis das Medium bereit ist. Produktivsysteme sollten asynchrone Erstellungsendpoints gefolgt von Aufgabenabfragen bevorzugen. Synchrone Varianten (`/sync`) stehen für einfache Integrationen zur Verfügung, bei denen das Warten auf das Ergebnis in einer einzigen Anfrage akzeptabel ist.
+</Tip>
+
+## So funktioniert es
+
+Senden Sie eine Anfrage mit einer öffentlichen Modell-ID und Ihrem API-Key. APIAny.AI führt die Modellanfrage aus, erfasst die Nutzung und gibt eine standardisierte Antwort zurück. Öffentliche Modell-IDs sind stabile Produktverträge, sodass Ihre Integration dieselbe API-Struktur beibehalten kann, während sich der Modellkatalog weiterentwickelt.
+
+{/* docs-updated */}
+
+Last updated: 2026-06-25 20:59 (UTC+8)

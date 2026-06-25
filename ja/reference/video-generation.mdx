@@ -1,0 +1,23 @@
+---
+title: 動画生成
+description: 動画生成タスクを作成し、結果をポーリングします。
+---
+
+`/v1/videos/generations` を使って動画生成タスクを作成します。
+
+```bash
+curl https://apiany.ai/v1/videos/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "seedance-2.0",
+    "prompt": "A cinematic product launch shot for an AI API platform",
+    "duration": "10s",
+    "resolution": "720p",
+    "ratio": "16:9"
+  }'
+```
+
+## 同期待機エンドポイント
+
+`/v1/videos/generations/sync` は動画タスクを作成し、同一の HTTP リクエスト内で結果を待機します。長時間かかるジョブには、非同期での作成とタスクのポーリングを推奨します。
