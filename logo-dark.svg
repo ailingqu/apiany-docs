@@ -1,0 +1,18 @@
+<svg width="180" height="44" viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="1" y="1" width="42" height="42" rx="12" fill="white" stroke="#E5E7EB" stroke-width="2"/>
+  <path d="M22 8L36 22L22 36L8 22L22 8Z" stroke="url(#g1)" stroke-width="3" fill="none"/>
+  <path d="M22 14L30 22L22 30L14 22L22 14Z" stroke="url(#g2)" stroke-width="3" fill="none"/>
+  <path d="M22 20L24 22L22 24L20 22L22 20Z" fill="#174CFF"/>
+  <text x="56" y="29" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF">APIAny.AI</text>
+  <defs>
+    <linearGradient id="g1" x1="8" y1="8" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="0.5" stop-color="#174CFF"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="14" y1="14" x2="30" y2="30" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+</svg>

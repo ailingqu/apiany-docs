@@ -14,7 +14,7 @@
   },
   "logo": {
     "light": "/logo.svg",
-    "dark": "/logo.svg",
+    "dark": "/logo-dark.svg",
     "href": "https://apiany.ai"
   },
   "navigation": {
@@ -36,7 +36,7 @@
           "primary": {
             "type": "button",
             "label": "Get API key",
-            "href": "https://apiany.ai/dashboard/api-keys"
+            "href": "https://apiany.ai/dashboard/apikeys"
           }
         },
         "tabs": [
@@ -126,7 +126,7 @@
           "primary": {
             "type": "button",
             "label": "获取 API Key",
-            "href": "https://apiany.ai/zh/dashboard/api-keys"
+            "href": "https://apiany.ai/zh/dashboard/apikeys"
           }
         },
         "tabs": [
