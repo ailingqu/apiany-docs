@@ -34,12 +34,20 @@
       "description": "動画生成エンドポイント。"
     },
     {
+      "name": "Moderation",
+      "description": "Image safety and moderation endpoints."
+    },
+    {
       "name": "Tasks",
       "description": "非同期タスク照会。"
     },
     {
       "name": "Account",
       "description": "アカウントおよびクレジットの照会。"
+    },
+    {
+      "name": "Free APIs",
+      "description": "Free utility APIs protected by API key rate limits."
     }
   ],
   "paths": {
@@ -659,6 +667,95 @@
           }
         }
       }
+    },
+    "/v1/moderations": {
+      "post": {
+        "operationId": "createModeration",
+        "summary": "Create image moderation result",
+        "description": "Classifies an image with a public moderation model and returns a normalized safety result.",
+        "tags": [
+          "Moderation"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationRequest"
+              },
+              "examples": {
+                "imageUrl": {
+                  "value": {
+                    "model": "nsfw-image-detection",
+                    "image_url": "https://example.com/image.png"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Moderation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/free/ip-geo": {
+      "get": {
+        "operationId": "lookupIpGeo",
+        "summary": "Lookup IP geolocation",
+        "description": "Returns country, region, and city for an IP address when GeoIP data is available.",
+        "tags": [
+          "Free APIs"
+        ],
+        "parameters": [
+          {
+            "name": "ip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "8.8.8.8",
+            "description": "IP address to look up. If omitted, the caller IP is used when proxy headers are available."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "IP geolocation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpGeoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "description": "Free API rate limit exceeded."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -860,15 +957,37 @@
           },
           "stop": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "string" } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             ],
             "description": "最大 4 個の停止シーケンス。"
           },
-          "n": { "type": "integer", "minimum": 1, "description": "生成する候補数。" },
-          "frequency_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
-          "presence_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
-          "seed": { "type": "integer", "description": "できる限り再現可能なサンプリングシード。" },
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "生成する候補数。"
+          },
+          "frequency_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2
+          },
+          "presence_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2
+          },
+          "seed": {
+            "type": "integer",
+            "description": "できる限り再現可能なサンプリングシード。"
+          },
           "response_format": {
             "type": "object",
             "description": "JSON オブジェクトまたは JSON Schema 出力を強制します（例: { \"type\": \"json_object\" }）。",
@@ -877,19 +996,39 @@
           "tools": {
             "type": "array",
             "description": "モデルが呼び出せるツール／関数の宣言。",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "description": "ツール選択: 'auto' | 'none' | 'required' | { type: 'function', function: { name } }。",
             "oneOf": [
-              { "type": "string" },
-              { "type": "object", "additionalProperties": true }
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
             ]
           },
-          "logprobs": { "type": "boolean" },
-          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
-          "logit_bias": { "type": "object", "additionalProperties": true },
-          "user": { "type": "string", "description": "リスク監査のためのエンドユーザー識別子。" },
+          "logprobs": {
+            "type": "boolean"
+          },
+          "top_logprobs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "logit_bias": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "user": {
+            "type": "string",
+            "description": "リスク監査のためのエンドユーザー識別子。"
+          },
           "stream": {
             "type": "boolean",
             "description": "true の場合、増分を SSE でストリーミング返却します（OpenAI chat.completion.chunk）。'data: [DONE]' で終了します。"
@@ -978,7 +1117,9 @@
           "input": {
             "description": "Responses の入力。文字列、または message / tool-result item の配列を指定できます。",
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "array",
                 "items": {
@@ -1061,7 +1202,9 @@
           },
           "tool_choice": {
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "object",
                 "additionalProperties": true
@@ -1171,8 +1314,16 @@
           },
           "system": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
             ],
             "description": "システムプロンプト。"
           },
@@ -1182,17 +1333,29 @@
             "maximum": 1,
             "description": "ランダム性（0〜1）。"
           },
-          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
-          "top_k": { "type": "integer", "description": "各トークンで確率が最も高い上位 K 個の候補のみからサンプリングします。" },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "各トークンで確率が最も高い上位 K 個の候補のみからサンプリングします。"
+          },
           "stop_sequences": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "カスタムの停止シーケンス。"
           },
           "tools": {
             "type": "array",
             "description": "モデルが呼び出せるツール。各ツールは name、description、input_schema（JSON Schema）を含みます。",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "type": "object",
@@ -1274,11 +1437,26 @@
             "type": "object",
             "description": "生成設定。なお、:generateContent ではなく :streamGenerateContent を呼び出すと Gemini SSE ストリームを取得できます。",
             "properties": {
-              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
-              "topP": { "type": "number" },
-              "topK": { "type": "integer" },
-              "maxOutputTokens": { "type": "integer" },
-              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2
+              },
+              "topP": {
+                "type": "number"
+              },
+              "topK": {
+                "type": "integer"
+              },
+              "maxOutputTokens": {
+                "type": "integer"
+              },
+              "stopSequences": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
               "responseMimeType": {
                 "type": "string",
                 "description": "構造化出力に使用します（例: 'application/json'）。"
@@ -1290,7 +1468,9 @@
               },
               "responseModalities": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "'IMAGE' を含めると画像生成結果を返します。"
               }
             },
@@ -1299,7 +1479,10 @@
           "tools": {
             "type": "array",
             "description": "functionDeclarations を含むツール宣言。",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "systemInstruction": {
             "type": "object",
@@ -1653,6 +1836,147 @@
           }
         },
         "additionalProperties": true
+      },
+      "ModerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Image URL to classify."
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "string",
+                "format": "uri",
+                "description": "Alternative nested image URL."
+              }
+            }
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "image_url"
+            ]
+          },
+          {
+            "required": [
+              "input"
+            ]
+          }
+        ]
+      },
+      "ModerationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "moderation"
+          },
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "created": {
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "flagged": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "string",
+                  "example": "normal"
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "flagged",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": [
+          "object",
+          "model",
+          "results"
+        ]
+      },
+      "IpGeoResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "ip_geo"
+          },
+          "request_id": {
+            "type": "string",
+            "example": "req_123"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "ip": {
+                "type": "string",
+                "example": "8.8.8.8"
+              },
+              "country": {
+                "type": "string",
+                "example": "US"
+              },
+              "region": {
+                "type": "string",
+                "example": "California"
+              },
+              "city": {
+                "type": "string",
+                "example": "Mountain View"
+              },
+              "source": {
+                "type": "string",
+                "example": "maxmind-city"
+              }
+            },
+            "required": [
+              "ip",
+              "country",
+              "region",
+              "city",
+              "source"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "request_id",
+          "data"
+        ]
       }
     }
   }

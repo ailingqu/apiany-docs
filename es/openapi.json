@@ -34,12 +34,20 @@
       "description": "Endpoints de generación de vídeo."
     },
     {
+      "name": "Moderation",
+      "description": "Image safety and moderation endpoints."
+    },
+    {
       "name": "Tasks",
       "description": "Consulta de tareas asíncronas."
     },
     {
       "name": "Account",
       "description": "Cuenta y consulta de créditos."
+    },
+    {
+      "name": "Free APIs",
+      "description": "Free utility APIs protected by API key rate limits."
     }
   ],
   "paths": {
@@ -659,6 +667,95 @@
           }
         }
       }
+    },
+    "/v1/moderations": {
+      "post": {
+        "operationId": "createModeration",
+        "summary": "Create image moderation result",
+        "description": "Classifies an image with a public moderation model and returns a normalized safety result.",
+        "tags": [
+          "Moderation"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationRequest"
+              },
+              "examples": {
+                "imageUrl": {
+                  "value": {
+                    "model": "nsfw-image-detection",
+                    "image_url": "https://example.com/image.png"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Moderation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/free/ip-geo": {
+      "get": {
+        "operationId": "lookupIpGeo",
+        "summary": "Lookup IP geolocation",
+        "description": "Returns country, region, and city for an IP address when GeoIP data is available.",
+        "tags": [
+          "Free APIs"
+        ],
+        "parameters": [
+          {
+            "name": "ip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "8.8.8.8",
+            "description": "IP address to look up. If omitted, the caller IP is used when proxy headers are available."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "IP geolocation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpGeoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "description": "Free API rate limit exceeded."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -860,15 +957,37 @@
           },
           "stop": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "string" } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             ],
             "description": "Hasta 4 secuencias de parada."
           },
-          "n": { "type": "integer", "minimum": 1, "description": "Número de candidatos a generar." },
-          "frequency_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
-          "presence_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
-          "seed": { "type": "integer", "description": "Semilla de muestreo lo más reproducible posible." },
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Número de candidatos a generar."
+          },
+          "frequency_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2
+          },
+          "presence_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2
+          },
+          "seed": {
+            "type": "integer",
+            "description": "Semilla de muestreo lo más reproducible posible."
+          },
           "response_format": {
             "type": "object",
             "description": "Fuerza la salida como objeto JSON o JSON Schema, p. ej. { \"type\": \"json_object\" }.",
@@ -877,19 +996,39 @@
           "tools": {
             "type": "array",
             "description": "Declaraciones de herramientas/funciones que el modelo puede invocar.",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "description": "Selección de herramienta: 'auto' | 'none' | 'required' | { type: 'function', function: { name } }.",
             "oneOf": [
-              { "type": "string" },
-              { "type": "object", "additionalProperties": true }
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
             ]
           },
-          "logprobs": { "type": "boolean" },
-          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
-          "logit_bias": { "type": "object", "additionalProperties": true },
-          "user": { "type": "string", "description": "Identificador del usuario final, para auditoría de riesgos." },
+          "logprobs": {
+            "type": "boolean"
+          },
+          "top_logprobs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "logit_bias": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "user": {
+            "type": "string",
+            "description": "Identificador del usuario final, para auditoría de riesgos."
+          },
           "stream": {
             "type": "boolean",
             "description": "Cuando es true, los incrementos se devuelven en streaming mediante SSE (OpenAI chat.completion.chunk) y terminan con 'data: [DONE]'."
@@ -978,7 +1117,9 @@
           "input": {
             "description": "Input de Responses. Puede ser una cadena o un array de items message / tool-result.",
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "array",
                 "items": {
@@ -1061,7 +1202,9 @@
           },
           "tool_choice": {
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "object",
                 "additionalProperties": true
@@ -1171,8 +1314,16 @@
           },
           "system": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
             ],
             "description": "Prompt del sistema."
           },
@@ -1182,17 +1333,29 @@
             "maximum": 1,
             "description": "Aleatoriedad (0–1)."
           },
-          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
-          "top_k": { "type": "integer", "description": "Muestrea solo entre los K candidatos de mayor probabilidad." },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "Muestrea solo entre los K candidatos de mayor probabilidad."
+          },
           "stop_sequences": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Secuencias de parada personalizadas."
           },
           "tools": {
             "type": "array",
             "description": "Herramientas que el modelo puede invocar; cada una incluye name, description e input_schema (JSON Schema).",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "type": "object",
@@ -1274,11 +1437,26 @@
             "type": "object",
             "description": "Configuración de generación. Además: llamar a :streamGenerateContent (en lugar de :generateContent) permite obtener un flujo SSE de Gemini.",
             "properties": {
-              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
-              "topP": { "type": "number" },
-              "topK": { "type": "integer" },
-              "maxOutputTokens": { "type": "integer" },
-              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2
+              },
+              "topP": {
+                "type": "number"
+              },
+              "topK": {
+                "type": "integer"
+              },
+              "maxOutputTokens": {
+                "type": "integer"
+              },
+              "stopSequences": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
               "responseMimeType": {
                 "type": "string",
                 "description": "P. ej. 'application/json' para salida estructurada."
@@ -1290,7 +1468,9 @@
               },
               "responseModalities": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Incluye 'IMAGE' para devolver resultados de generación de imágenes."
               }
             },
@@ -1299,7 +1479,10 @@
           "tools": {
             "type": "array",
             "description": "Declaraciones de herramientas con functionDeclarations.",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "systemInstruction": {
             "type": "object",
@@ -1653,6 +1836,147 @@
           }
         },
         "additionalProperties": true
+      },
+      "ModerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Image URL to classify."
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "string",
+                "format": "uri",
+                "description": "Alternative nested image URL."
+              }
+            }
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "image_url"
+            ]
+          },
+          {
+            "required": [
+              "input"
+            ]
+          }
+        ]
+      },
+      "ModerationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "moderation"
+          },
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "created": {
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "flagged": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "string",
+                  "example": "normal"
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "flagged",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": [
+          "object",
+          "model",
+          "results"
+        ]
+      },
+      "IpGeoResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "ip_geo"
+          },
+          "request_id": {
+            "type": "string",
+            "example": "req_123"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "ip": {
+                "type": "string",
+                "example": "8.8.8.8"
+              },
+              "country": {
+                "type": "string",
+                "example": "US"
+              },
+              "region": {
+                "type": "string",
+                "example": "California"
+              },
+              "city": {
+                "type": "string",
+                "example": "Mountain View"
+              },
+              "source": {
+                "type": "string",
+                "example": "maxmind-city"
+              }
+            },
+            "required": [
+              "ip",
+              "country",
+              "region",
+              "city",
+              "source"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "request_id",
+          "data"
+        ]
       }
     }
   }

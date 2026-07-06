@@ -1,0 +1,15 @@
+---
+title: IP geolocation
+description: Resolve an IP address to country, region, and city as a free API.
+---
+
+Use `/api/free/ip-geo` to look up IP geolocation data. This endpoint is part of
+the Free API group and uses the same API key authentication and rate limits.
+
+```bash
+curl "https://apiany.ai/api/free/ip-geo?ip=8.8.8.8" \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+If `ip` is omitted, the endpoint uses the caller IP when trusted proxy headers
+are available.

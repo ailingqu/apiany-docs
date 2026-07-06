@@ -34,12 +34,20 @@
       "description": "동영상 생성 엔드포인트입니다."
     },
     {
+      "name": "Moderation",
+      "description": "Image safety and moderation endpoints."
+    },
+    {
       "name": "Tasks",
       "description": "비동기 작업 조회입니다."
     },
     {
       "name": "Account",
       "description": "계정 및 크레딧 조회입니다."
+    },
+    {
+      "name": "Free APIs",
+      "description": "Free utility APIs protected by API key rate limits."
     }
   ],
   "paths": {
@@ -659,6 +667,95 @@
           }
         }
       }
+    },
+    "/v1/moderations": {
+      "post": {
+        "operationId": "createModeration",
+        "summary": "Create image moderation result",
+        "description": "Classifies an image with a public moderation model and returns a normalized safety result.",
+        "tags": [
+          "Moderation"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationRequest"
+              },
+              "examples": {
+                "imageUrl": {
+                  "value": {
+                    "model": "nsfw-image-detection",
+                    "image_url": "https://example.com/image.png"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Moderation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/free/ip-geo": {
+      "get": {
+        "operationId": "lookupIpGeo",
+        "summary": "Lookup IP geolocation",
+        "description": "Returns country, region, and city for an IP address when GeoIP data is available.",
+        "tags": [
+          "Free APIs"
+        ],
+        "parameters": [
+          {
+            "name": "ip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "8.8.8.8",
+            "description": "IP address to look up. If omitted, the caller IP is used when proxy headers are available."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "IP geolocation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpGeoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "description": "Free API rate limit exceeded."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -860,15 +957,37 @@
           },
           "stop": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "string" } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             ],
             "description": "최대 4개의 정지 시퀀스입니다."
           },
-          "n": { "type": "integer", "minimum": 1, "description": "생성할 후보 응답 수입니다." },
-          "frequency_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
-          "presence_penalty": { "type": "number", "minimum": -2, "maximum": 2 },
-          "seed": { "type": "integer", "description": "가능한 한 재현 가능한 샘플링 시드입니다." },
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "생성할 후보 응답 수입니다."
+          },
+          "frequency_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2
+          },
+          "presence_penalty": {
+            "type": "number",
+            "minimum": -2,
+            "maximum": 2
+          },
+          "seed": {
+            "type": "integer",
+            "description": "가능한 한 재현 가능한 샘플링 시드입니다."
+          },
           "response_format": {
             "type": "object",
             "description": "JSON 객체 또는 JSON Schema 출력을 강제합니다. 예: { \"type\": \"json_object\" }.",
@@ -877,19 +996,39 @@
           "tools": {
             "type": "array",
             "description": "모델이 호출할 수 있는 도구/함수 선언입니다.",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "description": "도구 선택: 'auto' | 'none' | 'required' | { type: 'function', function: { name } }.",
             "oneOf": [
-              { "type": "string" },
-              { "type": "object", "additionalProperties": true }
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
             ]
           },
-          "logprobs": { "type": "boolean" },
-          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
-          "logit_bias": { "type": "object", "additionalProperties": true },
-          "user": { "type": "string", "description": "오남용 모니터링을 위한 최종 사용자 식별자입니다." },
+          "logprobs": {
+            "type": "boolean"
+          },
+          "top_logprobs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "logit_bias": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "user": {
+            "type": "string",
+            "description": "오남용 모니터링을 위한 최종 사용자 식별자입니다."
+          },
           "stream": {
             "type": "boolean",
             "description": "true이면 SSE로 증분 델타를 스트리밍하며(OpenAI chat.completion.chunk), 'data: [DONE]'로 종료됩니다."
@@ -978,7 +1117,9 @@
           "input": {
             "description": "Responses 입력입니다. 문자열일 수도 있고, message / tool-result 항목 배열일 수도 있습니다.",
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "array",
                 "items": {
@@ -1061,7 +1202,9 @@
           },
           "tool_choice": {
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "object",
                 "additionalProperties": true
@@ -1171,8 +1314,16 @@
           },
           "system": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
             ],
             "description": "시스템 프롬프트입니다."
           },
@@ -1182,17 +1333,29 @@
             "maximum": 1,
             "description": "응답에 주입되는 무작위성입니다(0–1)."
           },
-          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
-          "top_k": { "type": "integer", "description": "각 토큰에 대해 확률이 가장 높은 K개 후보에서만 샘플링합니다." },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "top_k": {
+            "type": "integer",
+            "description": "각 토큰에 대해 확률이 가장 높은 K개 후보에서만 샘플링합니다."
+          },
           "stop_sequences": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "생성을 중단시키는 사용자 지정 시퀀스입니다."
           },
           "tools": {
             "type": "array",
             "description": "모델이 호출할 수 있는 도구이며, 각 도구는 name, description, input_schema(JSON Schema)를 가집니다.",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "type": "object",
@@ -1274,11 +1437,26 @@
             "type": "object",
             "description": "생성 설정입니다. 참고로, :generateContent 대신 :streamGenerateContent를 호출하면 Gemini SSE 스트림을 받을 수 있습니다.",
             "properties": {
-              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
-              "topP": { "type": "number" },
-              "topK": { "type": "integer" },
-              "maxOutputTokens": { "type": "integer" },
-              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2
+              },
+              "topP": {
+                "type": "number"
+              },
+              "topK": {
+                "type": "integer"
+              },
+              "maxOutputTokens": {
+                "type": "integer"
+              },
+              "stopSequences": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
               "responseMimeType": {
                 "type": "string",
                 "description": "구조화된 출력에는 'application/json'과 같이 지정합니다."
@@ -1290,7 +1468,9 @@
               },
               "responseModalities": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "'IMAGE'를 포함하면 이미지 생성 결과를 반환합니다."
               }
             },
@@ -1299,7 +1479,10 @@
           "tools": {
             "type": "array",
             "description": "모델이 호출할 수 있는 functionDeclarations를 포함하는 도구입니다.",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "systemInstruction": {
             "type": "object",
@@ -1653,6 +1836,147 @@
           }
         },
         "additionalProperties": true
+      },
+      "ModerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Image URL to classify."
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "string",
+                "format": "uri",
+                "description": "Alternative nested image URL."
+              }
+            }
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "image_url"
+            ]
+          },
+          {
+            "required": [
+              "input"
+            ]
+          }
+        ]
+      },
+      "ModerationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "moderation"
+          },
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "created": {
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "flagged": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "string",
+                  "example": "normal"
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "flagged",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": [
+          "object",
+          "model",
+          "results"
+        ]
+      },
+      "IpGeoResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "ip_geo"
+          },
+          "request_id": {
+            "type": "string",
+            "example": "req_123"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "ip": {
+                "type": "string",
+                "example": "8.8.8.8"
+              },
+              "country": {
+                "type": "string",
+                "example": "US"
+              },
+              "region": {
+                "type": "string",
+                "example": "California"
+              },
+              "city": {
+                "type": "string",
+                "example": "Mountain View"
+              },
+              "source": {
+                "type": "string",
+                "example": "maxmind-city"
+              }
+            },
+            "required": [
+              "ip",
+              "country",
+              "region",
+              "city",
+              "source"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "request_id",
+          "data"
+        ]
       }
     }
   }

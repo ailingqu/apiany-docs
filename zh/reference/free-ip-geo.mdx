@@ -1,0 +1,30 @@
+---
+title: IP 地区查询
+description: 免费查询 IP 对应的国家、地区和城市。
+---
+
+使用 `/api/free/ip-geo` 查询 IP 地理位置。该接口属于 Free API，使用同一套 API Key
+鉴权和免费接口限速规则。
+
+```bash
+curl "https://apiany.ai/api/free/ip-geo?ip=8.8.8.8" \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+如果不传 `ip`，接口会在可信代理请求头可用时使用调用方 IP。
+
+```json
+{
+  "object": "ip_geo",
+  "request_id": "req_123",
+  "data": {
+    "ip": "8.8.8.8",
+    "country": "US",
+    "region": "California",
+    "city": "Mountain View",
+    "source": "maxmind-city"
+  }
+}
+```
+
+如果 `country`、`region` 或 `city` 为空，表示本地 GeoIP 数据库没有匹配到对应信息。

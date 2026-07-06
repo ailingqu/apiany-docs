@@ -76,6 +76,8 @@
                   "reference/gemini-generate-content",
                   "reference/image-generation",
                   "reference/video-generation",
+                  "reference/moderations",
+                  "reference/free-ip-geo",
                   "reference/tasks"
                 ]
               },
@@ -166,6 +168,8 @@
                   "fr/reference/gemini-generate-content",
                   "fr/reference/image-generation",
                   "fr/reference/video-generation",
+                  "fr/reference/moderations",
+                  "fr/reference/free-ip-geo",
                   "fr/reference/tasks"
                 ]
               },
@@ -256,6 +260,8 @@
                   "de/reference/gemini-generate-content",
                   "de/reference/image-generation",
                   "de/reference/video-generation",
+                  "de/reference/moderations",
+                  "de/reference/free-ip-geo",
                   "de/reference/tasks"
                 ]
               },
@@ -346,6 +352,8 @@
                   "zh/reference/gemini-generate-content",
                   "zh/reference/image-generation",
                   "zh/reference/video-generation",
+                  "zh/reference/moderations",
+                  "zh/reference/free-ip-geo",
                   "zh/reference/tasks"
                 ]
               },
@@ -436,6 +444,8 @@
                   "ja/reference/gemini-generate-content",
                   "ja/reference/image-generation",
                   "ja/reference/video-generation",
+                  "ja/reference/moderations",
+                  "ja/reference/free-ip-geo",
                   "ja/reference/tasks"
                 ]
               },
@@ -526,6 +536,8 @@
                   "ko/reference/gemini-generate-content",
                   "ko/reference/image-generation",
                   "ko/reference/video-generation",
+                  "ko/reference/moderations",
+                  "ko/reference/free-ip-geo",
                   "ko/reference/tasks"
                 ]
               },
@@ -616,6 +628,8 @@
                   "es/reference/gemini-generate-content",
                   "es/reference/image-generation",
                   "es/reference/video-generation",
+                  "es/reference/moderations",
+                  "es/reference/free-ip-geo",
                   "es/reference/tasks"
                 ]
               },

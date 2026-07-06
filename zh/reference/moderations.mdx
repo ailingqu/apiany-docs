@@ -1,0 +1,35 @@
+---
+title: 内容安全检测
+description: 使用公开安全检测模型识别图片是否包含不适宜内容。
+---
+
+使用 `/v1/moderations` 对图片进行安全检测，并获得统一格式的检测结果。
+
+```bash
+curl https://apiany.ai/v1/moderations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nsfw-image-detection",
+    "image_url": "https://example.com/image.png"
+  }'
+```
+
+响应会返回标准化的检测结果：
+
+```json
+{
+  "object": "moderation",
+  "model": "nsfw-image-detection",
+  "results": [
+    {
+      "flagged": false,
+      "label": "normal",
+      "score": 0.02
+    }
+  ]
+}
+```
+
+业务侧建议优先使用 `flagged` 做放行或拦截判断。`label` 和 `score` 可用于人工复核、
+日志记录或更细的二次阈值策略。

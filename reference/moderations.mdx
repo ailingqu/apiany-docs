@@ -1,0 +1,35 @@
+---
+title: Moderation
+description: Classify image safety with a public moderation model.
+---
+
+Use `/v1/moderations` to classify an image and receive a normalized safety result.
+
+```bash
+curl https://apiany.ai/v1/moderations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "nsfw-image-detection",
+    "image_url": "https://example.com/image.png"
+  }'
+```
+
+The response follows a compact moderation shape:
+
+```json
+{
+  "object": "moderation",
+  "model": "nsfw-image-detection",
+  "results": [
+    {
+      "flagged": false,
+      "label": "normal",
+      "score": 0.02
+    }
+  ]
+}
+```
+
+`flagged` is the field you should use for allow/block decisions. Keep the raw
+label and score for review workflows, logging, or secondary thresholds.

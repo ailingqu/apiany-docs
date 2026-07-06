@@ -34,12 +34,20 @@
       "description": "Video generation endpoints."
     },
     {
+      "name": "Moderation",
+      "description": "Image safety and moderation endpoints."
+    },
+    {
       "name": "Tasks",
       "description": "Async task lookup."
     },
     {
       "name": "Account",
       "description": "Account and credit visibility."
+    },
+    {
+      "name": "Free APIs",
+      "description": "Free utility APIs protected by API key rate limits."
     }
   ],
   "paths": {
@@ -658,6 +666,95 @@
           }
         }
       }
+    },
+    "/v1/moderations": {
+      "post": {
+        "operationId": "createModeration",
+        "summary": "Create image moderation result",
+        "description": "Classifies an image with a public moderation model and returns a normalized safety result.",
+        "tags": [
+          "Moderation"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerationRequest"
+              },
+              "examples": {
+                "imageUrl": {
+                  "value": {
+                    "model": "nsfw-image-detection",
+                    "image_url": "https://example.com/image.png"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Moderation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModerationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/api/free/ip-geo": {
+      "get": {
+        "operationId": "lookupIpGeo",
+        "summary": "Lookup IP geolocation",
+        "description": "Returns country, region, and city for an IP address when GeoIP data is available.",
+        "tags": [
+          "Free APIs"
+        ],
+        "parameters": [
+          {
+            "name": "ip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "8.8.8.8",
+            "description": "IP address to look up. If omitted, the caller IP is used when proxy headers are available."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "IP geolocation result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IpGeoResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "429": {
+            "description": "Free API rate limit exceeded."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -859,8 +956,15 @@
           },
           "stop": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "string" } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
             ],
             "description": "Up to 4 stop sequences."
           },
@@ -891,18 +995,35 @@
           "tools": {
             "type": "array",
             "description": "Tool / function declarations the model may call.",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "description": "Tool selection: 'auto' | 'none' | 'required' | { type: 'function', function: { name } }.",
             "oneOf": [
-              { "type": "string" },
-              { "type": "object", "additionalProperties": true }
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "additionalProperties": true
+              }
             ]
           },
-          "logprobs": { "type": "boolean" },
-          "top_logprobs": { "type": "integer", "minimum": 0, "maximum": 20 },
-          "logit_bias": { "type": "object", "additionalProperties": true },
+          "logprobs": {
+            "type": "boolean"
+          },
+          "top_logprobs": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "logit_bias": {
+            "type": "object",
+            "additionalProperties": true
+          },
           "user": {
             "type": "string",
             "description": "End-user identifier for abuse monitoring."
@@ -995,7 +1116,9 @@
           "input": {
             "description": "Responses input. Can be a string or an array of message / tool-result items.",
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "array",
                 "items": {
@@ -1078,7 +1201,9 @@
           },
           "tool_choice": {
             "oneOf": [
-              { "type": "string" },
+              {
+                "type": "string"
+              },
               {
                 "type": "object",
                 "additionalProperties": true
@@ -1188,8 +1313,16 @@
           },
           "system": {
             "oneOf": [
-              { "type": "string" },
-              { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
             ],
             "description": "System prompt."
           },
@@ -1199,20 +1332,29 @@
             "maximum": 1,
             "description": "Amount of randomness injected into the response (0–1)."
           },
-          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
+          "top_p": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
           "top_k": {
             "type": "integer",
             "description": "Only sample from the top K options for each token."
           },
           "stop_sequences": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Custom sequences that stop generation."
           },
           "tools": {
             "type": "array",
             "description": "Tools the model may call; each has name, description and input_schema (JSON Schema).",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "tool_choice": {
             "type": "object",
@@ -1294,11 +1436,26 @@
             "type": "object",
             "description": "Generation config. Also note: call :streamGenerateContent (instead of :generateContent) to receive a Gemini SSE stream.",
             "properties": {
-              "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
-              "topP": { "type": "number" },
-              "topK": { "type": "integer" },
-              "maxOutputTokens": { "type": "integer" },
-              "stopSequences": { "type": "array", "items": { "type": "string" } },
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2
+              },
+              "topP": {
+                "type": "number"
+              },
+              "topK": {
+                "type": "integer"
+              },
+              "maxOutputTokens": {
+                "type": "integer"
+              },
+              "stopSequences": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
               "responseMimeType": {
                 "type": "string",
                 "description": "e.g. 'application/json' for structured output."
@@ -1310,7 +1467,9 @@
               },
               "responseModalities": {
                 "type": "array",
-                "items": { "type": "string" },
+                "items": {
+                  "type": "string"
+                },
                 "description": "Include 'IMAGE' for image-generation responses."
               }
             },
@@ -1319,7 +1478,10 @@
           "tools": {
             "type": "array",
             "description": "Tools with functionDeclarations the model may call.",
-            "items": { "type": "object", "additionalProperties": true }
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           },
           "systemInstruction": {
             "type": "object",
@@ -1673,6 +1835,147 @@
           }
         },
         "additionalProperties": true
+      },
+      "ModerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Image URL to classify."
+          },
+          "input": {
+            "type": "object",
+            "properties": {
+              "image": {
+                "type": "string",
+                "format": "uri",
+                "description": "Alternative nested image URL."
+              }
+            }
+          }
+        },
+        "required": [
+          "model"
+        ],
+        "anyOf": [
+          {
+            "required": [
+              "image_url"
+            ]
+          },
+          {
+            "required": [
+              "input"
+            ]
+          }
+        ]
+      },
+      "ModerationResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string",
+            "example": "moderation"
+          },
+          "model": {
+            "type": "string",
+            "example": "nsfw-image-detection"
+          },
+          "created": {
+            "type": [
+              "string",
+              "integer",
+              "null"
+            ]
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "flagged": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "string",
+                  "example": "normal"
+                },
+                "score": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              },
+              "required": [
+                "flagged",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": [
+          "object",
+          "model",
+          "results"
+        ]
+      },
+      "IpGeoResponse": {
+        "type": "object",
+        "properties": {
+          "object": {
+            "type": "string",
+            "example": "ip_geo"
+          },
+          "request_id": {
+            "type": "string",
+            "example": "req_123"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "ip": {
+                "type": "string",
+                "example": "8.8.8.8"
+              },
+              "country": {
+                "type": "string",
+                "example": "US"
+              },
+              "region": {
+                "type": "string",
+                "example": "California"
+              },
+              "city": {
+                "type": "string",
+                "example": "Mountain View"
+              },
+              "source": {
+                "type": "string",
+                "example": "maxmind-city"
+              }
+            },
+            "required": [
+              "ip",
+              "country",
+              "region",
+              "city",
+              "source"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "request_id",
+          "data"
+        ]
       }
     }
   }
