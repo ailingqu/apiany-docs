@@ -16,6 +16,7 @@ Important pages:
 - Image generation: /reference/image-generation
 - Video generation: /reference/video-generation
 - Tasks: /reference/tasks
+- Batch image APIs: /reference/batch-image-apis
 - OpenAPI specification: /openapi.json
 - Chinese OpenAPI specification: /zh/openapi.json
 

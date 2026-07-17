@@ -1,0 +1,37 @@
+---
+title: Batch image APIs
+description: Convert, resize, crop, rotate, inspect, analyze, and hash multiple images with paid batch endpoints.
+---
+
+The seven batch image endpoints process multiple files with one shared setting. They require an API key from a paid account. Each submitted batch counts as one API request.
+
+| Endpoint | Result |
+| --- | --- |
+| `/api/free/batch-convert-images` | ZIP with converted files and `manifest.json` |
+| `/api/free/batch-resize-images` | ZIP with resized files and `manifest.json` |
+| `/api/free/batch-crop-images` | ZIP with cropped files and `manifest.json` |
+| `/api/free/batch-rotate-images` | ZIP with rotated files and `manifest.json` |
+| `/api/free/batch-image-metadata` | Ordered JSON metadata results |
+| `/api/free/batch-color-palette` | Ordered JSON palette results |
+| `/api/free/batch-image-hash` | Ordered JSON SHA-256 results |
+
+The API accepts up to 20 files and 100 MB total per request, with a 30 MB limit per file. Files are processed independently, so one invalid image does not remove successful results.
+
+```bash
+curl -X POST "https://apiany.ai/api/free/batch-convert-images" \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -F "files=@a.png" \
+  -F "files=@b.jpg" \
+  -F "format=webp" \
+  -F "quality=82" \
+  --output converted-images.zip
+```
+
+For analysis output, send repeated `files` fields in the same way:
+
+```bash
+curl -X POST "https://apiany.ai/api/free/batch-image-hash" \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -F "files=@a.png" \
+  -F "files=@b.jpg"
+```

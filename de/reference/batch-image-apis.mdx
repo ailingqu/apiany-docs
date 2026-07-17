@@ -1,0 +1,10 @@
+---
+title: Batch-Bild-APIs
+description: Mehrere Bilder mit bezahlten Batch-Endpunkten konvertieren, skalieren, zuschneiden, drehen und analysieren.
+---
+
+Die sieben Batch-Bild-Endpunkte benötigen einen API-Schlüssel eines bezahlten Kontos. Jeder eingereichte Batch zählt als eine API-Anfrage.
+
+Die API akzeptiert bis zu 20 Dateien und insgesamt 100 MB, mit maximal 30 MB pro Datei. Dateien werden unabhängig verarbeitet; einzelne Fehler entfernen keine erfolgreichen Ergebnisse.
+
+Transformations-Endpunkte liefern ein ZIP mit `manifest.json`, Analyse-Endpunkte geordnete JSON-Ergebnisse. Verwenden Sie wiederholte `files`-Felder für alle Eingabebilder.

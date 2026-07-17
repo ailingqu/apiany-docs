@@ -1,0 +1,10 @@
+---
+title: API de imágenes por lotes
+description: Convierte, redimensiona, recorta, rota y analiza varias imágenes con endpoints de pago.
+---
+
+Los siete endpoints de imágenes por lotes requieren una clave API de una cuenta de pago. Cada lote enviado cuenta como una solicitud API.
+
+La API admite hasta 20 archivos y 100 MB en total, con un máximo de 30 MB por archivo. Los archivos se procesan por separado; un error no elimina los resultados correctos.
+
+Las transformaciones devuelven un ZIP con `manifest.json`; los análisis devuelven JSON ordenado. Envía un campo `files` repetido por cada imagen.

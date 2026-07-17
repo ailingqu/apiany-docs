@@ -755,6 +755,839 @@
           }
         }
       }
+    },
+    "/api/free/batch-convert-images": {
+      "post": {
+        "operationId": "batchConvertImages",
+        "summary": "Batch convert images",
+        "description": "Convert multiple images to one selected format and receive successful outputs in a ZIP archive with a manifest. This endpoint requires an API key from a paid account. One submitted batch counts as one API request.",
+        "tags": [
+          "Free APIs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files. Each file can be up to 30 MB; the combined API request can be up to 100 MB."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "webp",
+                      "png",
+                      "jpeg",
+                      "avif"
+                    ],
+                    "default": "webp"
+                  },
+                  "quality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 82
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ZIP archive containing successful image outputs and manifest.json with ordered per-file results.",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The API key does not belong to an eligible paid account."
+          },
+          "413": {
+            "description": "File count, single-file size, or combined request size exceeds the documented limit."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/free/batch-resize-images": {
+      "post": {
+        "operationId": "batchResizeImages",
+        "summary": "Batch resize images",
+        "description": "Apply one dimension, fit mode, output format, and quality setting to multiple images. This endpoint requires an API key from a paid account. One submitted batch counts as one API request.",
+        "tags": [
+          "Free APIs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files",
+                  "width"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files. Each file can be up to 30 MB; the combined API request can be up to 100 MB."
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8192,
+                    "default": 1200
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8192
+                  },
+                  "fit": {
+                    "type": "string",
+                    "enum": [
+                      "cover",
+                      "contain",
+                      "fill",
+                      "inside",
+                      "outside"
+                    ],
+                    "default": "inside"
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "webp",
+                      "png",
+                      "jpeg"
+                    ],
+                    "default": "webp"
+                  },
+                  "quality": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 100,
+                    "default": 82
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ZIP archive containing successful image outputs and manifest.json with ordered per-file results.",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The API key does not belong to an eligible paid account."
+          },
+          "413": {
+            "description": "File count, single-file size, or combined request size exceeds the documented limit."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/free/batch-crop-images": {
+      "post": {
+        "operationId": "batchCropImages",
+        "summary": "Batch crop images",
+        "description": "Crop the same coordinate-based rectangle from multiple images with independent boundary validation. This endpoint requires an API key from a paid account. One submitted batch counts as one API request.",
+        "tags": [
+          "Free APIs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files",
+                  "left",
+                  "top",
+                  "width",
+                  "height"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files. Each file can be up to 30 MB; the combined API request can be up to 100 MB."
+                  },
+                  "left": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "top": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "default": 0
+                  },
+                  "width": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8192,
+                    "default": 500
+                  },
+                  "height": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8192,
+                    "default": 500
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "webp",
+                      "png",
+                      "jpeg"
+                    ],
+                    "default": "webp"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ZIP archive containing successful image outputs and manifest.json with ordered per-file results.",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The API key does not belong to an eligible paid account."
+          },
+          "413": {
+            "description": "File count, single-file size, or combined request size exceeds the documented limit."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/free/batch-rotate-images": {
+      "post": {
+        "operationId": "batchRotateImages",
+        "summary": "Batch rotate images",
+        "description": "Normalize orientation and apply one rotation or flip setting to multiple images. This endpoint requires an API key from a paid account. One submitted batch counts as one API request.",
+        "tags": [
+          "Free APIs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files. Each file can be up to 30 MB; the combined API request can be up to 100 MB."
+                  },
+                  "angle": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      90,
+                      180,
+                      270
+                    ],
+                    "default": 90
+                  },
+                  "flip": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "flop": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "webp",
+                      "png",
+                      "jpeg"
+                    ],
+                    "default": "webp"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "ZIP archive containing successful image outputs and manifest.json with ordered per-file results.",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The API key does not belong to an eligible paid account."
+          },
+          "413": {
+            "description": "File count, single-file size, or combined request size exceeds the documented limit."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/free/batch-image-metadata": {
+      "post": {
+        "operationId": "batchReadImageMetadata",
+        "summary": "Batch read image metadata",
+        "description": "Read a safe technical metadata allowlist for multiple images and return results in upload order. This endpoint requires an API key from a paid account. One submitted batch counts as one API request.",
+        "tags": [
+          "Free APIs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files. Each file can be up to 30 MB; the combined API request can be up to 100 MB."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ordered batch result. Invalid files are reported individually without removing successful results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "operation",
+                    "status",
+                    "summary",
+                    "results"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "completed",
+                        "partial",
+                        "failed"
+                      ]
+                    },
+                    "summary": {
+                      "type": "object",
+                      "required": [
+                        "total",
+                        "succeeded",
+                        "failed",
+                        "originalBytes"
+                      ],
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "succeeded": {
+                          "type": "integer"
+                        },
+                        "failed": {
+                          "type": "integer"
+                        },
+                        "originalBytes": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "index",
+                          "inputFilename",
+                          "status",
+                          "originalSize"
+                        ],
+                        "properties": {
+                          "index": {
+                            "type": "integer"
+                          },
+                          "inputFilename": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "succeeded",
+                              "failed"
+                            ]
+                          },
+                          "originalSize": {
+                            "type": "integer"
+                          },
+                          "data": {
+                            "type": "object",
+                            "additionalProperties": true
+                          },
+                          "error": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The API key does not belong to an eligible paid account."
+          },
+          "413": {
+            "description": "File count, single-file size, or combined request size exceeds the documented limit."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/free/batch-color-palette": {
+      "post": {
+        "operationId": "batchExtractColorPalettes",
+        "summary": "Batch extract color palettes",
+        "description": "Extract representative HEX colors and approximate proportions independently from multiple images. This endpoint requires an API key from a paid account. One submitted batch counts as one API request.",
+        "tags": [
+          "Free APIs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files. Each file can be up to 30 MB; the combined API request can be up to 100 MB."
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 3,
+                    "maximum": 8,
+                    "default": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ordered batch result. Invalid files are reported individually without removing successful results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "operation",
+                    "status",
+                    "summary",
+                    "results"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "completed",
+                        "partial",
+                        "failed"
+                      ]
+                    },
+                    "summary": {
+                      "type": "object",
+                      "required": [
+                        "total",
+                        "succeeded",
+                        "failed",
+                        "originalBytes"
+                      ],
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "succeeded": {
+                          "type": "integer"
+                        },
+                        "failed": {
+                          "type": "integer"
+                        },
+                        "originalBytes": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "index",
+                          "inputFilename",
+                          "status",
+                          "originalSize"
+                        ],
+                        "properties": {
+                          "index": {
+                            "type": "integer"
+                          },
+                          "inputFilename": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "succeeded",
+                              "failed"
+                            ]
+                          },
+                          "originalSize": {
+                            "type": "integer"
+                          },
+                          "data": {
+                            "type": "object",
+                            "additionalProperties": true
+                          },
+                          "error": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The API key does not belong to an eligible paid account."
+          },
+          "413": {
+            "description": "File count, single-file size, or combined request size exceeds the documented limit."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/api/free/batch-image-hash": {
+      "post": {
+        "operationId": "batchCalculateImageHashes",
+        "summary": "Batch calculate image hashes",
+        "description": "Calculate a SHA-256 checksum for each accepted image and return ordered per-file results. This endpoint requires an API key from a paid account. One submitted batch counts as one API request.",
+        "tags": [
+          "Free APIs"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "files"
+                ],
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 20,
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files. Each file can be up to 30 MB; the combined API request can be up to 100 MB."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Ordered batch result. Invalid files are reported individually without removing successful results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "requestId",
+                    "operation",
+                    "status",
+                    "summary",
+                    "results"
+                  ],
+                  "properties": {
+                    "requestId": {
+                      "type": "string"
+                    },
+                    "operation": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "completed",
+                        "partial",
+                        "failed"
+                      ]
+                    },
+                    "summary": {
+                      "type": "object",
+                      "required": [
+                        "total",
+                        "succeeded",
+                        "failed",
+                        "originalBytes"
+                      ],
+                      "properties": {
+                        "total": {
+                          "type": "integer"
+                        },
+                        "succeeded": {
+                          "type": "integer"
+                        },
+                        "failed": {
+                          "type": "integer"
+                        },
+                        "originalBytes": {
+                          "type": "integer"
+                        }
+                      }
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "index",
+                          "inputFilename",
+                          "status",
+                          "originalSize"
+                        ],
+                        "properties": {
+                          "index": {
+                            "type": "integer"
+                          },
+                          "inputFilename": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "succeeded",
+                              "failed"
+                            ]
+                          },
+                          "originalSize": {
+                            "type": "integer"
+                          },
+                          "data": {
+                            "type": "object",
+                            "additionalProperties": true
+                          },
+                          "error": {
+                            "type": "object",
+                            "properties": {
+                              "code": {
+                                "type": "string"
+                              },
+                              "message": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "The API key does not belong to an eligible paid account."
+          },
+          "413": {
+            "description": "File count, single-file size, or combined request size exceeds the documented limit."
+          },
+          "429": {
+            "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
     }
   },
   "components": {

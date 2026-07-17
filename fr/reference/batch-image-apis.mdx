@@ -1,0 +1,10 @@
+---
+title: API d’images par lot
+description: Convertissez, redimensionnez, recadrez, faites pivoter et analysez plusieurs images avec des endpoints payants.
+---
+
+Les sept endpoints d’images par lot exigent la clé API d’un compte payant. Chaque lot soumis compte comme une requête API.
+
+L’API accepte jusqu’à 20 fichiers et 100 Mo au total, avec 30 Mo maximum par fichier. Les fichiers sont traités séparément : une erreur n’efface pas les résultats réussis.
+
+Les transformations renvoient un ZIP avec `manifest.json`; les analyses renvoient un JSON ordonné. Envoyez un champ `files` répété pour chaque image.

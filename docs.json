@@ -78,6 +78,7 @@
                   "reference/video-generation",
                   "reference/moderations",
                   "reference/free-ip-geo",
+                  "reference/batch-image-apis",
                   "reference/tasks"
                 ]
               },
@@ -170,6 +171,7 @@
                   "fr/reference/video-generation",
                   "fr/reference/moderations",
                   "fr/reference/free-ip-geo",
+                  "fr/reference/batch-image-apis",
                   "fr/reference/tasks"
                 ]
               },
@@ -262,6 +264,7 @@
                   "de/reference/video-generation",
                   "de/reference/moderations",
                   "de/reference/free-ip-geo",
+                  "de/reference/batch-image-apis",
                   "de/reference/tasks"
                 ]
               },
@@ -354,6 +357,7 @@
                   "zh/reference/video-generation",
                   "zh/reference/moderations",
                   "zh/reference/free-ip-geo",
+                  "zh/reference/batch-image-apis",
                   "zh/reference/tasks"
                 ]
               },
@@ -446,6 +450,7 @@
                   "ja/reference/video-generation",
                   "ja/reference/moderations",
                   "ja/reference/free-ip-geo",
+                  "ja/reference/batch-image-apis",
                   "ja/reference/tasks"
                 ]
               },
@@ -538,6 +543,7 @@
                   "ko/reference/video-generation",
                   "ko/reference/moderations",
                   "ko/reference/free-ip-geo",
+                  "ko/reference/batch-image-apis",
                   "ko/reference/tasks"
                 ]
               },
@@ -630,6 +636,7 @@
                   "es/reference/video-generation",
                   "es/reference/moderations",
                   "es/reference/free-ip-geo",
+                  "es/reference/batch-image-apis",
                   "es/reference/tasks"
                 ]
               },

@@ -1,0 +1,19 @@
+---
+title: 批量图片 API
+description: 使用付费批量接口转换、缩放、裁剪、旋转、分析和校验多张图片。
+---
+
+七个批量图片接口会用一组统一参数处理多个文件。调用时必须使用付费账户的 API Key，每次提交的批量任务按一次 API 请求计数。
+
+转换、缩放、裁剪和旋转接口返回包含成功文件与 `manifest.json` 的 ZIP；元数据、配色和 SHA-256 接口按上传顺序返回 JSON。
+
+每次 API 请求最多 20 个文件、合计 100 MB，单个文件最大 30 MB。文件独立处理，一个无效图片不会删除其他成功结果。
+
+```bash
+curl -X POST "https://apiany.ai/api/free/batch-convert-images" \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -F "files=@a.png" \
+  -F "files=@b.jpg" \
+  -F "format=webp" \
+  --output converted-images.zip
+```
