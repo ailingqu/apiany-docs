@@ -1795,7 +1795,19 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "응답의 최대 토큰 수입니다."
+            "deprecated": true,
+            "description": "max_completion_tokens의 더 이상 권장되지 않는 호환 별칭입니다. APIAny는 선택한 업스트림이 새 필드를 요구할 때만 변환합니다."
+          },
+          "max_completion_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1048576,
+            "description": "추론 과정과 최종 답변을 합친 최대 토큰 수입니다. Kimi K3 기본값은 131072이며 최대 1048576까지 지원합니다."
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": ["max"],
+            "description": "Kimi K3 추론 강도입니다. K3는 항상 추론하며 현재 max만 지원합니다."
           },
           "stop": {
             "oneOf": [
@@ -1906,11 +1918,24 @@
                 }
               }
             ]
+          },
+          "reasoning_content": {
+            "type": "string",
+            "description": "Kimi K3 assistant 기록에 보존해야 하는 추론 과정입니다."
+          },
+          "partial": {
+            "type": "boolean",
+            "default": false,
+            "description": "Kimi Partial Mode이며 마지막 assistant 접두사 메시지에만 true로 설정합니다."
+          },
+          "tools": {
+            "type": "array",
+            "description": "content가 없는 system 메시지에 담는 Kimi K3 동적 도구 선언입니다.",
+            "items": {"type": "object", "additionalProperties": true}
           }
         },
         "required": [
-          "role",
-          "content"
+          "role"
         ]
       },
       "ChatCompletionResponse": {

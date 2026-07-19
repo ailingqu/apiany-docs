@@ -1795,7 +1795,19 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "レスポンスの最大トークン数。"
+            "deprecated": true,
+            "description": "max_completion_tokens の非推奨互換エイリアスです。APIAny は選択された上流が新しいフィールドを必要とする場合のみ変換します。"
+          },
+          "max_completion_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1048576,
+            "description": "思考過程と最終回答を合わせた最大トークン数です。Kimi K3 の既定値は 131072、上限は 1048576 です。"
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": ["max"],
+            "description": "Kimi K3 の思考強度です。K3 は常に思考し、現在は max のみをサポートします。"
           },
           "stop": {
             "oneOf": [
@@ -1906,11 +1918,24 @@
                 }
               }
             ]
+          },
+          "reasoning_content": {
+            "type": "string",
+            "description": "Kimi K3 の assistant 履歴に保持する必要がある思考過程です。"
+          },
+          "partial": {
+            "type": "boolean",
+            "default": false,
+            "description": "Kimi Partial Mode。最後の assistant プレフィックスメッセージでのみ true にします。"
+          },
+          "tools": {
+            "type": "array",
+            "description": "content を持たない system メッセージに含める Kimi K3 の動的ツール宣言です。",
+            "items": {"type": "object", "additionalProperties": true}
           }
         },
         "required": [
-          "role",
-          "content"
+          "role"
         ]
       },
       "ChatCompletionResponse": {

@@ -38,9 +38,46 @@ curl https://apiany.ai/v1/chat/completions \
 
 ## 参数
 
-支持 OpenAI 标准参数：`temperature`、`top_p`、`max_tokens`、`stop`、`n`、
+支持 OpenAI 标准参数：`temperature`、`top_p`、`max_tokens`、`max_completion_tokens`、`stop`、`n`、
 `frequency_penalty`、`presence_penalty`、`seed`、`response_format`、`tools`、
 `tool_choice`、`logprobs`、`top_logprobs`、`logit_bias`、`user`、`stream`。
+
+## Kimi K3 兼容规则
+
+`kimi-k3` 继续使用同一个 OpenAI 兼容接口，但需要遵循模型专属规则：
+
+- K3 始终开启思考。使用顶层 `reasoning_effort: "max"`；K2.x 的
+  `thinking` 仅作为“开启思考”的兼容别名接受。
+- 优先使用 `max_completion_tokens`。APIAny 仍接受已弃用的 `max_tokens`，
+  但只在所选路由指向 Kimi K3 时转换。省略上限时使用 Kimi 官方默认值，显式上限最高为
+  1,048,576 Token。
+- K3 的采样参数由厂商固定。APIAny 只对 K3 删除 `temperature`、`top_p`、
+  `frequency_penalty` 和 `presence_penalty`；`n` 必须为 `1`。
+- `reasoning_content` 是思考过程，`content` 是最终答案；流式响应也分别返回，
+  不要把思考过程合并成最终正文。
+- 多轮对话和工具调用必须原样回传完整 assistant message，包括
+  `reasoning_content` 与 `tool_calls`。
+- 最后一条 assistant message 可以设置 `partial: true`；不含 `content` 的
+  system message 可以携带 `tools`，用于动态加载工具。
+- K3 图片和视频内容块只能使用 Base64 `data:` URL 或 `ms://` 文件 ID；
+  公网 HTTP 媒体地址会在模型请求发出前被拒绝。
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "kimi-k3",
+    "messages": [{"role": "user", "content": "证明根号 2 是无理数。"}],
+    "reasoning_effort": "max",
+    "max_completion_tokens": 16384,
+    "stream": true
+  }'
+```
+
+如果 `finish_reason` 为 `length`，说明输出预算已经耗尽。响应仍符合 OpenAI
+格式，但最终答案可能为空或不完整；请提高 `max_completion_tokens` 或缩短输入后重试。
 
 ## 说明
 

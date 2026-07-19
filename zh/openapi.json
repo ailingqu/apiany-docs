@@ -1795,7 +1795,21 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "响应中最大 token 数。"
+            "deprecated": true,
+            "description": "max_completion_tokens 的兼容旧别名。APIAny 仅在所选模型路由需要新字段时转换。"
+          },
+          "max_completion_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1048576,
+            "description": "思考过程与最终答案合计的最大 Token 数。Kimi K3 省略时默认 131072，最高支持 1048576。"
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "max"
+            ],
+            "description": "Kimi K3 的思考强度。K3 始终思考，目前仅支持 max。"
           },
           "stop": {
             "oneOf": [
@@ -1906,11 +1920,27 @@
                 }
               }
             ]
+          },
+          "reasoning_content": {
+            "type": "string",
+            "description": "支持思考的模型返回的思考过程。Kimi K3 多轮历史必须保留此字段。"
+          },
+          "partial": {
+            "type": "boolean",
+            "default": false,
+            "description": "Kimi Partial Mode，仅在最后一条 assistant 前缀消息上设置为 true。"
+          },
+          "tools": {
+            "type": "array",
+            "description": "Kimi K3 通过不含 content 的 system message 动态加载的工具声明。",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           }
         },
         "required": [
-          "role",
-          "content"
+          "role"
         ]
       },
       "ChatCompletionResponse": {

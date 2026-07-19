@@ -1795,7 +1795,19 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "Nombre maximal de tokens dans la réponse."
+            "deprecated": true,
+            "description": "Ancien alias de compatibilité de max_completion_tokens. APIAny le convertit uniquement lorsque le canal amont sélectionné exige le nouveau champ."
+          },
+          "max_completion_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1048576,
+            "description": "Nombre maximal de tokens pour le raisonnement et la réponse finale. Kimi K3 utilise 131072 par défaut et accepte jusqu’à 1048576."
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": ["max"],
+            "description": "Effort de raisonnement de Kimi K3. K3 raisonne toujours et ne prend actuellement en charge que max."
           },
           "stop": {
             "oneOf": [
@@ -1906,11 +1918,24 @@
                 }
               }
             ]
+          },
+          "reasoning_content": {
+            "type": "string",
+            "description": "Trace de raisonnement à conserver dans l’historique assistant de Kimi K3."
+          },
+          "partial": {
+            "type": "boolean",
+            "default": false,
+            "description": "Mode partiel Kimi, uniquement sur le dernier message assistant servant de préfixe."
+          },
+          "tools": {
+            "type": "array",
+            "description": "Outils Kimi K3 chargés dynamiquement par un message system sans content.",
+            "items": {"type": "object", "additionalProperties": true}
           }
         },
         "required": [
-          "role",
-          "content"
+          "role"
         ]
       },
       "ChatCompletionResponse": {

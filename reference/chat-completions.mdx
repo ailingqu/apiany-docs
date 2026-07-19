@@ -39,9 +39,49 @@ curl https://apiany.ai/v1/chat/completions \
 ## Parameters
 
 OpenAI-standard parameters are accepted, including `temperature`, `top_p`,
-`max_tokens`, `stop`, `n`, `frequency_penalty`, `presence_penalty`, `seed`,
+`max_tokens`, `max_completion_tokens`, `stop`, `n`, `frequency_penalty`, `presence_penalty`, `seed`,
 `response_format`, `tools`, `tool_choice`, `logprobs`, `top_logprobs`,
 `logit_bias`, `user`, and `stream`.
+
+## Kimi K3 compatibility
+
+`kimi-k3` uses the same OpenAI-compatible endpoint, but its native contract has
+model-specific rules:
+
+- K3 always reasons. Use top-level `reasoning_effort: "max"`; the K2.x
+  `thinking` object is accepted only as an enabled compatibility alias.
+- Prefer `max_completion_tokens`. APIAny accepts deprecated `max_tokens` and
+  converts it only when the selected route targets Kimi K3. If no limit is provided, Kimi's
+  official default is used. The explicit maximum is 1,048,576 tokens.
+- K3 sampling is fixed by the provider. APIAny removes `temperature`, `top_p`,
+  `frequency_penalty`, and `presence_penalty` only for K3; `n` must be `1`.
+- `reasoning_content` is the reasoning trace and `content` is the final answer.
+  Streaming returns them as separate deltas. Do not merge the reasoning trace
+  into the final answer.
+- Replay the complete assistant message, including `reasoning_content` and
+  `tool_calls`, in multi-turn and tool-calling requests.
+- The last assistant message may use `partial: true`. A content-less system
+  message may carry `tools` to load K3 tools dynamically.
+- K3 image/video content blocks must use a Base64 `data:` URL or an `ms://`
+  file ID. Public HTTP media URLs are rejected before the model request is sent.
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "kimi-k3",
+    "messages": [{"role": "user", "content": "Prove that sqrt(2) is irrational."}],
+    "reasoning_effort": "max",
+    "max_completion_tokens": 16384,
+    "stream": true
+  }'
+```
+
+If `finish_reason` is `length`, the output budget was exhausted. The response
+is still OpenAI-compatible, but the final answer may be missing or incomplete;
+increase `max_completion_tokens` or reduce the input before retrying.
 
 ## Notes
 
