@@ -352,6 +352,15 @@
                     "size": "1k"
                   }
                 },
+                "gptImage2NativeSize": {
+                  "value": {
+                    "model": "gpt-image-2",
+                    "prompt": "A cinematic landscape product launch visual",
+                    "size": "2048x1152",
+                    "quality": "high",
+                    "n": 1
+                  }
+                },
                 "withReferences": {
                   "value": {
                     "model": "nano-banana-pro",
@@ -2346,10 +2355,92 @@
         ]
       },
       "ImageGenerationRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage2GenerationRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GenericImageGenerationRequest"
+          }
+        ]
+      },
+      "GPTImage2GenerationRequest": {
         "type": "object",
         "properties": {
           "model": {
             "type": "string",
+            "const": "gpt-image-2"
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "description": "Native WIDTHxHEIGHT dimensions or auto. GPT-Image 2 also accepts ratio shorthand with the deprecated resolution compatibility tier.",
+            "examples": [
+              "auto",
+              "1024x1024",
+              "2048x1152"
+            ]
+          },
+          "quality": {
+            "type": "string",
+            "description": "GPT-Image 2 rendering quality.",
+            "enum": [
+              "auto",
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "auto"
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "description": "Number of images to generate. Billing scales with the image count.",
+            "default": 1
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "description": "Compatibility ratio shorthand such as 1:1, 4:3, or 16:9. Prefer native size dimensions.",
+            "deprecated": true
+          },
+          "resolution": {
+            "type": "string",
+            "description": "Compatibility conversion tier used with ratio shorthand.",
+            "enum": [
+              "1K",
+              "2K",
+              "4K"
+            ],
+            "deprecated": true
+          },
+          "input_images": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "GenericImageGenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "not": {
+              "const": "gpt-image-2"
+            },
             "example": "nano-banana"
           },
           "prompt": {
@@ -2357,6 +2448,7 @@
           },
           "size": {
             "type": "string",
+            "description": "Model-specific image size or aspect ratio shorthand.",
             "example": "1k"
           },
           "input_images": {
