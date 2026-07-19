@@ -43,9 +43,9 @@ curl https://apiany.ai/v1/images/generations \
   }'
 ```
 
-Common `size` values are `1024x1024`, `1536x1024`, `1024x1536`, `2048x2048`, `2048x1152`, `3840x2160`, `2160x3840`, and `auto`. Custom dimensions are valid when both edges are multiples of 16, neither edge exceeds 3840, the long-to-short ratio is at most 3:1, and the total pixel count is between 655,360 and 8,294,400.
+GPT-Image 2 outputs use `auto` or one of seven official popular sizes: `1024x1024`, `1536x1024`, `1024x1536`, `2048x2048`, `2048x1152`, `3840x2160`, and `2160x3840`. APIAny also accepts any positive integer `WIDTHxHEIGHT` as a target and maps it to the nearest popular size while preserving square, landscape, or portrait orientation. For example, `1280x720` maps to `1536x1024`, `1920x1080` maps to `2048x1152`, and `1440x2560` maps to `2160x3840`.
 
-`quality` accepts `auto`, `low`, `medium`, or `high`; the default is `auto`. `n` accepts 1–10 and credits are charged for each generated image. APIAny also accepts ratio shorthand such as `size: "4:3"` together with `resolution: "1K"`, `"2K"`, or `"4K"` and converts it to a compliant pixel size. Legacy requests that only send `aspect_ratio`, `resolution`, or `img_size` keep their selected conversion tier. New API integrations should prefer native pixel dimensions.
+`quality` accepts `auto`, `low`, `medium`, or `high`; the default is `auto`. `n` accepts 1–10 and credits are charged for each generated image. Ratio shorthand such as `size: "4:3"` can be combined with the compatibility `resolution` values `"1K"`, `"2K"`, or `"4K"`; APIAny first derives a target and then applies the same nearest-popular-size mapping. Legacy requests that only send `aspect_ratio`, `resolution`, or `img_size` remain accepted. New integrations should prefer `auto` or one of the seven official popular sizes for predictable output and billing.
 
 ## Sync variant
 

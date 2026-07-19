@@ -2376,11 +2376,12 @@
           },
           "size": {
             "type": "string",
-            "description": "Native WIDTHxHEIGHT dimensions or auto. GPT-Image 2 also accepts ratio shorthand with the deprecated resolution compatibility tier.",
+            "description": "Accepts auto, a positive WIDTHxHEIGHT target, or ratio shorthand such as 16:9. Every non-auto target is mapped to the nearest official popular size: 1024x1024, 1536x1024, 1024x1536, 2048x2048, 2048x1152, 3840x2160, or 2160x3840.",
             "examples": [
               "auto",
               "1024x1024",
-              "2048x1152"
+              "1280x720",
+              "16:9"
             ]
           },
           "quality": {
@@ -2403,12 +2404,12 @@
           },
           "aspect_ratio": {
             "type": "string",
-            "description": "Compatibility ratio shorthand such as 1:1, 4:3, or 16:9. Prefer native size dimensions.",
+            "description": "Deprecated ratio shorthand. The ratio and compatibility tier are mapped to the nearest official popular size.",
             "deprecated": true
           },
           "resolution": {
             "type": "string",
-            "description": "Compatibility conversion tier used with ratio shorthand.",
+            "description": "Deprecated compatibility tier used to form the target size before nearest-official-size mapping.",
             "enum": [
               "1K",
               "2K",
