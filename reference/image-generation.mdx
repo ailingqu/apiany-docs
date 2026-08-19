@@ -26,6 +26,21 @@ The response returns a task:
 }
 ```
 
+APIAny schedules processing immediately after the task record is committed.
+The `202` response does not wait for image generation to finish, so continue
+polling `poll_url` until the task reaches a terminal state. The periodic task
+worker remains a recovery mechanism for pending tasks.
+
+## Prompt safety
+
+Prompts that clearly combine a minor with exposure or emphasis of sensitive
+body areas, or with explicit sexual or nudity content, return HTTP `400` with
+code `content_policy`. Validation runs before task creation and credit
+reservation, so no credits are charged. Revise the prompt to use an adult
+subject (18+), remove sensitive-body close-ups, and keep the subject fully
+clothed. Ordinary child-safe family, classroom, sports, and art scenes are not
+blocked by this targeted rule.
+
 ## GPT-Image 2 size and quality
 
 For `gpt-image-2`, send a native pixel size or `auto`:
