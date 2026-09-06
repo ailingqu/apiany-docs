@@ -18,6 +18,18 @@ curl https://apiany.ai/v1/videos/generations \
   }'
 ```
 
+## Wan 3.0 Prime 요청
+
+프롬프트만 사용할 때는 `wan3.0-prime-text-to-video`, 필수 `image_start`와 선택
+`image_end`를 사용할 때는 `wan3.0-prime-image-to-video`, 순서가 있는
+`image_urls`, `video_urls`, `audio_urls`에는 `wan3.0-prime-reference-video`를
+사용하세요.
+
+세 모델은 2–30초 정수, 480p·720p·1080p, `adaptive`, `16:9`, `9:16`, `1:1`,
+`4:3`, `3:4`와 선택 오디오를 지원합니다. 참조 모델은 이미지 10장, 영상 5개,
+오디오 5개까지 받습니다. `model_params.file_url`과 `model_params.link_url`은 선택
+사항이지만 함께 쓸 수 없습니다. Task ID를 저장하고 임시 결과를 빠르게 보관하세요.
+
 ## 동기 변형
 
 `/v1/videos/generations/sync`는 동일한 HTTP 요청 내에서 task 결과를 기다립니다. 장시간 실행되는 작업은 비동기 생성과 task 폴링을 사용하세요.

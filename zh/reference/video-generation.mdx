@@ -18,6 +18,23 @@ curl https://apiany.ai/v1/videos/generations \
   }'
 ```
 
+## Wan 3.0 Prime 请求
+
+Wan 3.0 Prime 提供三种公开模型 ID：`wan3.0-prime-text-to-video` 只接收提示词；
+`wan3.0-prime-image-to-video` 使用必填 `image_start` 和可选 `image_end`；
+`wan3.0-prime-reference-video` 使用有序的 `image_urls`、`video_urls`、
+`audio_urls`，还可选择文档或网页上下文。
+
+三个模型 ID 都支持 2–30 秒整数时长、`480p`/`720p`/`1080p`、
+`adaptive`/`16:9`/`9:16`/`1:1`/`4:3`/`3:4` 画幅和默认开启的
+`generate_audio`。`resolution` 可作为 `quality` 的别名。自动时长、取消任务、
+`negative_prompt` 和 `prompt_extend` 暂不支持。
+
+参考视频最多接收 10 张图片、5 个视频和 5 个音频。文档使用
+`model_params.file_url`，网页使用 `model_params.link_url`，二者不能同时提交。
+`Image 1`、`Video 1`、`Audio 1` 分别按各自数组顺序编号。请保存任务 ID，
+通过轮询或 HTTPS 回调等待终态，并及时转存临时结果链接。
+
 ## 同步等待接口
 
 `/v1/videos/generations/sync` 会创建视频任务并在同一个 HTTP 请求中等待结果。长耗时任务建议使用异步创建和任务轮询。

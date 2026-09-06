@@ -33,6 +33,77 @@ subject (18+), remove sensitive-body close-ups, and keep the subject fully
 clothed. Ordinary child-safe family, classroom, sports, and art scenes are not
 blocked by this targeted rule.
 
+## Wan 3.0 Prime requests
+
+Wan 3.0 Prime uses three public model IDs with separate input contracts:
+
+| Model ID | Input |
+| --- | --- |
+| `wan3.0-prime-text-to-video` | Prompt only. Reference media is rejected. |
+| `wan3.0-prime-image-to-video` | Required `image_start`; optional `image_end`. |
+| `wan3.0-prime-reference-video` | Ordered `image_urls`, `video_urls`, and `audio_urls`, plus optional document or web context. |
+
+All three accept an integer `duration` from 2 to 30, `quality` of `480p`,
+`720p`, or `1080p`, and `aspect_ratio` of `adaptive`, `16:9`, `9:16`,
+`1:1`, `4:3`, or `3:4`. `generate_audio` defaults to `true`.
+`resolution` remains an alias for `quality`. Automatic duration, task
+cancellation, `negative_prompt`, and `prompt_extend` are not supported on
+these public model IDs.
+
+### Text to video
+
+```json
+{
+  "model": "wan3.0-prime-text-to-video",
+  "prompt": "A precise product film with a slow camera orbit",
+  "duration": 5,
+  "quality": "720p",
+  "aspect_ratio": "16:9",
+  "generate_audio": true
+}
+```
+
+### First and last frame
+
+```json
+{
+  "model": "wan3.0-prime-image-to-video",
+  "prompt": "Move smoothly from the opening composition to the final frame",
+  "image_start": "https://assets.example/start.webp",
+  "image_end": "https://assets.example/end.webp",
+  "duration": 5,
+  "quality": "720p",
+  "aspect_ratio": "16:9"
+}
+```
+
+The image-to-video route does not accept `image_urls`; use `image_start` and
+the optional `image_end` fields shown above.
+
+### Multimodal references
+
+```json
+{
+  "model": "wan3.0-prime-reference-video",
+  "prompt": "Use Image 1 for product design and Video 1 for camera rhythm",
+  "image_urls": ["https://assets.example/product.webp"],
+  "video_urls": ["https://assets.example/camera-reference.mp4"],
+  "audio_urls": ["https://assets.example/ambience.mp3"],
+  "duration": 5,
+  "quality": "720p",
+  "aspect_ratio": "adaptive"
+}
+```
+
+The reference route accepts up to 10 images, 5 videos, and 5 audio tracks.
+Add one document with `model_params.file_url` or one web page with
+`model_params.link_url`; those two fields are mutually exclusive. Numbering is
+per media type and follows array order: `Image 1`, `Video 1`, and `Audio 1`
+refer to the first item of their respective arrays.
+
+Save the task ID and use polling or an HTTPS callback. Persist successful
+outputs promptly because generated result URLs are temporary.
+
 ## Sync variant
 
 `/v1/videos/generations/sync` waits for the task result in the same HTTP request. Long-running jobs should use async creation and task polling.

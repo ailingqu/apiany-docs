@@ -2533,22 +2533,111 @@
         "properties": {
           "model": {
             "type": "string",
-            "example": "seedance-2.0"
+            "example": "seedance-2.0",
+            "examples": [
+              "wan3.0-prime-text-to-video",
+              "wan3.0-prime-image-to-video",
+              "wan3.0-prime-reference-video"
+            ]
           },
           "prompt": {
             "type": "string"
           },
           "duration": {
-            "type": "string",
-            "example": "10s"
+            "type": [
+              "integer",
+              "string"
+            ],
+            "example": 5,
+            "description": "Output duration. Wan 3.0 Prime requires an integer from 2 to 30 seconds."
           },
           "resolution": {
             "type": "string",
-            "example": "720p"
+            "example": "720p",
+            "description": "Resolution or quality alias."
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "description": "Wan 3.0 Prime output quality."
           },
           "ratio": {
             "type": "string",
             "example": "16:9"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "adaptive",
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:3",
+              "3:4"
+            ],
+            "description": "Wan 3.0 Prime output aspect ratio."
+          },
+          "generate_audio": {
+            "type": "boolean",
+            "default": true,
+            "description": "Request synchronized audio when the selected model supports it."
+          },
+          "image_start": {
+            "type": "string",
+            "format": "uri",
+            "description": "Required first frame for wan3.0-prime-image-to-video."
+          },
+          "image_end": {
+            "type": "string",
+            "format": "uri",
+            "description": "Optional final frame for wan3.0-prime-image-to-video."
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 10,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "Ordered image references for wan3.0-prime-reference-video."
+          },
+          "video_urls": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "Ordered video references for wan3.0-prime-reference-video."
+          },
+          "audio_urls": {
+            "type": "array",
+            "maxItems": 5,
+            "items": {
+              "type": "string",
+              "format": "uri"
+            },
+            "description": "Ordered audio references for wan3.0-prime-reference-video."
+          },
+          "model_params": {
+            "type": "object",
+            "description": "Optional Wan 3.0 Prime reference context. file_url and link_url are mutually exclusive.",
+            "properties": {
+              "file_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "One reference document URL."
+              },
+              "link_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "One reference web page URL."
+              }
+            }
           },
           "input_images": {
             "type": "array",

@@ -18,6 +18,20 @@ curl https://apiany.ai/v1/videos/generations \
   }'
 ```
 
+## Requêtes Wan 3.0 Prime
+
+Utilisez `wan3.0-prime-text-to-video` pour un prompt seul,
+`wan3.0-prime-image-to-video` avec `image_start` obligatoire et `image_end`
+facultative, ou `wan3.0-prime-reference-video` avec des tableaux ordonnés
+`image_urls`, `video_urls` et `audio_urls`.
+
+Les trois modèles acceptent une durée entière de 2 à 30 secondes, les qualités
+480p, 720p et 1080p, les formats `adaptive`, `16:9`, `9:16`, `1:1`, `4:3` et
+`3:4`, ainsi que l’audio facultatif. La route de référence accepte jusqu’à 10
+images, 5 vidéos et 5 audios. `model_params.file_url` et
+`model_params.link_url` sont facultatifs mais mutuellement exclusifs. Conservez
+l’identifiant de tâche et sauvegardez rapidement le résultat temporaire.
+
 ## Variante synchrone
 
 `/v1/videos/generations/sync` attend le résultat de la tâche dans la même requête HTTP. Les tâches de longue durée devraient utiliser la création asynchrone et le polling de tâches.

@@ -18,6 +18,18 @@ curl https://apiany.ai/v1/videos/generations \
   }'
 ```
 
+## Wan 3.0 Prime リクエスト
+
+プロンプトのみは `wan3.0-prime-text-to-video`、必須の `image_start` と任意の
+`image_end` は `wan3.0-prime-image-to-video`、順序付き `image_urls`、
+`video_urls`、`audio_urls` は `wan3.0-prime-reference-video` を使用します。
+
+三つのモデルは 2〜30 秒の整数、480p・720p・1080p、`adaptive`、`16:9`、
+`9:16`、`1:1`、`4:3`、`3:4` と任意の音声に対応します。参照モデルは画像
+10 枚、動画 5 本、音声 5 本までです。`model_params.file_url` と
+`model_params.link_url` は任意ですが併用できません。Task ID を保存し、期限付きの
+結果を速やかに保管してください。
+
 ## 同期待機エンドポイント
 
 `/v1/videos/generations/sync` は動画タスクを作成し、同一の HTTP リクエスト内で結果を待機します。長時間かかるジョブには、非同期での作成とタスクのポーリングを推奨します。
