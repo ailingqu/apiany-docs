@@ -58,3 +58,20 @@ JSON 출력을 위해 `generationConfig.responseMimeType: "application/json"`과
 `stopSequences`, `responseMimeType`, `responseSchema`, `responseModalities`
 (이미지 출력을 위해 `IMAGE` 포함). 또한 최상위 `tools`(functionDeclarations)와
 `systemInstruction`을 지원합니다.
+
+## 추론 강도
+
+Gemini 3는 `generationConfig.thinkingConfig.thinkingLevel`, Gemini 2.5는 `generationConfig.thinkingConfig.thinkingBudget`을 사용합니다. 지원 수준과 예산은 모델마다 다릅니다. Gemini 3는 `none`을 지원하지 않으며 Gemini 2.5 Pro는 추론을 끌 수 없습니다.
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "2 + 2 = ?" }] }],
+  "generationConfig": {
+    "thinkingConfig": { "thinkingLevel": "high" }
+  }
+}
+```
+
+OpenAI 호환 요청에서 Gemini 2.5의 추론 예산은 `minimal`/`low`가 `1024`토큰, `medium`이 `8192`, `high`가 `24576`이며, 지원 모델의 `none`은 `0`입니다. 명시적인 effort와 네이티브 `thinkingLevel` 또는 `thinkingBudget`은 동시에 지정할 수 없으며, 설정이 동등해도 `400`을 반환합니다. `includeThoughts`만 있으면 effort와 함께 사용할 수 있습니다. [모델별 추론 제어](/ko/models/chat-models)를 참고하세요.
+
+`max_completion_tokens`, `max_output_tokens` 및 네이티브 대응 필드는 추론과 최종 답변 토큰의 합계를 제한합니다. effort 자체는 출력 토큰 상한이 아닙니다. 예산이 소진되면(Chat Completions의 `finish_reason: "length"`) 최종 답변이 불완전하거나 비어 있을 수 있습니다.

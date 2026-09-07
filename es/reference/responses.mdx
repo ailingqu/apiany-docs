@@ -35,8 +35,11 @@ curl https://apiany.ai/v1/responses \
 }
 ```
 
-Los valores admitidos para `reasoning.effort` son `none`, `minimal`, `low`, `medium`,
-`high` y `xhigh`.
+`gpt-5.5` y `gpt-5.4` admiten `none`, `low`, `medium`, `high` y `xhigh`, pero no `minimal` ni `max`. Se acepta `reasoning_effort` de nivel superior como alias. Si se indican ambas formas, sus valores deben coincidir; los conflictos devuelven `400`.
+
+Los valores admitidos dependen del modelo. Si se omiten, se mantiene el comportamiento predeterminado. Consulta los [controles de razonamiento por modelo](/es/models/chat-models).
+
+Los límites como `max_completion_tokens`, `max_output_tokens` y sus equivalentes nativos incluyen tokens de razonamiento y de respuesta final. effort no es un límite de tokens de salida. El presupuesto puede agotarse (`finish_reason: "length"` en Chat Completions) y dejar la respuesta final incompleta o vacía.
 
 ## Búsqueda web
 

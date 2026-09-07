@@ -58,3 +58,20 @@ JSON 出力が得られます：
 `stopSequences`、`responseMimeType`、`responseSchema`、`responseModalities`
 （`IMAGE` を含めると画像を返します）。さらにトップレベルの `tools`（functionDeclarations）と
 `systemInstruction` にも対応しています。
+
+## 推論強度
+
+Gemini 3 は `generationConfig.thinkingConfig.thinkingLevel`、Gemini 2.5 は `generationConfig.thinkingConfig.thinkingBudget` を使用します。対応レベルと予算はモデルごとに異なります。Gemini 3 は `none` に対応せず、Gemini 2.5 Pro は思考を無効化できません。
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "2 + 2 = ?" }] }],
+  "generationConfig": {
+    "thinkingConfig": { "thinkingLevel": "high" }
+  }
+}
+```
+
+OpenAI 互換形式では、Gemini 2.5 の思考予算は `minimal`/`low` が `1024` トークン、`medium` が `8192`、`high` が `24576`、対応モデルでの `none` が `0` です。明示的な effort とネイティブの `thinkingLevel` または `thinkingBudget` は同時に指定できません。設定が同等でも `400` になります。`includeThoughts` のみであれば effort と併用できます。[モデル別の推論制御](/ja/models/chat-models)を参照してください。
+
+`max_completion_tokens`、`max_output_tokens` およびネイティブの対応フィールドは、推論と最終回答の合計トークン数を制限します。effort 自体は出力トークン上限ではありません。予算を使い切ると（Chat Completions の `finish_reason: "length"`）、最終回答が不完全または空になる場合があります。

@@ -42,6 +42,23 @@ curl https://apiany.ai/v1/chat/completions \
 `frequency_penalty`、`presence_penalty`、`seed`、`response_format`、`tools`、
 `tool_choice`、`logprobs`、`top_logprobs`、`logit_bias`、`user`、`stream`。
 
+## 思考强度
+
+支持可配置思考的模型可使用顶层 `reasoning_effort`。也接受 Responses 风格的 `reasoning.effort`；同时提供时值必须一致，否则返回 `400`。
+
+```json
+{
+  "model": "gpt-5.4",
+  "messages": [{ "role": "user", "content": "2 + 2 = ?" }],
+  "reasoning_effort": "high",
+  "max_completion_tokens": 4096
+}
+```
+
+支持值因模型而异；省略时保持原有默认行为。详见[各模型思考控制](/zh/models/chat-models)。
+
+`max_completion_tokens`、`max_output_tokens` 及原生对应字段限制的是思考与最终答案共用的 token 总量。effort 不是输出 token 上限；请求仍可能耗尽预算（Chat Completions 返回 `finish_reason: "length"`），导致最终答案不完整或为空。
+
 ## Kimi K3 兼容规则
 
 `kimi-k3` 继续使用同一个 OpenAI 兼容接口，但需要遵循模型专属规则：
@@ -49,9 +66,9 @@ curl https://apiany.ai/v1/chat/completions \
 - K3 始终开启思考。使用顶层 `reasoning_effort: "max"`；K2.x 的
   `thinking` 仅作为“开启思考”的兼容别名接受。
 - 优先使用 `max_completion_tokens`。APIAny 仍接受已弃用的 `max_tokens`，
-  但只在所选路由指向 Kimi K3 时转换。省略上限时使用 Kimi 官方默认值，显式上限最高为
+  Kimi K3 使用 `max_completion_tokens`。省略上限时使用模型默认值，显式上限最高为
   1,048,576 Token。
-- K3 的采样参数由厂商固定。APIAny 只对 K3 删除 `temperature`、`top_p`、
+- K3 的采样参数固定。APIAny 只对 K3 删除 `temperature`、`top_p`、
   `frequency_penalty` 和 `presence_penalty`；`n` 必须为 `1`。
 - `reasoning_content` 是思考过程，`content` 是最终答案；流式响应也分别返回，
   不要把思考过程合并成最终正文。

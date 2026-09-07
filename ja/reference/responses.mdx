@@ -35,8 +35,11 @@ curl https://apiany.ai/v1/responses \
 }
 ```
 
-`reasoning.effort` で指定できる値は `none`、`minimal`、`low`、`medium`、`high`、
-`xhigh` です。
+`gpt-5.5` と `gpt-5.4` は `none`、`low`、`medium`、`high`、`xhigh` に対応し、`minimal` と `max` には対応しません。トップレベルの `reasoning_effort` も互換エイリアスとして使用できます。両方を指定する場合は同じ値にしてください。不一致は `400` になります。
+
+対応値はモデルごとに異なり、省略時は既定動作を維持します。[モデル別の推論制御](/ja/models/chat-models)を参照してください。
+
+`max_completion_tokens`、`max_output_tokens` およびネイティブの対応フィールドは、推論と最終回答の合計トークン数を制限します。effort 自体は出力トークン上限ではありません。予算を使い切ると（Chat Completions の `finish_reason: "length"`）、最終回答が不完全または空になる場合があります。
 
 ## Web 検索
 

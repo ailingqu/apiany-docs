@@ -58,3 +58,20 @@ Usa `generationConfig.responseMimeType: "application/json"` junto con
 `stopSequences`, `responseMimeType`, `responseSchema`, `responseModalities`
 (incluye `IMAGE` para salida de imagen). También `tools` de nivel superior (functionDeclarations)
 y `systemInstruction`.
+
+## Intensidad del razonamiento
+
+Gemini 3 utiliza `generationConfig.thinkingConfig.thinkingLevel`; Gemini 2.5 utiliza `generationConfig.thinkingConfig.thinkingBudget`. Los niveles y presupuestos admitidos dependen del modelo. Gemini 3 no admite `none` y Gemini 2.5 Pro no permite desactivar el pensamiento.
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "2 + 2 = ?" }] }],
+  "generationConfig": {
+    "thinkingConfig": { "thinkingLevel": "high" }
+  }
+}
+```
+
+En solicitudes compatibles con OpenAI, Gemini 2.5 asigna `minimal`/`low` a un presupuesto de `1024` tokens de pensamiento, `medium` a `8192`, `high` a `24576` y `none` a `0` si se admite. No combines effort explícito con `thinkingLevel` o `thinkingBudget` nativos: se devuelve `400` incluso si los ajustes son equivalentes. `includeThoughts` por sí solo puede combinarse con effort. Consulta los [controles de razonamiento por modelo](/es/models/chat-models).
+
+Los límites como `max_completion_tokens`, `max_output_tokens` y sus equivalentes nativos incluyen tokens de razonamiento y de respuesta final. effort no es un límite de tokens de salida. El presupuesto puede agotarse (`finish_reason: "length"` en Chat Completions) y dejar la respuesta final incompleta o vacía.

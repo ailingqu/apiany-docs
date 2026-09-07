@@ -55,3 +55,18 @@ APIAny.AI 会处理请求，并返回 Anthropic 兼容的响应。
 
 支持：`model`、`messages`、`max_tokens`（必填）、`system`、`temperature`、
 `top_p`、`top_k`、`stop_sequences`、`tools`、`tool_choice`、`stream`。
+
+## 思考强度
+
+支持的 Claude 模型使用原生 `output_config.effort`，可用值取决于版本，详见[各模型思考控制](/zh/models/chat-models)。原生 `thinking` 独立保留：effort 不会自动开启思考，也不会设置 token 预算。如需配置 `thinking`，请单独按模型要求设置。
+
+```json
+{
+  "model": "claude-opus-4-8",
+  "max_tokens": 4096,
+  "output_config": { "effort": "medium" },
+  "messages": [{ "role": "user", "content": "2 + 2 = ?" }]
+}
+```
+
+`max_completion_tokens`、`max_output_tokens` 及原生对应字段限制的是思考与最终答案共用的 token 总量。effort 不是输出 token 上限；请求仍可能耗尽预算（Chat Completions 返回 `finish_reason: "length"`），导致最终答案不完整或为空。

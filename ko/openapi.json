@@ -1796,18 +1796,26 @@
             "type": "integer",
             "minimum": 1,
             "deprecated": true,
-            "description": "max_completion_tokens의 더 이상 권장되지 않는 호환 별칭입니다. APIAny는 선택한 업스트림이 새 필드를 요구할 때만 변환합니다."
+            "description": "max_completion_tokens의 사용 중단된 호환 별칭입니다. Kimi K3는 두 형식을 모두 받고 max_completion_tokens를 사용합니다."
           },
           "max_completion_tokens": {
             "type": "integer",
             "minimum": 1,
             "maximum": 1048576,
-            "description": "추론 과정과 최종 답변을 합친 최대 토큰 수입니다. Kimi K3 기본값은 131072이며 최대 1048576까지 지원합니다."
+            "description": "추론과 최종 답변을 합친 최대 토큰 수입니다. 모델별 제한이 적용되며 예산 소진 시 답변이 불완전할 수 있습니다. Kimi K3: 131072 (default), 1048576 (max)."
           },
           "reasoning_effort": {
             "type": "string",
-            "enum": ["max"],
-            "description": "Kimi K3 추론 강도입니다. K3는 항상 추론하며 현재 max만 지원합니다."
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
           },
           "stop": {
             "oneOf": [
@@ -1886,6 +1894,26 @@
           "stream": {
             "type": "boolean",
             "description": "true이면 SSE로 증분 델타를 스트리밍하며(OpenAI chat.completion.chunk), 'data: [DONE]'로 종료됩니다."
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "reasoning_effort의 호환 별칭입니다. 두 형식을 함께 지정하면 값이 같아야 하며, 충돌 시 400을 반환합니다.",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
+              }
+            }
           }
         },
         "required": [
@@ -1931,7 +1959,10 @@
           "tools": {
             "type": "array",
             "description": "content가 없는 system 메시지에 담는 Kimi K3 동적 도구 선언입니다.",
-            "items": {"type": "object", "additionalProperties": true}
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           }
         },
         "required": [
@@ -2003,7 +2034,7 @@
           "max_output_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "최대 출력 토큰 수입니다."
+            "description": "추론과 최종 답변을 합친 최대 토큰 수입니다. 모델별 제한이 적용되며 예산 소진 시 답변이 불완전할 수 있습니다."
           },
           "temperature": {
             "type": "number",
@@ -2027,9 +2058,10 @@
                   "low",
                   "medium",
                   "high",
-                  "xhigh"
+                  "xhigh",
+                  "max"
                 ],
-                "description": "지원 모델의 reasoning 강도입니다."
+                "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
               },
               "summary": {
                 "type": "string",
@@ -2085,6 +2117,19 @@
           "metadata": {
             "type": "object",
             "additionalProperties": true
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "reasoning.effort의 호환 별칭입니다. 두 형식을 함께 지정하면 값이 같아야 하며, 충돌 시 400을 반환합니다. 추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
           }
         },
         "required": [
@@ -2177,7 +2222,7 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "생성할 최대 토큰 수입니다(필수)."
+            "description": "추론과 최종 답변을 합친 최대 토큰 수입니다. 모델별 제한이 적용되며 예산 소진 시 답변이 불완전할 수 있습니다."
           },
           "system": {
             "oneOf": [
@@ -2232,6 +2277,29 @@
           "stream": {
             "type": "boolean",
             "description": "true이면 Anthropic SSE 이벤트 스트림으로 반환합니다(message_start / content_block_delta / message_delta / message_stop)."
+          },
+          "output_config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Anthropic 네이티브 effort 제어입니다. 지원 값은 Claude 버전에 따라 다릅니다. /ko/models/chat-models를 참고하세요. effort는 thinking을 켜거나 추론 토큰 예산을 설정하지 않습니다.",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "Anthropic 네이티브 effort 제어입니다. 지원 값은 Claude 버전에 따라 다릅니다. /ko/models/chat-models를 참고하세요. effort는 thinking을 켜거나 추론 토큰 예산을 설정하지 않습니다."
+              }
+            }
+          },
+          "thinking": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "output_config.effort와 독립적인 Anthropic 네이티브 thinking 설정입니다. type과 budget_tokens는 선택한 모델의 요구 사항을 따라야 합니다."
           }
         },
         "required": [
@@ -2316,7 +2384,8 @@
                 "type": "integer"
               },
               "maxOutputTokens": {
-                "type": "integer"
+                "type": "integer",
+                "description": "추론과 최종 답변을 합친 최대 토큰 수입니다. 모델별 제한이 적용되며 예산 소진 시 답변이 불완전할 수 있습니다."
               },
               "stopSequences": {
                 "type": "array",
@@ -2339,6 +2408,31 @@
                   "type": "string"
                 },
                 "description": "'IMAGE'를 포함하면 이미지 생성 결과를 반환합니다."
+              },
+              "thinkingConfig": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Gemini 네이티브 추론 제어입니다. Gemini 3는 thinkingLevel, Gemini 2.5는 thinkingBudget을 사용하며 지원 값과 예산은 모델별로 다릅니다. 명시적인 effort와 네이티브 thinkingLevel 또는 thinkingBudget은 동시에 지정할 수 없으며, 설정이 동등해도 400을 반환합니다. includeThoughts만 있으면 effort와 함께 사용할 수 있습니다.",
+                "properties": {
+                  "thinkingLevel": {
+                    "type": "string",
+                    "enum": [
+                      "minimal",
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "description": "Gemini 3 추론 수준입니다. 지원 수준은 모델별로 다르며 none은 지원하지 않습니다."
+                  },
+                  "thinkingBudget": {
+                    "type": "integer",
+                    "minimum": -1,
+                    "description": "Gemini 2.5 추론 토큰 예산입니다. 지원 모델에서 -1은 동적 추론, 0은 추론 비활성화를 뜻합니다. Gemini 2.5 Pro는 비활성화할 수 없습니다."
+                  },
+                  "includeThoughts": {
+                    "type": "boolean"
+                  }
+                }
               }
             },
             "additionalProperties": true

@@ -1796,18 +1796,26 @@
             "type": "integer",
             "minimum": 1,
             "deprecated": true,
-            "description": "Ancien alias de compatibilité de max_completion_tokens. APIAny le convertit uniquement lorsque le canal amont sélectionné exige le nouveau champ."
+            "description": "Alias de compatibilité obsolète de max_completion_tokens. Kimi K3 accepte les deux formes et utilise max_completion_tokens."
           },
           "max_completion_tokens": {
             "type": "integer",
             "minimum": 1,
             "maximum": 1048576,
-            "description": "Nombre maximal de tokens pour le raisonnement et la réponse finale. Kimi K3 utilise 131072 par défaut et accepte jusqu’à 1048576."
+            "description": "Nombre maximal de tokens de raisonnement et de réponse finale cumulés. Les limites dépendent du modèle ; un budget épuisé peut laisser la réponse incomplète. Kimi K3: 131072 (default), 1048576 (max)."
           },
           "reasoning_effort": {
             "type": "string",
-            "enum": ["max"],
-            "description": "Effort de raisonnement de Kimi K3. K3 raisonne toujours et ne prend actuellement en charge que max."
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
           },
           "stop": {
             "oneOf": [
@@ -1886,6 +1894,26 @@
           "stream": {
             "type": "boolean",
             "description": "Si true, les deltas partiels sont diffusés via des server-sent events (OpenAI chat.completion.chunk), terminés par 'data: [DONE]'."
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Alias de compatibilité de reasoning_effort. Si les deux formes sont présentes, leurs valeurs doivent être identiques ; sinon, la requête renvoie 400.",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
+              }
+            }
           }
         },
         "required": [
@@ -1931,7 +1959,10 @@
           "tools": {
             "type": "array",
             "description": "Outils Kimi K3 chargés dynamiquement par un message system sans content.",
-            "items": {"type": "object", "additionalProperties": true}
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           }
         },
         "required": [
@@ -2003,7 +2034,7 @@
           "max_output_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "Nombre maximal de tokens de sortie."
+            "description": "Nombre maximal de tokens de raisonnement et de réponse finale cumulés. Les limites dépendent du modèle ; un budget épuisé peut laisser la réponse incomplète."
           },
           "temperature": {
             "type": "number",
@@ -2027,9 +2058,10 @@
                   "low",
                   "medium",
                   "high",
-                  "xhigh"
+                  "xhigh",
+                  "max"
                 ],
-                "description": "Intensité du reasoning pour les modèles pris en charge."
+                "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
               },
               "summary": {
                 "type": "string",
@@ -2085,6 +2117,19 @@
           "metadata": {
             "type": "object",
             "additionalProperties": true
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "Alias de compatibilité de reasoning.effort. Si les deux formes sont présentes, leurs valeurs doivent être identiques ; sinon, la requête renvoie 400. Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
           }
         },
         "required": [
@@ -2177,7 +2222,7 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "Nombre maximal de tokens à générer (obligatoire)."
+            "description": "Nombre maximal de tokens de raisonnement et de réponse finale cumulés. Les limites dépendent du modèle ; un budget épuisé peut laisser la réponse incomplète."
           },
           "system": {
             "oneOf": [
@@ -2232,6 +2277,29 @@
           "stream": {
             "type": "boolean",
             "description": "Si true, renvoie un flux d'événements SSE Anthropic (message_start / content_block_delta / message_delta / message_stop)."
+          },
+          "output_config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Contrôle natif Anthropic de l’effort. Les valeurs dépendent de la version de Claude ; voir /fr/models/chat-models. effort n’active pas thinking et ne fixe aucun budget de tokens de réflexion.",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "Contrôle natif Anthropic de l’effort. Les valeurs dépendent de la version de Claude ; voir /fr/models/chat-models. effort n’active pas thinking et ne fixe aucun budget de tokens de réflexion."
+              }
+            }
+          },
+          "thinking": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Configuration native Anthropic de thinking, indépendante de output_config.effort. type et budget_tokens doivent respecter les exigences du modèle."
           }
         },
         "required": [
@@ -2316,7 +2384,8 @@
                 "type": "integer"
               },
               "maxOutputTokens": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Nombre maximal de tokens de raisonnement et de réponse finale cumulés. Les limites dépendent du modèle ; un budget épuisé peut laisser la réponse incomplète."
               },
               "stopSequences": {
                 "type": "array",
@@ -2339,6 +2408,31 @@
                   "type": "string"
                 },
                 "description": "Incluez 'IMAGE' pour des réponses de génération d'image."
+              },
+              "thinkingConfig": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Contrôles natifs de réflexion Gemini. Gemini 3 utilise thinkingLevel et Gemini 2.5 thinkingBudget ; les valeurs et budgets dépendent du modèle. Ne combinez pas un effort explicite avec thinkingLevel ou thinkingBudget natif : la requête renvoie 400 même si les réglages sont équivalents. includeThoughts seul peut être associé à effort.",
+                "properties": {
+                  "thinkingLevel": {
+                    "type": "string",
+                    "enum": [
+                      "minimal",
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "description": "Niveau de réflexion Gemini 3. Les niveaux dépendent du modèle ; none n’est pas pris en charge."
+                  },
+                  "thinkingBudget": {
+                    "type": "integer",
+                    "minimum": -1,
+                    "description": "Budget de tokens de réflexion Gemini 2.5. Si le modèle le permet, -1 indique une réflexion dynamique et 0 la désactive. Gemini 2.5 Pro ne permet pas de la désactiver."
+                  },
+                  "includeThoughts": {
+                    "type": "boolean"
+                  }
+                }
               }
             },
             "additionalProperties": true

@@ -1796,20 +1796,26 @@
             "type": "integer",
             "minimum": 1,
             "deprecated": true,
-            "description": "max_completion_tokens 的兼容旧别名。APIAny 仅在所选模型路由需要新字段时转换。"
+            "description": "max_completion_tokens 的已弃用兼容别名。Kimi K3 接受两种写法，并使用 max_completion_tokens。"
           },
           "max_completion_tokens": {
             "type": "integer",
             "minimum": 1,
             "maximum": 1048576,
-            "description": "思考过程与最终答案合计的最大 Token 数。Kimi K3 省略时默认 131072，最高支持 1048576。"
+            "description": "思考与最终答案共用的最大 token 数。上限因模型而异；预算耗尽时答案可能不完整。 Kimi K3 省略时默认为 131072，最高支持 1048576。"
           },
           "reasoning_effort": {
             "type": "string",
             "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
               "max"
             ],
-            "description": "Kimi K3 的思考强度。K3 始终思考，目前仅支持 max。"
+            "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
           },
           "stop": {
             "oneOf": [
@@ -1888,6 +1894,26 @@
           "stream": {
             "type": "boolean",
             "description": "为 true 时通过 SSE 流式返回增量（OpenAI chat.completion.chunk），以 'data: [DONE]' 结束。"
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "reasoning_effort 的兼容别名。同时提供两种 effort 写法时，值必须一致；冲突返回 400。",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
+              }
+            }
           }
         },
         "required": [
@@ -2008,7 +2034,7 @@
           "max_output_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "最大输出 token 数。"
+            "description": "思考与最终答案共用的最大 token 数。上限因模型而异；预算耗尽时答案可能不完整。"
           },
           "temperature": {
             "type": "number",
@@ -2032,9 +2058,10 @@
                   "low",
                   "medium",
                   "high",
-                  "xhigh"
+                  "xhigh",
+                  "max"
                 ],
-                "description": "支持模型的 reasoning 强度。"
+                "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
               },
               "summary": {
                 "type": "string",
@@ -2090,6 +2117,19 @@
           "metadata": {
             "type": "object",
             "additionalProperties": true
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "reasoning.effort 的兼容别名。同时提供两种 effort 写法时，值必须一致；冲突返回 400。 思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
           }
         },
         "required": [
@@ -2182,7 +2222,7 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "最大生成 token 数（必填）。"
+            "description": "思考与最终答案共用的最大 token 数。上限因模型而异；预算耗尽时答案可能不完整。"
           },
           "system": {
             "oneOf": [
@@ -2237,6 +2277,29 @@
           "stream": {
             "type": "boolean",
             "description": "为 true 时按 Anthropic SSE 事件流返回（message_start / content_block_delta / message_delta / message_stop）。"
+          },
+          "output_config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Anthropic 原生 effort 控制。支持值取决于 Claude 版本，见 /zh/models/chat-models。effort 不会自动开启 thinking，也不会设置思考 token 预算。",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "Anthropic 原生 effort 控制。支持值取决于 Claude 版本，见 /zh/models/chat-models。effort 不会自动开启 thinking，也不会设置思考 token 预算。"
+              }
+            }
+          },
+          "thinking": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Anthropic 原生 thinking 配置，独立于 output_config.effort。type 与 budget_tokens 必须符合所选模型要求。"
           }
         },
         "required": [
@@ -2321,7 +2384,8 @@
                 "type": "integer"
               },
               "maxOutputTokens": {
-                "type": "integer"
+                "type": "integer",
+                "description": "思考与最终答案共用的最大 token 数。上限因模型而异；预算耗尽时答案可能不完整。"
               },
               "stopSequences": {
                 "type": "array",
@@ -2344,6 +2408,31 @@
                   "type": "string"
                 },
                 "description": "含 'IMAGE' 时返回图片生成结果。"
+              },
+              "thinkingConfig": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Gemini 原生思考控制。Gemini 3 使用 thinkingLevel，Gemini 2.5 使用 thinkingBudget；支持值和预算因模型而异。 显式 effort 与原生 thinkingLevel 或 thinkingBudget 不可同时指定，即使设置等价也返回 400。仅包含 includeThoughts 时可与 effort 一起使用。",
+                "properties": {
+                  "thinkingLevel": {
+                    "type": "string",
+                    "enum": [
+                      "minimal",
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "description": "Gemini 3 思考级别，支持值因模型而异；不支持 none。"
+                  },
+                  "thinkingBudget": {
+                    "type": "integer",
+                    "minimum": -1,
+                    "description": "Gemini 2.5 思考 token 预算。支持时可用 -1 表示动态思考；0 表示关闭思考，但 Gemini 2.5 Pro 不支持关闭。"
+                  },
+                  "includeThoughts": {
+                    "type": "boolean"
+                  }
+                }
               }
             },
             "additionalProperties": true

@@ -1795,20 +1795,26 @@
             "type": "integer",
             "minimum": 1,
             "deprecated": true,
-            "description": "Deprecated compatibility alias for max_completion_tokens. APIAny converts it only when the selected model route requires the newer field."
+            "description": "Deprecated compatibility alias for max_completion_tokens. For Kimi K3, APIAny accepts either field and uses max_completion_tokens."
           },
           "max_completion_tokens": {
             "type": "integer",
             "minimum": 1,
             "maximum": 1048576,
-            "description": "Maximum reasoning plus final-answer tokens. Kimi K3 defaults to 131072 when omitted and supports up to 1048576."
+            "description": "Maximum reasoning plus final-answer tokens. Model-specific limits apply; exhausting the budget can leave the answer incomplete. Kimi K3 defaults to 131072 when omitted and supports up to 1048576."
           },
           "reasoning_effort": {
             "type": "string",
             "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
               "max"
             ],
-            "description": "Kimi K3 reasoning effort. K3 always reasons and currently supports only max."
+            "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
           },
           "stop": {
             "oneOf": [
@@ -1887,6 +1893,26 @@
           "stream": {
             "type": "boolean",
             "description": "If true, partial deltas are streamed as server-sent events (OpenAI chat.completion.chunk), terminated by 'data: [DONE]'."
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Compatibility alias for reasoning_effort. When both effort forms are present, their values must match; conflicting values return 400.",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
+              }
+            }
           }
         },
         "required": [
@@ -2007,7 +2033,7 @@
           "max_output_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "Maximum output tokens."
+            "description": "Maximum reasoning plus final-answer tokens. Model-specific limits apply; exhausting the budget can leave the answer incomplete."
           },
           "temperature": {
             "type": "number",
@@ -2031,9 +2057,10 @@
                   "low",
                   "medium",
                   "high",
-                  "xhigh"
+                  "xhigh",
+                  "max"
                 ],
-                "description": "Reasoning strength for supported models."
+                "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
               },
               "summary": {
                 "type": "string",
@@ -2089,6 +2116,19 @@
           "metadata": {
             "type": "object",
             "additionalProperties": true
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "Compatibility alias for reasoning.effort. When both effort forms are present, their values must match; conflicting values return 400. Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
           }
         },
         "required": [
@@ -2181,7 +2221,7 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "Maximum tokens to generate (required)."
+            "description": "Maximum reasoning plus final-answer tokens. Model-specific limits apply; exhausting the budget can leave the answer incomplete."
           },
           "system": {
             "oneOf": [
@@ -2236,6 +2276,29 @@
           "stream": {
             "type": "boolean",
             "description": "If true, responses are streamed as Anthropic SSE events (message_start, content_block_delta, message_delta, message_stop)."
+          },
+          "output_config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Native Anthropic effort control. Supported values depend on the Claude version; see /models/chat-models. Effort does not enable thinking or choose a thinking token budget.",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "Native Anthropic effort control. Supported values depend on the Claude version; see /models/chat-models. Effort does not enable thinking or choose a thinking token budget."
+              }
+            }
+          },
+          "thinking": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Native Anthropic thinking configuration, independent of output_config.effort. Keep type and budget_tokens compatible with the selected model."
           }
         },
         "required": [
@@ -2320,7 +2383,8 @@
                 "type": "integer"
               },
               "maxOutputTokens": {
-                "type": "integer"
+                "type": "integer",
+                "description": "Maximum reasoning plus final-answer tokens. Model-specific limits apply; exhausting the budget can leave the answer incomplete."
               },
               "stopSequences": {
                 "type": "array",
@@ -2343,6 +2407,31 @@
                   "type": "string"
                 },
                 "description": "Include 'IMAGE' for image-generation responses."
+              },
+              "thinkingConfig": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Native Gemini thinking controls. Use thinkingLevel for Gemini 3 and thinkingBudget for Gemini 2.5; supported values and budgets vary by model. Do not combine explicit effort with native thinkingLevel or thinkingBudget: this returns 400 even if the settings are equivalent. includeThoughts alone can be combined with effort.",
+                "properties": {
+                  "thinkingLevel": {
+                    "type": "string",
+                    "enum": [
+                      "minimal",
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "description": "Gemini 3 thinking level. Levels vary by model; none is not supported."
+                  },
+                  "thinkingBudget": {
+                    "type": "integer",
+                    "minimum": -1,
+                    "description": "Gemini 2.5 thinking budget in tokens. Use -1 for dynamic thinking where supported. 0 disables thinking where supported, but not on Gemini 2.5 Pro."
+                  },
+                  "includeThoughts": {
+                    "type": "boolean"
+                  }
+                }
               }
             },
             "additionalProperties": true

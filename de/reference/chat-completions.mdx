@@ -43,6 +43,23 @@ OpenAI-Standardparameter werden akzeptiert, darunter `temperature`, `top_p`,
 `response_format`, `tools`, `tool_choice`, `logprobs`, `top_logprobs`,
 `logit_bias`, `user` und `stream`.
 
+## Reasoning-Stärke
+
+Setze `reasoning_effort` auf oberster Ebene, wenn das Modell konfigurierbares Reasoning unterstützt. Auch `reasoning.effort` im Responses-Format wird akzeptiert. Werden beide angegeben, müssen sie übereinstimmen; andernfalls wird `400` zurückgegeben.
+
+```json
+{
+  "model": "gpt-5.4",
+  "messages": [{ "role": "user", "content": "2 + 2 = ?" }],
+  "reasoning_effort": "high",
+  "max_completion_tokens": 4096
+}
+```
+
+Die unterstützten Werte hängen vom Modell ab. Ohne Angabe bleibt das Standardverhalten erhalten. Siehe [modellabhängige Reasoning-Steuerung](/de/models/chat-models).
+
+Ausgabelimits wie `max_completion_tokens`, `max_output_tokens` und native Entsprechungen zählen Reasoning- und Antwort-Tokens gemeinsam. Effort ist kein Ausgabetokenlimit. Das Budget kann weiterhin erschöpft werden (`finish_reason: "length"` in Chat Completions), sodass die endgültige Antwort unvollständig oder leer bleibt.
+
 ## Hinweise
 
 - Das `model` ist eine öffentliche APIAny.AI-Modell-ID.

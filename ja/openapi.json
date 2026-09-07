@@ -1796,18 +1796,26 @@
             "type": "integer",
             "minimum": 1,
             "deprecated": true,
-            "description": "max_completion_tokens の非推奨互換エイリアスです。APIAny は選択された上流が新しいフィールドを必要とする場合のみ変換します。"
+            "description": "max_completion_tokens の非推奨互換エイリアス。Kimi K3 は両方の形式を受け付け、max_completion_tokens を使用します。"
           },
           "max_completion_tokens": {
             "type": "integer",
             "minimum": 1,
             "maximum": 1048576,
-            "description": "思考過程と最終回答を合わせた最大トークン数です。Kimi K3 の既定値は 131072、上限は 1048576 です。"
+            "description": "推論と最終回答を合わせた最大トークン数。上限はモデルごとに異なり、予算を使い切ると回答が不完全になる場合があります。 Kimi K3: 131072 (default), 1048576 (max)."
           },
           "reasoning_effort": {
             "type": "string",
-            "enum": ["max"],
-            "description": "Kimi K3 の思考強度です。K3 は常に思考し、現在は max のみをサポートします。"
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
           },
           "stop": {
             "oneOf": [
@@ -1886,6 +1894,26 @@
           "stream": {
             "type": "boolean",
             "description": "true の場合、増分を SSE でストリーミング返却します（OpenAI chat.completion.chunk）。'data: [DONE]' で終了します。"
+          },
+          "reasoning": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "reasoning_effort の互換エイリアス。両方の形式を指定する場合、値を一致させてください。不一致は 400 になります。",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "minimal",
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
+              }
+            }
           }
         },
         "required": [
@@ -1931,7 +1959,10 @@
           "tools": {
             "type": "array",
             "description": "content を持たない system メッセージに含める Kimi K3 の動的ツール宣言です。",
-            "items": {"type": "object", "additionalProperties": true}
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
           }
         },
         "required": [
@@ -2003,7 +2034,7 @@
           "max_output_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "最大出力トークン数。"
+            "description": "推論と最終回答を合わせた最大トークン数。上限はモデルごとに異なり、予算を使い切ると回答が不完全になる場合があります。"
           },
           "temperature": {
             "type": "number",
@@ -2027,9 +2058,10 @@
                   "low",
                   "medium",
                   "high",
-                  "xhigh"
+                  "xhigh",
+                  "max"
                 ],
-                "description": "対応モデルにおける reasoning の強度。"
+                "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
               },
               "summary": {
                 "type": "string",
@@ -2085,6 +2117,19 @@
           "metadata": {
             "type": "object",
             "additionalProperties": true
+          },
+          "reasoning_effort": {
+            "type": "string",
+            "enum": [
+              "none",
+              "minimal",
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ],
+            "description": "reasoning.effort の互換エイリアス。両方の形式を指定する場合、値を一致させてください。不一致は 400 になります。 推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
           }
         },
         "required": [
@@ -2177,7 +2222,7 @@
           "max_tokens": {
             "type": "integer",
             "minimum": 1,
-            "description": "生成する最大トークン数（必須）。"
+            "description": "推論と最終回答を合わせた最大トークン数。上限はモデルごとに異なり、予算を使い切ると回答が不完全になる場合があります。"
           },
           "system": {
             "oneOf": [
@@ -2232,6 +2277,29 @@
           "stream": {
             "type": "boolean",
             "description": "true の場合、Anthropic SSE イベントストリームで返却します（message_start / content_block_delta / message_delta / message_stop）。"
+          },
+          "output_config": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Anthropic ネイティブの effort 制御。対応値は Claude のバージョンに依存します。/ja/models/chat-models を参照。effort は thinking を有効化せず、思考トークン予算も設定しません。",
+            "properties": {
+              "effort": {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "xhigh",
+                  "max"
+                ],
+                "description": "Anthropic ネイティブの effort 制御。対応値は Claude のバージョンに依存します。/ja/models/chat-models を参照。effort は thinking を有効化せず、思考トークン予算も設定しません。"
+              }
+            }
+          },
+          "thinking": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "output_config.effort とは独立した Anthropic ネイティブの thinking 設定。type と budget_tokens はモデルの要件に合わせてください。"
           }
         },
         "required": [
@@ -2316,7 +2384,8 @@
                 "type": "integer"
               },
               "maxOutputTokens": {
-                "type": "integer"
+                "type": "integer",
+                "description": "推論と最終回答を合わせた最大トークン数。上限はモデルごとに異なり、予算を使い切ると回答が不完全になる場合があります。"
               },
               "stopSequences": {
                 "type": "array",
@@ -2339,6 +2408,31 @@
                   "type": "string"
                 },
                 "description": "'IMAGE' を含めると画像生成結果を返します。"
+              },
+              "thinkingConfig": {
+                "type": "object",
+                "additionalProperties": true,
+                "description": "Gemini ネイティブの思考制御。Gemini 3 は thinkingLevel、Gemini 2.5 は thinkingBudget を使用します。対応値と予算はモデルごとに異なります。 明示的な effort とネイティブの thinkingLevel または thinkingBudget は同時に指定できません。設定が同等でも 400 になります。includeThoughts のみであれば effort と併用できます。",
+                "properties": {
+                  "thinkingLevel": {
+                    "type": "string",
+                    "enum": [
+                      "minimal",
+                      "low",
+                      "medium",
+                      "high"
+                    ],
+                    "description": "Gemini 3 の思考レベル。対応値はモデルに依存し、none は非対応です。"
+                  },
+                  "thinkingBudget": {
+                    "type": "integer",
+                    "minimum": -1,
+                    "description": "Gemini 2.5 の思考トークン予算。対応モデルでは -1 で動的思考、0 で思考を無効化できます。ただし Gemini 2.5 Pro は無効化できません。"
+                  },
+                  "includeThoughts": {
+                    "type": "boolean"
+                  }
+                }
               }
             },
             "additionalProperties": true

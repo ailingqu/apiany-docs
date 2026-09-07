@@ -42,6 +42,23 @@ OpenAI 標準のパラメータに対応しています：`temperature`、`top_p
 `frequency_penalty`、`presence_penalty`、`seed`、`response_format`、`tools`、
 `tool_choice`、`logprobs`、`top_logprobs`、`logit_bias`、`user`、`stream`。
 
+## 推論強度
+
+推論強度を設定できるモデルでは、トップレベルの `reasoning_effort` を使用します。Responses 形式の `reasoning.effort` も受け付けます。両方を指定する場合は同じ値にしてください。不一致は `400` になります。
+
+```json
+{
+  "model": "gpt-5.4",
+  "messages": [{ "role": "user", "content": "2 + 2 = ?" }],
+  "reasoning_effort": "high",
+  "max_completion_tokens": 4096
+}
+```
+
+対応値はモデルごとに異なり、省略時は既定動作を維持します。[モデル別の推論制御](/ja/models/chat-models)を参照してください。
+
+`max_completion_tokens`、`max_output_tokens` およびネイティブの対応フィールドは、推論と最終回答の合計トークン数を制限します。effort 自体は出力トークン上限ではありません。予算を使い切ると（Chat Completions の `finish_reason: "length"`）、最終回答が不完全または空になる場合があります。
+
 ## 補足
 
 - `model` は APIAny.AI の公開モデル ID です。

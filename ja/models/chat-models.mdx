@@ -38,3 +38,30 @@ description: テキスト生成とマルチモーダルチャットモデルの�
 | `deepseek-v4-flash` | DeepSeek V4 Flash —— レイテンシ最適化版の DeepSeek V4。高ボリューム・低コストな推論に適しています。 |
 | `glm-5.1` | Zhipu GLM-5.1 —— 中国語/英語のバイリンガル能力に優れ、推論、コーディング、エージェントアプリケーションに適したモデル。 |
 | `minimax-m3` | MiniMax M3 —— 長いコンテキストの推論、ツール利用、多言語チャットに適した大規模言語モデル。 |
+
+## 推論強度
+
+Chat Completions では `reasoning_effort`、Responses では `reasoning: { "effort": "high" }` を使用します。両エンドポイントはもう一方の形式も互換エイリアスとして受け付けます。両方を指定する場合は値を一致させてください。不一致は `400` になります。省略時はモデルの既定動作を維持します。
+
+構文上の許容値は `none`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max` です。すべてのモデルで全値に対応するわけではありません。不正な値や、対応範囲が明記されたモデルでの非対応値は `400` になります。
+
+| モデル | 対応する effort |
+| --- | --- |
+| Kimi K3 | `max` |
+| GPT-5.4 / GPT-5.5 | `none`, `low`, `medium`, `high`, `xhigh` |
+| GPT-5.4 Pro / GPT-5.5 Pro | `medium`, `high`, `xhigh` |
+| Claude Opus 4.7 / 4.8 | `low`, `medium`, `high`, `xhigh`, `max` |
+| Claude Opus 4.6 / Sonnet 4.6 | `low`, `medium`, `high`, `max` |
+| Claude Opus 4.5 | `low`, `medium`, `high` |
+| Gemini 3 | 対応レベルはモデルに依存。`none` は非対応 |
+| Gemini 2.5 | `none`、`minimal`、`low`、`medium`、`high`。Pro は `none` 非対応 |
+
+Anthropic Messages では `output_config.effort` を使用します。ネイティブの `thinking` は独立した設定です。effort は思考を有効化せず、`budget_tokens` も設定しません。
+
+Gemini 3 のネイティブ形式は `generationConfig.thinkingConfig.thinkingLevel` を使い、対応レベルはモデルごとに異なります。Gemini 2.5 は `thinkingBudget` を使います。OpenAI 互換形式では、Gemini 2.5 の `minimal`/`low` は `1024`、`medium` は `8192`、`high` は `24576`、`none` は `0`（Pro を除く）に対応します。明示的な effort とネイティブの `thinkingLevel` または `thinkingBudget` は同時に指定できません。設定が同等でも `400` になります。`includeThoughts` のみであれば effort と併用できます。
+
+その他の OpenAI 互換モデルでは構文上有効な effort を送信できますが、対応は保証されません。特定の値に依存する前にモデルの対応状況を確認してください。
+
+`max_completion_tokens`、`max_output_tokens` およびネイティブの対応フィールドは、推論と最終回答の合計トークン数を制限します。effort 自体は出力トークン上限ではありません。予算を使い切ると（Chat Completions の `finish_reason: "length"`）、最終回答が不完全または空になる場合があります。
+
+API 形式の参考資料: [OpenAI](https://developers.openai.com/api/docs/guides/reasoning#reasoning-effort), [Anthropic Messages](https://platform.claude.com/docs/en/build-with-claude/effort), [Gemini](https://ai.google.dev/gemini-api/docs/generate-content/thinking), [Gemini OpenAI](https://ai.google.dev/gemini-api/docs/openai).

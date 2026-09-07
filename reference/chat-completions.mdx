@@ -43,6 +43,23 @@ OpenAI-standard parameters are accepted, including `temperature`, `top_p`,
 `response_format`, `tools`, `tool_choice`, `logprobs`, `top_logprobs`,
 `logit_bias`, `user`, and `stream`.
 
+## Reasoning effort
+
+Set top-level `reasoning_effort` for models that support configurable reasoning. The Responses-style `reasoning.effort` is also accepted; if both are provided, they must match or the request returns `400`.
+
+```json
+{
+  "model": "gpt-5.4",
+  "messages": [{ "role": "user", "content": "2 + 2 = ?" }],
+  "reasoning_effort": "high",
+  "max_completion_tokens": 4096
+}
+```
+
+Supported values vary by model; omission preserves the existing default. See [model-specific reasoning controls](/models/chat-models).
+
+Output limits such as `max_completion_tokens`, `max_output_tokens`, and the native equivalents include reasoning and final-answer tokens. Effort is not an output-token limit. A request can still exhaust its budget (`finish_reason: "length"` in Chat Completions) and return an incomplete or empty final answer.
+
 ## Kimi K3 compatibility
 
 `kimi-k3` uses the same OpenAI-compatible endpoint, but its native contract has
@@ -51,9 +68,9 @@ model-specific rules:
 - K3 always reasons. Use top-level `reasoning_effort: "max"`; the K2.x
   `thinking` object is accepted only as an enabled compatibility alias.
 - Prefer `max_completion_tokens`. APIAny accepts deprecated `max_tokens` and
-  converts it only when the selected route targets Kimi K3. If no limit is provided, Kimi's
-  official default is used. The explicit maximum is 1,048,576 tokens.
-- K3 sampling is fixed by the provider. APIAny removes `temperature`, `top_p`,
+  uses `max_completion_tokens` for Kimi K3. If no limit is provided, the model's
+  default is used. The explicit maximum is 1,048,576 tokens.
+- K3 sampling settings are fixed. APIAny removes `temperature`, `top_p`,
   `frequency_penalty`, and `presence_penalty` only for K3; `n` must be `1`.
 - `reasoning_content` is the reasoning trace and `content` is the final answer.
   Streaming returns them as separate deltas. Do not merge the reasoning trace

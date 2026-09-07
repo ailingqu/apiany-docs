@@ -57,3 +57,18 @@ Set `stream: true` to receive Anthropic server-sent events:
 Supported: `model`, `messages`, `max_tokens` (required), `system`,
 `temperature`, `top_p`, `top_k`, `stop_sequences`, `tools`, `tool_choice`,
 and `stream`.
+
+## Reasoning effort
+
+Use native `output_config.effort` for supported Claude models. Supported values depend on the version; see [model-specific reasoning controls](/models/chat-models). Native `thinking` is independent: effort does not enable thinking or select a token budget. If needed, configure `thinking` separately according to the model’s requirements.
+
+```json
+{
+  "model": "claude-opus-4-8",
+  "max_tokens": 4096,
+  "output_config": { "effort": "medium" },
+  "messages": [{ "role": "user", "content": "2 + 2 = ?" }]
+}
+```
+
+Output limits such as `max_completion_tokens`, `max_output_tokens`, and the native equivalents include reasoning and final-answer tokens. Effort is not an output-token limit. A request can still exhaust its budget (`finish_reason: "length"` in Chat Completions) and return an incomplete or empty final answer.

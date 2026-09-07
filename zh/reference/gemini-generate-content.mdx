@@ -58,3 +58,20 @@ curl https://apiany.ai/v1beta/models/gemini-3.5-flash:streamGenerateContent \
 `stopSequences`、`responseMimeType`、`responseSchema`、`responseModalities`
 （含 `IMAGE` 时返回图片）。另支持顶层 `tools`（functionDeclarations）与
 `systemInstruction`。
+
+## 思考强度
+
+Gemini 3 使用 `generationConfig.thinkingConfig.thinkingLevel`；Gemini 2.5 使用 `generationConfig.thinkingConfig.thinkingBudget`。支持级别和预算因模型而异。Gemini 3 不支持 `none`，Gemini 2.5 Pro 无法关闭思考。
+
+```json
+{
+  "contents": [{ "parts": [{ "text": "2 + 2 = ?" }] }],
+  "generationConfig": {
+    "thinkingConfig": { "thinkingLevel": "high" }
+  }
+}
+```
+
+OpenAI 兼容请求中，Gemini 2.5 将 `minimal`/`low` 映射为 `1024` 个思考 token、`medium` 映射为 `8192`、`high` 映射为 `24576`；支持关闭思考的模型将 `none` 映射为 `0`。显式 effort 与原生 `thinkingLevel` 或 `thinkingBudget` 不可同时指定，即使设置等价也返回 `400`。仅包含 `includeThoughts` 时可与 effort 一起使用。详见[各模型思考控制](/zh/models/chat-models)。
+
+`max_completion_tokens`、`max_output_tokens` 及原生对应字段限制的是思考与最终答案共用的 token 总量。effort 不是输出 token 上限；请求仍可能耗尽预算（Chat Completions 返回 `finish_reason: "length"`），导致最终答案不完整或为空。

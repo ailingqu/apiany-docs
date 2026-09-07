@@ -38,3 +38,30 @@ La fenêtre de contexte et les limites de sortie maximale sont des métadonnées
 | `deepseek-v4-flash` | DeepSeek V4 Flash — une variante de DeepSeek V4 optimisée pour la latence, destinée à une inférence à grand volume et à faible coût. |
 | `glm-5.1` | Zhipu GLM-5.1 — un modèle bilingue (chinois/anglais) performant pour le raisonnement, le code et les applications d'agent. |
 | `minimax-m3` | MiniMax M3 — un grand modèle de langage performant pour le raisonnement à long contexte, l'utilisation d'outils et le chat multilingue. |
+
+## Intensité du raisonnement
+
+Utilisez `reasoning_effort` dans Chat Completions et `reasoning: { "effort": "high" }` dans Responses. Chaque endpoint accepte aussi l’autre forme comme alias de compatibilité. Si les deux sont présentes, leurs valeurs doivent être identiques ; sinon, la requête renvoie `400`. Sans effort, le comportement par défaut du modèle est conservé.
+
+La syntaxe accepte `none`, `minimal`, `low`, `medium`, `high`, `xhigh` et `max`. Cela ne signifie pas que chaque modèle accepte toutes ces valeurs. Les valeurs invalides et celles hors de l’ensemble documenté pour le modèle renvoient `400`.
+
+| Modèle | effort pris en charge |
+| --- | --- |
+| Kimi K3 | `max` |
+| GPT-5.4 / GPT-5.5 | `none`, `low`, `medium`, `high`, `xhigh` |
+| GPT-5.4 Pro / GPT-5.5 Pro | `medium`, `high`, `xhigh` |
+| Claude Opus 4.7 / 4.8 | `low`, `medium`, `high`, `xhigh`, `max` |
+| Claude Opus 4.6 / Sonnet 4.6 | `low`, `medium`, `high`, `max` |
+| Claude Opus 4.5 | `low`, `medium`, `high` |
+| Gemini 3 | Niveaux selon le modèle ; `none` non pris en charge |
+| Gemini 2.5 | `none`, `minimal`, `low`, `medium`, `high` ; Pro n’accepte pas `none` |
+
+Avec Anthropic Messages, utilisez `output_config.effort`. Le réglage natif `thinking` reste indépendant : effort n’active pas la réflexion et ne définit pas `budget_tokens`.
+
+Les requêtes natives Gemini 3 utilisent `generationConfig.thinkingConfig.thinkingLevel` ; les niveaux acceptés dépendent du modèle. Gemini 2.5 utilise `thinkingBudget`. Au format compatible OpenAI, Gemini 2.5 associe `minimal`/`low` à `1024`, `medium` à `8192`, `high` à `24576` et `none` à `0` (sauf Pro). Ne combinez pas un effort explicite avec `thinkingLevel` ou `thinkingBudget` natif : la requête renvoie `400` même si les réglages sont équivalents. `includeThoughts` seul peut être associé à effort.
+
+Les autres modèles compatibles OpenAI acceptent les efforts syntaxiquement valides pour l’exécution, sans garantie déclarée de prise en charge. Vérifiez les capacités du modèle avant de dépendre d’une valeur.
+
+Les limites comme `max_completion_tokens`, `max_output_tokens` et leurs équivalents natifs comptent à la fois les tokens de raisonnement et de réponse finale. effort n’est pas une limite de tokens de sortie. Le budget peut toujours être épuisé (`finish_reason: "length"` dans Chat Completions), laissant une réponse finale incomplète ou vide.
+
+Références des formats d’API: [OpenAI](https://developers.openai.com/api/docs/guides/reasoning#reasoning-effort), [Anthropic Messages](https://platform.claude.com/docs/en/build-with-claude/effort), [Gemini](https://ai.google.dev/gemini-api/docs/generate-content/thinking), [Gemini OpenAI](https://ai.google.dev/gemini-api/docs/openai).

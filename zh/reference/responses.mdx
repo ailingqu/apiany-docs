@@ -34,8 +34,11 @@ curl https://apiany.ai/v1/responses \
 }
 ```
 
-`reasoning.effort` 支持 `none`、`minimal`、`low`、`medium`、`high`、
-`xhigh`。
+`gpt-5.5` 和 `gpt-5.4` 支持 `none`、`low`、`medium`、`high`、`xhigh`，不支持 `minimal` 或 `max`。顶层 `reasoning_effort` 可作为兼容别名；同时提供两种写法时，值必须一致，否则返回 `400`。
+
+支持值因模型而异；省略时保持原有默认行为。详见[各模型思考控制](/zh/models/chat-models)。
+
+`max_completion_tokens`、`max_output_tokens` 及原生对应字段限制的是思考与最终答案共用的 token 总量。effort 不是输出 token 上限；请求仍可能耗尽预算（Chat Completions 返回 `finish_reason: "length"`），导致最终答案不完整或为空。
 
 ## 联网搜索
 
