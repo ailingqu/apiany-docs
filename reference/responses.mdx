@@ -85,3 +85,9 @@ curl https://apiany.ai/v1/responses \
 - Responses-native fields such as `reasoning`, `text`, `tools`,
   `tool_choice`, `include`, `previous_response_id`, and `store` are forwarded
   when supported by the selected model.
+
+## GPT-6 output and stream completion
+
+For `gpt-6-astra`, recognizable leading thinking wrappers are separated from the final answer. Read `content` / `output_text` for the answer and the independent reasoning fields or summary events for thinking. Explicit tag examples and ambiguous markup are preserved. Reasoning effort and output-token limits are not changed by this formatting.
+
+An HTTP `200` stream is not proof of a successful generation. Handle error events, keep any partial answer clearly marked as incomplete, and wait for the protocol's completion event. In Chat, read the final usage chunk before `[DONE]`; in Responses, distinguish `response.completed`, `response.incomplete`, and `response.failed` / `error`.

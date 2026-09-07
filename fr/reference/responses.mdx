@@ -85,3 +85,9 @@ curl https://apiany.ai/v1/responses \
 - Les champs natifs de Responses tels que `reasoning`, `text`, `tools`,
   `tool_choice`, `include`, `previous_response_id` et `store` sont transmis
   lorsqu'ils sont pris en charge par le modèle sélectionné.
+
+## Sortie GPT-6 et fin du flux
+
+Avec `gpt-6-astra`, les blocs de réflexion initiaux reconnaissables sont séparés de la réponse finale. Lisez `content` / `output_text` pour la réponse, et les champs de raisonnement ou événements summary pour la réflexion. Les exemples explicites de balises et les cas ambigus sont conservés. Ce formatage ne modifie ni l’effort de raisonnement ni la limite de tokens.
+
+Un flux HTTP `200` ne garantit pas le succès. Gérez les événements d’erreur et marquez toute réponse partielle comme incomplète. En Chat, lisez le dernier usage avant `[DONE]` ; en Responses, distinguez `response.completed`, `response.incomplete` et `response.failed` / `error`.

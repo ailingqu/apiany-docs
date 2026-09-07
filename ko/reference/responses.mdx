@@ -85,3 +85,9 @@ curl https://apiany.ai/v1/responses \
 - `reasoning`, `text`, `tools`, `tool_choice`, `include`,
   `previous_response_id`, `store` 등 Responses 고유 필드는 선택한 모델이
   지원할 때 전달됩니다.
+
+## GPT-6 출력 및 스트림 종료
+
+`gpt-6-astra`는 식별 가능한 앞부분의 사고 블록을 최종 답변과 분리합니다. 답변은 `content` / `output_text`, 사고 내용은 별도의 reasoning 필드 또는 summary 이벤트에서 읽으세요. 명시적인 태그 예제와 모호한 표기는 그대로 유지합니다. 추론 강도나 출력 토큰 한도는 변경하지 않습니다.
+
+스트림의 HTTP `200`만으로 생성 성공을 판단할 수 없습니다. 오류 이벤트를 처리하고 부분 답변은 미완료로 표시하세요. Chat에서는 `[DONE]` 이전의 마지막 usage를 읽고, Responses에서는 `response.completed`, `response.incomplete`, `response.failed` / `error`를 구분하세요.

@@ -85,3 +85,9 @@ curl https://apiany.ai/v1/responses \
 - `reasoning`、`text`、`tools`、`tool_choice`、`include`、
   `previous_response_id`、`store` などの Responses ネイティブフィールドは、選択したモデルが
   対応している場合に転送されます。
+
+## GPT-6 の出力とストリームの終了
+
+`gpt-6-astra` では、認識可能な先頭の思考ブロックを最終回答から分離します。回答は `content` / `output_text`、思考内容は独立した reasoning フィールドまたは summary イベントから読み取ってください。明示的なタグの例や曖昧な記述は保持されます。推論強度や出力 Token 上限は変更しません。
+
+ストリームの HTTP `200` だけでは生成成功を意味しません。エラーイベントを処理し、途中までの回答は未完了と表示してください。Chat では `[DONE]` 前の最後の usage を読み取り、Responses では `response.completed`、`response.incomplete`、`response.failed` / `error` を区別してください。

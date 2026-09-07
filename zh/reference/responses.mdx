@@ -83,3 +83,9 @@ curl https://apiany.ai/v1/responses \
 - `max_output_tokens` 是 Responses 风格的输出 token 上限。
 - `reasoning`、`text`、`tools`、`tool_choice`、`include`、
   `previous_response_id`、`store` 等 Responses 原生字段会在所选模型支持时转发。
+
+## GPT-6 输出与流式结束
+
+使用 `gpt-6-astra` 时，可识别的前置思考包装会与最终答案分离。最终答案读取 `content` / `output_text`，思考内容读取独立 reasoning 字段或 summary 事件；明确的标签示例和有歧义的标记保留原样。这种格式整理不会修改推理强度或输出 Token 上限。
+
+流式 HTTP `200` 不代表生成成功。请处理错误事件，并将出错前收到的部分答案明确标为不完整，等待协议终态再判断结果。Chat 应在 `[DONE]` 前读取末尾 usage；Responses 应区分 `response.completed`、`response.incomplete` 与 `response.failed` / `error`。

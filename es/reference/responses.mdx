@@ -85,3 +85,9 @@ curl https://apiany.ai/v1/responses \
 - Los campos nativos de Responses como `reasoning`, `text`, `tools`,
   `tool_choice`, `include`, `previous_response_id` y `store` se reenvían
   cuando el modelo seleccionado los admite.
+
+## Salida de GPT-6 y finalización del flujo
+
+En `gpt-6-astra`, los bloques iniciales de reflexión reconocibles se separan de la respuesta final. Lea `content` / `output_text` para la respuesta y los campos de razonamiento o eventos summary para la reflexión. Se conservan los ejemplos explícitos de etiquetas y los casos ambiguos. El formato no cambia el esfuerzo de razonamiento ni los límites de tokens.
+
+Un flujo HTTP `200` no garantiza una generación correcta. Gestione los eventos de error y marque las respuestas parciales como incompletas. En Chat, lea el último usage antes de `[DONE]`; en Responses, distinga `response.completed`, `response.incomplete` y `response.failed` / `error`.

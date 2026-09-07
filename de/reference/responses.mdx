@@ -85,3 +85,9 @@ curl https://apiany.ai/v1/responses \
 - Responses-native Felder wie `reasoning`, `text`, `tools`,
   `tool_choice`, `include`, `previous_response_id` und `store` werden weitergeleitet,
   wenn das ausgewählte Modell sie unterstützt.
+
+## GPT-6-Ausgabe und Stream-Abschluss
+
+Bei `gpt-6-astra` werden erkennbare führende Denkblöcke von der endgültigen Antwort getrennt. Die Antwort steht in `content` / `output_text`, der Denktext in separaten Reasoning-Feldern oder Summary-Ereignissen. Explizite Tag-Beispiele und mehrdeutige Markierungen bleiben erhalten. Reasoning-Effort und Token-Limits ändern sich dadurch nicht.
+
+HTTP `200` bei einem Stream garantiert keinen Erfolg. Behandeln Sie Fehlerereignisse und kennzeichnen Sie Teilantworten als unvollständig. Lesen Sie bei Chat den letzten usage-Block vor `[DONE]`; unterscheiden Sie bei Responses zwischen `response.completed`, `response.incomplete` und `response.failed` / `error`.
