@@ -2480,6 +2480,9 @@
             "$ref": "#/components/schemas/GPTImage2GenerationRequest"
           },
           {
+            "$ref": "#/components/schemas/GPTImage25GenerationRequest"
+          },
+          {
             "$ref": "#/components/schemas/GenericImageGenerationRequest"
           }
         ]
@@ -2554,13 +2557,91 @@
           "prompt"
         ]
       },
+      "GPTImage25GenerationRequest": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string",
+            "enum": [
+              "gpt-image-2.5",
+              "gpt-image-2.5-flare",
+              "gpt-image-2.5-sunburst"
+            ],
+            "description": "The gpt-image-2.5 alias is fixed to Flare semantics. Use the explicit Sunburst ID for precision-focused workflows."
+          },
+          "prompt": {
+            "type": "string"
+          },
+          "size": {
+            "type": "string",
+            "description": "Use auto, a W:H ratio, or a valid WIDTHxHEIGHT value. Explicit pixels are preserved and must match resolution; dimensions must use multiples of 16, 655,360–8,294,400 total pixels, a maximum edge of 3840, and a ratio no wider than 3:1.",
+            "examples": ["auto", "1:1", "16:9", "2048x1152"]
+          },
+          "resolution": {
+            "type": "string",
+            "enum": ["1K", "2K", "4K"],
+            "default": "1K",
+            "description": "Output resolution tier. This is independent from quality."
+          },
+          "quality": {
+            "type": "string",
+            "enum": ["auto", "low", "medium", "high", "xhigh", "max"],
+            "default": "auto",
+            "description": "Rendering effort. APIAny selects only routes that support the requested tier."
+          },
+          "n": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10,
+            "default": 1,
+            "description": "Number of images. Requests above one image require a compatible route, and billing scales with n."
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 16,
+            "items": { "type": "string", "format": "uri" },
+            "description": "Optional reference images for editing or guided generation."
+          },
+          "mask_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Optional edit mask. Supplying it restricts routing to mask-capable providers."
+          },
+          "background": {
+            "type": "string",
+            "enum": ["auto", "opaque", "transparent"],
+            "default": "auto"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": ["png", "jpeg", "webp"],
+            "default": "png"
+          },
+          "output_compression": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "description": "Compression setting for JPEG or WebP output."
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["model", "prompt"]
+      },
       "GenericImageGenerationRequest": {
         "type": "object",
         "properties": {
           "model": {
             "type": "string",
             "not": {
-              "const": "gpt-image-2"
+              "enum": [
+                "gpt-image-2",
+                "gpt-image-2.5",
+                "gpt-image-2.5-flare",
+                "gpt-image-2.5-sunburst"
+              ]
             },
             "example": "nano-banana"
           },

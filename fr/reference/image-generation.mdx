@@ -35,3 +35,17 @@ Utilisez-la pour la compatibilité et les démos. Utilisez l'endpoint asynchrone
 ## Édition d'images
 
 `/v1/images/edits` prend en charge les workflows d'édition d'images de style OpenAI lorsque le modèle sélectionné prend en charge les images de référence.
+
+## Qualité et routage de GPT Image 2.5
+
+`gpt-image-2.5` est un alias fixe de Flare ; utilisez `gpt-image-2.5-sunburst` pour l’édition précise. `quality` (`auto/low/medium/high/xhigh/max`) et `resolution` (`1K/2K/4K`) sont indépendants. Les pixels explicites doivent correspondre à la résolution, et APIAny choisit uniquement les routes compatibles par coût sans supprimer de champs.
+
+```json
+{"model":"gpt-image-2.5-flare","prompt":"Visuel principal de produit","size":"16:9","resolution":"2K","quality":"high","n":1}
+```
+
+L’édition accepte jusqu’à 16 références et un masque facultatif.
+
+```json
+{"model":"gpt-image-2.5-sunburst","prompt":"Remplacer uniquement le fond","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","resolution":"2K","quality":"xhigh"}
+```

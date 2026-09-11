@@ -35,3 +35,17 @@ Verwende sie für Kompatibilität und Demos. Nutze für Produktiv-Workloads den 
 ## Bildbearbeitung
 
 `/v1/images/edits` unterstützt OpenAI-typische Bildbearbeitungs-Workflows, sofern das ausgewählte Modell Referenzbilder unterstützt.
+
+## GPT Image 2.5 Qualität und Routing
+
+`gpt-image-2.5` ist ein fester Flare-Alias; für präzise Bearbeitung wird `gpt-image-2.5-sunburst` verwendet. `quality` (`auto/low/medium/high/xhigh/max`) und `resolution` (`1K/2K/4K`) sind unabhängig. Explizite Pixel müssen zur Auflösungsstufe passen. APIAny wählt nur kompatible Routen nach Kosten und entfernt keine Felder.
+
+```json
+{"model":"gpt-image-2.5-flare","prompt":"Produkt-Hauptmotiv","size":"16:9","resolution":"2K","quality":"high","n":1}
+```
+
+Die Bearbeitung unterstützt bis zu 16 Referenzbilder und eine optionale Maske.
+
+```json
+{"model":"gpt-image-2.5-sunburst","prompt":"Nur den Hintergrund ersetzen","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","resolution":"2K","quality":"xhigh"}
+```

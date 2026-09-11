@@ -35,3 +35,17 @@ curl https://apiany.ai/v1/images/generations \
 ## 画像編集
 
 `/v1/images/edits` は OpenAI スタイルの画像編集に使用します。参照画像に対応したモデルのみがこのエンドポイントを呼び出せます。
+
+## GPT Image 2.5 の品質とルーティング
+
+`gpt-image-2.5` は Flare 固定のエイリアスです。精密編集には `gpt-image-2.5-sunburst` を指定します。`quality` は `auto/low/medium/high/xhigh/max`、`resolution` は `1K/2K/4K` で独立しており、明示ピクセルは解像度帯と一致する必要があります。未対応のパラメータを削除せず、対応ルートのみをコスト順に選択します。
+
+```json
+{"model":"gpt-image-2.5-flare","prompt":"商品メイン画像","size":"16:9","resolution":"2K","quality":"high","n":1}
+```
+
+編集では最大 16 枚の参照画像と任意のマスクを使用できます。
+
+```json
+{"model":"gpt-image-2.5-sunburst","prompt":"背景だけを変更","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","resolution":"2K","quality":"xhigh"}
+```

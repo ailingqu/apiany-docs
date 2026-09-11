@@ -35,3 +35,17 @@ La respuesta devuelve una tarea:
 ## Edición de imágenes
 
 `/v1/images/edits` admite flujos de edición de imágenes estilo OpenAI cuando el modelo seleccionado admite imágenes de referencia.
+
+## Calidad y enrutamiento de GPT Image 2.5
+
+`gpt-image-2.5` es un alias fijo de Flare; usa `gpt-image-2.5-sunburst` para edición precisa. `quality` (`auto/low/medium/high/xhigh/max`) y `resolution` (`1K/2K/4K`) son independientes. Los píxeles explícitos deben coincidir con la resolución y APIAny elige solo rutas compatibles ordenadas por coste sin eliminar campos.
+
+```json
+{"model":"gpt-image-2.5-flare","prompt":"Imagen principal de producto","size":"16:9","resolution":"2K","quality":"high","n":1}
+```
+
+La edición admite hasta 16 referencias y una máscara opcional.
+
+```json
+{"model":"gpt-image-2.5-sunburst","prompt":"Cambiar solo el fondo","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","resolution":"2K","quality":"xhigh"}
+```

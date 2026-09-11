@@ -56,3 +56,17 @@ GPT-Image 2 的最终输出使用 `auto` 或七个官方常用尺寸之一：`10
 ## 图片编辑
 
 `/v1/images/edits` 用于 OpenAI 风格图片编辑。只有支持参考图的模型可以调用该接口。
+
+## GPT Image 2.5 档位与路由
+
+`gpt-image-2.5` 固定为 Flare 别名；需要精细编辑时请显式使用 `gpt-image-2.5-sunburst`。`quality` 与 `resolution` 相互独立：质量支持 `auto/low/medium/high/xhigh/max`，分辨率支持 `1K/2K/4K`。显式像素 `size` 会原样保留，并且必须与分辨率档位一致。APIAny 会先剔除不支持请求参数的渠道，再按该次请求的预估处理成本排序，不会静默丢弃字段。
+
+```bash
+curl https://apiany.ai/v1/images/generations -H "Authorization: Bearer $APIANY_API_KEY" -H "Content-Type: application/json" -d '{"model":"gpt-image-2.5-flare","prompt":"高级产品主视觉","size":"16:9","resolution":"2K","quality":"high","n":1}'
+```
+
+编辑请求可使用 Sunburst、最多 16 张参考图和可选蒙版；使用透明背景或 WebP 压缩时，只会选择支持这些字段的渠道。
+
+```json
+{"model":"gpt-image-2.5-sunburst","prompt":"只替换背景","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","size":"1:1","resolution":"2K","quality":"xhigh","background":"transparent","output_format":"webp","output_compression":90}
+```

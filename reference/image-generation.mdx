@@ -71,3 +71,20 @@ Use it for compatibility and demos. Use the async endpoint for production worklo
 ## Image edits
 
 `/v1/images/edits` supports OpenAI-style image editing workflows where the selected model supports reference images.
+
+## GPT Image 2.5 tiers and routing
+
+`gpt-image-2.5` is a stable alias for Flare; use `gpt-image-2.5-sunburst` explicitly for precision-focused work. `quality` and `resolution` are independent: quality accepts `auto`, `low`, `medium`, `high`, `xhigh`, or `max`, while resolution accepts `1K`, `2K`, or `4K`. A valid explicit pixel `size` is preserved and must match the selected resolution tier. APIAny filters incompatible providers before sorting eligible routes by estimated processing cost, so unsupported fields are never silently dropped.
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.5-flare","prompt":"A premium product hero","size":"16:9","resolution":"2K","quality":"high","n":1}'
+```
+
+For editing, choose Sunburst and provide up to 16 references plus an optional mask. `background`, `output_format`, and `output_compression` also restrict routing to providers that support those exact controls.
+
+```json
+{"model":"gpt-image-2.5-sunburst","prompt":"Replace only the background","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","size":"1:1","resolution":"2K","quality":"xhigh","background":"transparent","output_format":"webp","output_compression":90}
+```

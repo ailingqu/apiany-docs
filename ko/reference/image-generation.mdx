@@ -35,3 +35,17 @@ curl https://apiany.ai/v1/images/generations \
 ## 이미지 편집
 
 `/v1/images/edits`는 선택한 모델이 참조 이미지를 지원하는 경우 OpenAI 스타일의 이미지 편집 워크플로를 지원합니다.
+
+## GPT Image 2.5 품질과 라우팅
+
+`gpt-image-2.5`는 Flare로 고정된 별칭이며 정밀 편집에는 `gpt-image-2.5-sunburst`를 사용합니다. `quality`의 `auto/low/medium/high/xhigh/max`와 `resolution`의 `1K/2K/4K`는 독립적입니다. 명시적 픽셀 크기는 해상도 단계와 일치해야 하며, APIAny는 필드를 버리지 않고 호환 경로만 비용순으로 선택합니다.
+
+```json
+{"model":"gpt-image-2.5-flare","prompt":"제품 메인 이미지","size":"16:9","resolution":"2K","quality":"high","n":1}
+```
+
+편집은 최대 16개의 참조 이미지와 선택적 마스크를 지원합니다.
+
+```json
+{"model":"gpt-image-2.5-sunburst","prompt":"배경만 교체","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","resolution":"2K","quality":"xhigh"}
+```
