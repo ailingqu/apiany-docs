@@ -57,3 +57,19 @@ description: APIAny.AI가 반환하는 표준 오류 분류.
 | 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
+
+## 미디어 생성 오류와 재시도
+
+이미지와 영상 생성에서는 구조화된 `error.code`와 작업의 `status`
+(클라이언트의 `task.status`)를 기준으로 표시할 메시지와 재시도 여부를 결정하세요.
+
+| 오류 코드 | 의미와 권장 조치 |
+|-----------|------------------|
+| `not_found` | 생성 작업에서 유효한 미디어가 반환되지 않았거나, 요청한 엔드포인트 또는 리소스가 존재하지 않을 수 있습니다. 이것만으로 콘텐츠 정책 위반이라고 판단할 수 없습니다. |
+| `rate_limit` | 요청 속도 제한 또는 모델 서비스의 일시적인 과부하일 수 있습니다. 잠시 기다린 뒤 간격을 점차 늘리며 제한된 횟수만 재시도하세요. |
+| `content_policy`, `content_filter`, `image_safety` | 명시적인 콘텐츠 정책 거부입니다. 사용자에게 콘텐츠 수정을 안내하세요. |
+
+명시적인 정책 오류 코드나 분명한 콘텐츠 정책 거부가 있을 때만 콘텐츠 수정을 권장하세요.
+메시지에 `safety`가 언급되거나 HTTP `502`가 반환되었다는 이유만으로 정책 위반이라고
+판단하면 안 됩니다. 비동기 작업이 `pending` 또는 `processing`이면 동일한 `task_id`로
+`/v1/tasks/{task_id}`를 계속 조회하고, 생성 요청을 중복 제출하지 마세요.

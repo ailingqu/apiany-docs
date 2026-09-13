@@ -56,3 +56,18 @@ description: APIAny.AI 标准错误分类。
 | 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
+
+## 媒体生成错误与重试
+
+图片和视频生成应依据结构化的 `error.code` 和任务的 `status`（客户端中的
+`task.status`）决定提示内容和是否重试。
+
+| 错误码 | 含义与建议处理 |
+|--------|----------------|
+| `not_found` | 在生成任务中可能表示未返回有效媒体，也可能是所请求的端点或资源不存在；不能据此判断内容违规。 |
+| `rate_limit` | 可能是请求限流，也可能是模型服务暂时过载。等待后可有限重试，并逐步延长重试间隔。 |
+| `content_policy`、`content_filter`、`image_safety` | 明确的内容策略拒绝，应提示用户修改内容。 |
+
+只有明确的内容策略错误码或明确的内容策略拒绝，才应建议修改内容。不能仅凭错误消息提到
+`safety`，或 HTTP `502`，推断内容违规。异步任务仍为 `pending` 或 `processing` 时，
+继续使用同一个 `task_id` 查询 `/v1/tasks/{task_id}`，不要重复提交生成请求。

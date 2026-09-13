@@ -57,3 +57,19 @@ Gemini）と同じ形式**でエラーを返します。すべてのエラーレ
 | 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
+
+## メディア生成のエラーと再試行
+
+画像・動画の生成では、構造化された `error.code` とタスクの `status`
+（クライアント側の `task.status`）に基づいて、表示するメッセージと再試行の可否を判断してください。
+
+| エラーコード | 意味と推奨対応 |
+|--------------|----------------|
+| `not_found` | 生成タスクで有効なメディアが返されなかったか、要求したエンドポイントまたはリソースが存在しない可能性があります。これだけでコンテンツポリシー違反とは判断できません。 |
+| `rate_limit` | リクエストのレート制限、またはモデルサービスの一時的な過負荷の可能性があります。時間を置き、間隔を徐々に延ばしながら回数を制限して再試行してください。 |
+| `content_policy`、`content_filter`、`image_safety` | コンテンツポリシーによる明示的な拒否です。ユーザーに内容の修正を案内してください。 |
+
+内容の修正を案内するのは、明示的なポリシーエラーコード、または明確なコンテンツポリシー上の
+拒否がある場合に限ります。メッセージに `safety` が含まれることや HTTP `502` だけで、
+ポリシー違反と判断しないでください。非同期タスクが `pending` または `processing` の間は、
+同じ `task_id` で `/v1/tasks/{task_id}` を継続して照会し、生成リクエストを重複送信しないでください。

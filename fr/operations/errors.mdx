@@ -58,3 +58,21 @@ Le `type` / `status` de l'erreur est dérivé du statut HTTP :
 | 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
+
+## Erreurs de génération multimédia et nouvelles tentatives
+
+Pour générer des images et des vidéos, utilisez le champ structuré `error.code` et le
+`status` de la tâche (`task.status` dans votre client) pour choisir le message à afficher
+et décider d'une nouvelle tentative.
+
+| Code d'erreur | Signification et action recommandée |
+|---------------|--------------------------------------|
+| `not_found` | Dans une tâche de génération, cela peut indiquer qu'aucun média valide n'a été renvoyé ou que l'endpoint ou la ressource demandée n'existe pas. Cela ne permet pas de conclure à une infraction à la politique de contenu. |
+| `rate_limit` | La requête peut être limitée ou le service du modèle temporairement surchargé. Attendez, puis réessayez un nombre limité de fois en augmentant les délais. |
+| `content_policy`, `content_filter`, `image_safety` | Refus explicite lié à la politique de contenu. Demandez à l'utilisateur de modifier le contenu. |
+
+Ne suggérez de modifier le contenu qu'en présence d'un code de politique explicite ou
+d'un refus clair lié à la politique de contenu. La simple mention de `safety` dans un
+message, ou HTTP `502` seul, ne prouve pas une infraction. Si une tâche asynchrone reste
+`pending` ou `processing`, continuez à interroger `/v1/tasks/{task_id}` avec le même
+`task_id` ; ne soumettez pas de requête de génération en double.

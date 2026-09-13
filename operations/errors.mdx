@@ -59,6 +59,23 @@ The error `type` / `status` is derived from the HTTP status:
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
 
+## Media generation errors and retries
+
+For image and video generation, use the structured `error.code` and the task's
+`status` (`task.status` in your client) to decide what to display and whether to retry.
+
+| Error code | Meaning and recommended action |
+|------------|--------------------------------|
+| `not_found` | In a generation task, this may mean no valid media was returned, or the requested endpoint or resource does not exist. It does not establish a content-policy violation. |
+| `rate_limit` | The request may be rate-limited or the model service may be temporarily overloaded. Wait, then retry a limited number of times with increasing delays. |
+| `content_policy`, `content_filter`, `image_safety` | An explicit content-policy rejection. Ask the user to revise the content. |
+
+Only suggest content changes for an explicit policy code or a clear content-policy
+refusal. A message merely mentioning `safety`, or HTTP `502` alone, is not evidence
+of a policy violation. If an asynchronous task is still `pending` or `processing`,
+continue querying `/v1/tasks/{task_id}` with the same `task_id`; do not submit a
+duplicate generation request.
+
 ## Minor-sensitive media prompts
 
 Image and video requests are rejected with HTTP `400` and code

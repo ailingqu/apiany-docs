@@ -58,3 +58,21 @@ Der Fehler-`type` / `status` wird aus dem HTTP-Status abgeleitet:
 | 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
+
+## Fehler bei der Mediengenerierung und Wiederholungen
+
+Entscheide bei der Bild- und Videogenerierung anhand des strukturierten `error.code`
+und des Aufgabenfelds `status` (`task.status` in deinem Client), welche Meldung angezeigt
+wird und ob ein erneuter Versuch sinnvoll ist.
+
+| Fehlercode | Bedeutung und empfohlene Maßnahme |
+|------------|-----------------------------------|
+| `not_found` | Bei einer Generierungsaufgabe wurden möglicherweise keine gültigen Medien zurückgegeben, oder der angefragte Endpunkt bzw. die Ressource existiert nicht. Daraus lässt sich kein Verstoß gegen Inhaltsrichtlinien ableiten. |
+| `rate_limit` | Die Anfrage kann begrenzt sein oder der Modelldienst vorübergehend überlastet. Warte und wiederhole den Versuch nur begrenzt, mit zunehmenden Abständen. |
+| `content_policy`, `content_filter`, `image_safety` | Eine ausdrückliche Ablehnung aufgrund von Inhaltsrichtlinien. Bitte den Nutzer, den Inhalt zu ändern. |
+
+Empfiehl Inhaltsänderungen nur bei einem eindeutigen Richtliniencode oder einer klaren
+Ablehnung aufgrund von Inhaltsrichtlinien. Die bloße Erwähnung von `safety` in einer
+Meldung oder HTTP `502` allein belegt keinen Verstoß. Solange eine asynchrone Aufgabe
+`pending` oder `processing` ist, frage `/v1/tasks/{task_id}` mit derselben `task_id`
+weiter ab; reiche keine doppelte Generierungsanfrage ein.
