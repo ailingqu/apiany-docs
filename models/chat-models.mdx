@@ -50,6 +50,8 @@ Context window and maximum output limits are model-level capability metadata.
 
 DeepSeek Flash accepts `none`, `low`, `high`, and `max`. Compatibility values `minimal` map to `low`; `medium` and `xhigh` map to `high`. In Chat Completions, `thinking: { "type": "disabled" }` or effort `none` disables thinking. Do not combine contradictory settings.
 
+For `deepseek-v4.1-flash` Chat Completions, thinking is enabled by default. Forced tools (`tool_choice: "required"` or a named function) require `reasoning_effort: "none"` or `thinking: { "type": "disabled" }`. Otherwise the request returns HTTP `400` with `invalid_tool_choice`. To keep thinking enabled, use `tool_choice: "auto"`; APIAny.AI does not silently disable thinking for you.
+
 GLM 5.3 Flash always thinks. Its effort values are `low`, `high`, and `max` (model default); disabling thinking returns `400`. For a quick smoke test, use `low`. Allocate enough tokens for thinking plus the final answer, for example `max_tokens: 32768`. Explicit limits are honored, not silently increased. `max_completion_tokens` is accepted as an alias; different simultaneous limits return `400`.
 
 When continuing a tool conversation with these models, preserve the assistant's `reasoning_content`, `tool_calls`, and matching tool result messages. Cache-hit input tokens are included in total input tokens, not added again. Submit images with Chat `image_url` or Responses `input_image`; generic documents, audio, and DeepSeek video URL inputs are not accepted by this integration.

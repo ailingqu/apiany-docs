@@ -50,6 +50,8 @@ description: 文本生成和多模态对话模型能力。
 
 DeepSeek Flash 支持 `none`、`low`、`high`、`max`；兼容值 `minimal` 按 `low` 处理，`medium` 和 `xhigh` 按 `high` 处理。Chat Completions 可使用 `thinking: { "type": "disabled" }` 或 effort `none` 关闭思考，两种设置不能互相矛盾。
 
+`deepseek-v4.1-flash` 的 Chat Completions 默认开启思考。强制工具调用（`tool_choice: "required"` 或指定函数）需设置 `reasoning_effort: "none"` 或 `thinking: { "type": "disabled" }`，否则返回 HTTP `400`，错误码为 `invalid_tool_choice`。如需保留思考，请使用 `tool_choice: "auto"`；APIAny.AI 不会为您静默关闭思考。
+
 GLM 5.3 Flash 始终思考，仅支持 `low`、`high`、`max`（模型默认），关闭思考返回 `400`。快速验证建议选 `low`。思考与最终答案共享输出预算，例如设置 `max_tokens: 32768`；明确传入的限制不会被静默增大。`max_completion_tokens` 可作为别名，同时提供不一致的输出上限会返回 `400`。
 
 工具调用续接时，请保留助手消息中的 `reasoning_content`、`tool_calls` 及对应工具结果。缓存命中 Token 已包含在输入 Token 总数内，不重复叠加。图片使用 Chat 的 `image_url` 或 Responses 的 `input_image`；本次接入不接受通用文档、音频及 DeepSeek 视频 URL 输入。
