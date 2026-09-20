@@ -1948,7 +1948,7 @@
           },
           "reasoning_content": {
             "type": "string",
-            "description": "Reasoning trace returned by supported thinking models. Preserve it in Kimi K3 assistant-message history."
+            "description": "Reasoning trace returned by supported thinking models. Preserve it in Kimi K3, DeepSeek Flash, and GLM 5.3 Flash assistant-message history, especially when continuing tool calls."
           },
           "partial": {
             "type": "boolean",

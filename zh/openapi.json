@@ -1949,7 +1949,7 @@
           },
           "reasoning_content": {
             "type": "string",
-            "description": "支持思考的模型返回的思考过程。Kimi K3 多轮历史必须保留此字段。"
+            "description": "支持思考的模型返回的思考过程。Kimi K3、DeepSeek Flash 和 GLM 5.3 Flash 多轮历史应保留此字段，尤其是工具调用续接。"
           },
           "partial": {
             "type": "boolean",

@@ -6,6 +6,7 @@ description: 文本生成和多模态对话模型能力。
 对话模型可以通过以下接口暴露：
 
 - `/v1/chat/completions`
+- `/v1/responses`
 - `/v1/messages`
 - `/v1beta/models/{model}:generateContent`
 
@@ -36,10 +37,36 @@ description: 文本生成和多模态对话模型能力。
 | `gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite —— 超低成本、低延迟，适合高并发日常任务。 |
 | `deepseek-v4` | DeepSeek V4 —— 推理与编码表现强，价格极具竞争力。 |
 | `deepseek-v4-flash` | DeepSeek V4 Flash —— 延迟优化版本，适合高并发、低成本推理。 |
+| `deepseek-v4.1-flash` | DeepSeek V4.1 Flash —— 支持图片理解、推理与编码，提供 1M Token 上下文。 |
+| `glm-5.3-flash` | GLM 5.3 Flash —— 多模态编码与推理模型，始终开启思考。 |
 | `glm-5.1` | 智谱 GLM-5.1 —— 中英双语能力出色，适合推理、编码与 Agent 应用。 |
 | `minimax-m3` | MiniMax M3 —— 适合长上下文推理、工具调用与多语言对话的大语言模型。 |
 
 ## 思考强度
+
+### DeepSeek Flash 与 GLM 5.3 Flash
+
+`deepseek-v4-flash` 与 `deepseek-v4.1-flash` 是两个独立模型，不是别名。V4 Flash 接收文本；V4.1 Flash 接收文本和图片。二者的上下文为 1,048,576 Token，最大输出为 393,216 Token。GLM 5.3 Flash 上下文同为 1,048,576 Token，最大输出为 131,072 Token。实时可用状态与积分价以 `/v1/models` 为准。`glm-5.2` 不再接受新请求，历史使用记录保留。
+
+DeepSeek Flash 支持 `none`、`low`、`high`、`max`；兼容值 `minimal` 按 `low` 处理，`medium` 和 `xhigh` 按 `high` 处理。Chat Completions 可使用 `thinking: { "type": "disabled" }` 或 effort `none` 关闭思考，两种设置不能互相矛盾。
+
+GLM 5.3 Flash 始终思考，仅支持 `low`、`high`、`max`（模型默认），关闭思考返回 `400`。快速验证建议选 `low`。思考与最终答案共享输出预算，例如设置 `max_tokens: 32768`；明确传入的限制不会被静默增大。`max_completion_tokens` 可作为别名，同时提供不一致的输出上限会返回 `400`。
+
+工具调用续接时，请保留助手消息中的 `reasoning_content`、`tool_calls` 及对应工具结果。缓存命中 Token 已包含在输入 Token 总数内，不重复叠加。图片使用 Chat 的 `image_url` 或 Responses 的 `input_image`；本次接入不接受通用文档、音频及 DeepSeek 视频 URL 输入。
+
+```json
+{
+  "model": "deepseek-v4.1-flash",
+  "messages": [{ "role": "user", "content": "解释怎样安全地重试 API 请求。" }],
+  "reasoning_effort": "low",
+  "max_tokens": 32768,
+  "stream": true
+}
+```
+
+GLM 可将示例模型改成 `glm-5.3-flash`。Responses 使用 `input`、`max_output_tokens` 和 `reasoning: { "effort": "low" }`。
+
+Responses 工具续接时，把完整返回的 `output`（包含推理项和函数调用）及配对的 `function_call_output` 追加到下一轮 `input`，不要删除推理项。DeepSeek Responses 是无状态接口，需回传对话历史，不能依赖 `previous_response_id`。
 
 Chat Completions 使用 `reasoning_effort`，Responses 使用 `reasoning: { "effort": "high" }`。两个接口也接受另一种写法作为兼容别名；同时提供时值必须一致，冲突返回 `400`。省略 effort 时保持模型原有默认行为。
 

@@ -6,6 +6,7 @@ description: Text generation and multimodal chat model behavior.
 Chat models can be exposed through:
 
 - `/v1/chat/completions`
+- `/v1/responses`
 - `/v1/messages`
 - `/v1beta/models/{model}:generateContent`
 
@@ -36,10 +37,36 @@ Context window and maximum output limits are model-level capability metadata.
 | `gemini-2.5-flash-lite` | Google Gemini 2.5 Flash Lite — ultra-low-cost, low-latency model for high-volume everyday tasks. |
 | `deepseek-v4` | DeepSeek V4 — strong reasoning and coding performance at a highly competitive price. |
 | `deepseek-v4-flash` | DeepSeek V4 Flash — a latency-optimized DeepSeek V4 variant for high-volume, low-cost inference. |
+| `deepseek-v4.1-flash` | DeepSeek V4.1 Flash — multimodal reasoning and coding with a 1M-token context. |
+| `glm-5.3-flash` | GLM 5.3 Flash — multimodal coding and reasoning with always-on thinking. |
 | `glm-5.1` | Zhipu GLM-5.1 — a capable bilingual (Chinese/English) model for reasoning, coding, and agent applications. |
 | `minimax-m3` | MiniMax M3 — a capable large language model for long-context reasoning, tool use, and multilingual chat. |
 
 ## Reasoning effort
+
+### DeepSeek Flash and GLM 5.3 Flash
+
+`deepseek-v4-flash` and `deepseek-v4.1-flash` are separate models, not aliases. V4 Flash accepts text; V4.1 Flash accepts text and images. Both support up to 393,216 output tokens within a 1,048,576-token context window. GLM 5.3 Flash supports the same context window and up to 131,072 output tokens. Use `/v1/models` for current availability and prices. `glm-5.2` is no longer available for new requests; previous usage records remain available.
+
+DeepSeek Flash accepts `none`, `low`, `high`, and `max`. Compatibility values `minimal` map to `low`; `medium` and `xhigh` map to `high`. In Chat Completions, `thinking: { "type": "disabled" }` or effort `none` disables thinking. Do not combine contradictory settings.
+
+GLM 5.3 Flash always thinks. Its effort values are `low`, `high`, and `max` (model default); disabling thinking returns `400`. For a quick smoke test, use `low`. Allocate enough tokens for thinking plus the final answer, for example `max_tokens: 32768`. Explicit limits are honored, not silently increased. `max_completion_tokens` is accepted as an alias; different simultaneous limits return `400`.
+
+When continuing a tool conversation with these models, preserve the assistant's `reasoning_content`, `tool_calls`, and matching tool result messages. Cache-hit input tokens are included in total input tokens, not added again. Submit images with Chat `image_url` or Responses `input_image`; generic documents, audio, and DeepSeek video URL inputs are not accepted by this integration.
+
+```json
+{
+  "model": "deepseek-v4.1-flash",
+  "messages": [{ "role": "user", "content": "Explain how to safely retry an API request." }],
+  "reasoning_effort": "low",
+  "max_tokens": 32768,
+  "stream": true
+}
+```
+
+For GLM, use `"model": "glm-5.3-flash"` with the same example. In Responses, use `input`, `max_output_tokens`, and `reasoning: { "effort": "low" }`.
+
+For Responses tool follow-ups, append the complete returned `output` items (including reasoning and function calls) and the matching `function_call_output` to your next `input`. Do not discard reasoning items. DeepSeek Responses is stateless: resend the conversation history instead of relying on `previous_response_id`.
 
 Use `reasoning_effort` in Chat Completions and `reasoning: { "effort": "high" }` in Responses. Each endpoint also accepts the other form as a compatibility alias. If both are present, their values must match; conflicting values return `400`. Omitting effort preserves the existing model default.
 
