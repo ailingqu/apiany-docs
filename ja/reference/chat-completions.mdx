@@ -57,7 +57,37 @@ OpenAI 標準のパラメータに対応しています：`temperature`、`top_p
 
 対応値はモデルごとに異なり、省略時は既定動作を維持します。[モデル別の推論制御](/ja/models/chat-models)を参照してください。
 
+各モデルが受け付ける強度、既定値、思考を無効化できるかどうかは `GET /v1/models` の `capability_metadata.reasoning` に公開されているため、クライアントは表をハードコードせずにモデルを設定できます。
+
 `max_completion_tokens`、`max_output_tokens` およびネイティブの対応フィールドは、推論と最終回答の合計トークン数を制限します。effort 自体は出力トークン上限ではありません。予算を使い切ると（Chat Completions の `finish_reason: "length"`）、最終回答が不完全または空になる場合があります。
+
+## Kimi K3 互換ルール
+
+`kimi-k3` は同じ OpenAI 互換エンドポイントを使用しますが、ネイティブの仕様にモデル固有のルールがあります：
+
+- K3 は常に思考し、無効化できません。`low`、`high`、`max` を受け付け、既定値は `max` です。強度を下げるほど、推論の深さと引き換えにレイテンシーが短くなります。K2.x の `thinking` オブジェクトは、思考を有効にする互換エイリアスとしてのみ受け付けられます。
+- `max_completion_tokens` の使用を推奨します。APIAny は非推奨の `max_tokens` も受け付けますが、Kimi K3 では `max_completion_tokens` を使用します。上限を指定しない場合はモデルの既定値が使用されます。明示できる上限は最大 1,048,576 トークンです。
+- K3 のサンプリング設定は固定です。APIAny は K3 に限り `temperature`、`top_p`、`frequency_penalty`、`presence_penalty` を取り除きます。`n` は `1` である必要があります。
+- `reasoning_content` は思考過程、`content` は最終回答です。ストリーミングでは両者が別々の delta として返されます。思考過程を最終回答に統合しないでください。
+- マルチターンおよびツール呼び出しのリクエストでは、`reasoning_content` と `tool_calls` を含む assistant メッセージ全体を再送してください。
+- 最後の assistant メッセージでは `partial: true` を使用できます。`content` を持たない system メッセージに `tools` を含めると、K3 のツールを動的に読み込めます。
+- K3 の画像／動画コンテンツブロックには、Base64 の `data:` URL または `ms://` ファイル ID を使用する必要があります。公開 HTTP メディア URL はモデルリクエストの送信前に拒否されます。
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "kimi-k3",
+    "messages": [{"role": "user", "content": "sqrt(2) が無理数であることを証明してください。"}],
+    "reasoning_effort": "max",
+    "max_completion_tokens": 16384,
+    "stream": true
+  }'
+```
+
+`finish_reason` が `length` の場合、出力予算を使い切っています。レスポンスは引き続き OpenAI 互換ですが、最終回答が欠落または不完全になる場合があります。再試行する前に `max_completion_tokens` を増やすか、入力を減らしてください。
 
 ## 補足
 

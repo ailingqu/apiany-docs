@@ -39,6 +39,8 @@ curl https://apiany.ai/v1/responses \
 
 Les valeurs acceptées dépendent du modèle. En l’absence de valeur, le comportement par défaut est conservé. Voir les [contrôles de raisonnement par modèle](/fr/models/chat-models).
 
+Les valeurs d’effort acceptées par chaque modèle, sa valeur par défaut et la possibilité de désactiver le raisonnement sont publiées dans `GET /v1/models` sous `capability_metadata.reasoning`, ce qui permet aux clients de configurer un modèle sans coder de tableau en dur.
+
 Les limites comme `max_completion_tokens`, `max_output_tokens` et leurs équivalents natifs comptent à la fois les tokens de raisonnement et de réponse finale. effort n’est pas une limite de tokens de sortie. Le budget peut toujours être épuisé (`finish_reason: "length"` dans Chat Completions), laissant une réponse finale incomplète ou vide.
 
 ## Recherche web

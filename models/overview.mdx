@@ -24,3 +24,14 @@ Use the model ID shown in the dashboard and model pages:
 ## Model usage
 
 Use the public model ID in API requests and APIAny.AI returns a standardized response for that model family.
+
+## Capability metadata
+
+`GET /v1/models` returns a `capability_metadata` object for every model, so client code can configure a model without hardcoding assumptions:
+
+- `input` and `output` list the accepted and produced types.
+- `features` reports `stream`, `tools`, `vision`, `jsonMode`, and whether the model reasons at all (`thinking`).
+- `reasoning` reports the reasoning controls: `mode` (`always-on`, `optional` or `none`), the accepted `efforts`, the `defaultEffort` applied when effort is omitted, and `disableWith` for models whose reasoning can be turned off.
+- `limits` reports `contextWindow` and `maxOutputTokens`.
+
+Official model IDs are accepted as equivalent IDs for `deepseek-flash` (= `deepseek-v4.1-flash`) and `deepseek-v4-pro` (= `deepseek-v4`); `GET /v1/models` marks such entries with `alias_of`.

@@ -1740,6 +1740,131 @@
           "parameters": {
             "type": "object",
             "additionalProperties": true
+          },
+          "group": {
+            "type": "string",
+            "description": "Modellgruppe, die im Modellkatalog angezeigt wird.",
+            "example": "GPT 5.5"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Kommagetrennte Fähigkeits-Tags.",
+            "example": "chat,coding,reasoning"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capability_metadata": {
+            "type": ["object", "null"],
+            "description": "Fähigkeitsmetadaten des Modells: unterstützte Ein- und Ausgabetypen, Feature-Flags, Denk- und Reasoning-Stufen, Limits und Tags. Null, wenn das Modell keine deklarierten Fähigkeitsmetadaten hat.",
+            "properties": {
+              "modality": {
+                "type": "string",
+                "example": "chat"
+              },
+              "endpoint_formats": {
+                "type": "array",
+                "items": { "type": "string" },
+                "example": ["openai-chat", "openai-responses", "anthropic-messages", "gemini-generate-content"]
+              },
+              "execution": {
+                "type": "string",
+                "example": "sync"
+              },
+              "input": {
+                "type": "object",
+                "description": "Eingabetypen, die das Modell akzeptiert.",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "audio": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "file": { "type": "boolean" }
+                }
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "audio": { "type": "boolean" }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "stream": { "type": "boolean" },
+                  "tools": { "type": "boolean" },
+                  "vision": { "type": "boolean" },
+                  "jsonMode": { "type": "boolean" },
+                  "thinking": { "type": "boolean" }
+                }
+              },
+              "reasoning": {
+                "type": ["object", "null"],
+                "description": "Deklaration von Denken und Reasoning-Stärke für Chat-Modelle. Null oder nicht vorhanden, wenn das Modell keine Reasoning-Steuerung bietet.",
+                "properties": {
+                  "supported": {
+                    "type": "boolean",
+                    "description": "Ob das Modell Reasoning ausführen kann."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["always-on", "optional", "none"],
+                    "description": "always-on: Reasoning kann nicht deaktiviert werden. optional: es kann deaktiviert werden. none: das Modell hat keinen Reasoning-Modus."
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "reasoning_effort"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["reasoning.effort", "output_config.effort"]
+                  },
+                  "efforts": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Reasoning-Stufen, die dieses Modell akzeptiert. Ein leeres Array bedeutet, dass das Modell keinen effort-Parameter akzeptiert.",
+                    "example": ["low", "high", "max"]
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "description": "Standardstufe, die gilt, wenn die Anfrage effort weglässt. Fehlt, wenn der Standard nicht veröffentlicht wird.",
+                    "example": "max"
+                  },
+                  "disableWith": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Akzeptierte Wege, um Reasoning bei einem optionalen Modell zu deaktivieren.",
+                    "example": ["reasoning_effort=none"]
+                  },
+                  "thinkingTypes": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Werte, die das thinking-Objekt akzeptiert, wenn das Modell eines bereitstellt.",
+                    "example": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "limits": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "release_stage": {
+                "type": "string",
+                "example": "stable"
+              },
+              "pricing_dimensions": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
           }
         },
         "required": [
@@ -1815,7 +1940,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt nur max; GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten."
+            "description": "Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt low, high und max (Standard: max); GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten. Die unterstützten Werte, der Standard und die Abschaltbarkeit je Modell stehen in GET /v1/models unter capability_metadata.reasoning."
           },
           "stop": {
             "oneOf": [
@@ -1911,7 +2036,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt nur max; GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten."
+                "description": "Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt low, high und max (Standard: max); GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten. Die unterstützten Werte, der Standard und die Abschaltbarkeit je Modell stehen in GET /v1/models unter capability_metadata.reasoning."
               }
             }
           }
@@ -2061,7 +2186,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt nur max; GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten."
+                "description": "Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt low, high und max (Standard: max); GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten. Die unterstützten Werte, der Standard und die Abschaltbarkeit je Modell stehen in GET /v1/models unter capability_metadata.reasoning."
               },
               "summary": {
                 "type": "string",
@@ -2129,7 +2254,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Kompatibilitätsalias für reasoning.effort. Werden beide Formen angegeben, müssen die Werte übereinstimmen; Konflikte ergeben 400. Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt nur max; GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten."
+            "description": "Kompatibilitätsalias für reasoning.effort. Werden beide Formen angegeben, müssen die Werte übereinstimmen; Konflikte ergeben 400. Reasoning-Stärke. Die Aufzählung enthält syntaktisch gültige Werte, garantiert aber keine Unterstützung durch jedes Modell. Nicht unterstützte Werte ergeben 400. Kimi K3 unterstützt low, high und max (Standard: max); GPT-5.4/5.5 unterstützen none, low, medium, high, xhigh. Claude- und Gemini-Grenzen: /de/models/chat-models. Ohne Angabe bleibt der Modellstandard erhalten. Die unterstützten Werte, der Standard und die Abschaltbarkeit je Modell stehen in GET /v1/models unter capability_metadata.reasoning."
           }
         },
         "required": [

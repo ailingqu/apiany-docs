@@ -1740,6 +1740,201 @@
           "parameters": {
             "type": "object",
             "additionalProperties": true
+          },
+          "group": {
+            "type": "string",
+            "description": "模型目录中展示的模型分组。",
+            "example": "GPT 5.5"
+          },
+          "capability": {
+            "type": "string",
+            "description": "以逗号分隔的能力标签。",
+            "example": "chat,coding,reasoning"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capability_metadata": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "模型能力元数据：支持的输入与输出类型、特性开关、思考与推理档位、限制和标签。模型未声明能力元数据时为 null。",
+            "properties": {
+              "modality": {
+                "type": "string",
+                "example": "chat"
+              },
+              "endpoint_formats": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "example": [
+                  "openai-chat",
+                  "openai-responses",
+                  "anthropic-messages",
+                  "gemini-generate-content"
+                ]
+              },
+              "execution": {
+                "type": "string",
+                "example": "sync"
+              },
+              "input": {
+                "type": "object",
+                "description": "模型接受的输入类型。",
+                "properties": {
+                  "text": {
+                    "type": "boolean"
+                  },
+                  "image": {
+                    "type": "boolean"
+                  },
+                  "audio": {
+                    "type": "boolean"
+                  },
+                  "video": {
+                    "type": "boolean"
+                  },
+                  "file": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "boolean"
+                  },
+                  "image": {
+                    "type": "boolean"
+                  },
+                  "video": {
+                    "type": "boolean"
+                  },
+                  "audio": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "stream": {
+                    "type": "boolean"
+                  },
+                  "tools": {
+                    "type": "boolean"
+                  },
+                  "vision": {
+                    "type": "boolean"
+                  },
+                  "jsonMode": {
+                    "type": "boolean"
+                  },
+                  "thinking": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "reasoning": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "description": "对话模型的思考与推理档位声明。模型没有思考控制时为 null 或省略。",
+                "properties": {
+                  "supported": {
+                    "type": "boolean",
+                    "description": "模型是否具备推理能力。"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "always-on",
+                      "optional",
+                      "none"
+                    ],
+                    "description": "always-on：思考无法关闭。optional：可以关闭。none：该模型没有思考模式。"
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "reasoning_effort"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "reasoning.effort",
+                      "output_config.effort"
+                    ]
+                  },
+                  "efforts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "该模型接受的推理档位。空数组表示模型不接受 effort 参数。",
+                    "example": [
+                      "low",
+                      "high",
+                      "max"
+                    ]
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "description": "请求省略 effort 时生效的默认档位。未公布默认值时省略。",
+                    "example": "max"
+                  },
+                  "disableWith": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "可关闭思考的模型中被接受的关闭方式。",
+                    "example": [
+                      "reasoning_effort=none"
+                    ]
+                  },
+                  "thinkingTypes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "模型提供 thinking 对象时该对象接受的取值。",
+                    "example": [
+                      "enabled",
+                      "disabled"
+                    ]
+                  }
+                }
+              },
+              "limits": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "release_stage": {
+                "type": "string",
+                "example": "stable"
+              },
+              "pricing_dimensions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
           }
         },
         "required": [
@@ -1815,7 +2010,7 @@
               "xhigh",
               "max"
             ],
-            "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
+            "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 支持 low、high、max（默认 max）；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。模型级可用档位、默认档位与能否关闭思考都发布在 GET /v1/models 的 capability_metadata.reasoning 中。"
           },
           "stop": {
             "oneOf": [
@@ -1911,7 +2106,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
+                "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 支持 low、high、max（默认 max）；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。模型级可用档位、默认档位与能否关闭思考都发布在 GET /v1/models 的 capability_metadata.reasoning 中。"
               }
             }
           }
@@ -2061,7 +2256,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
+                "description": "思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 支持 low、high、max（默认 max）；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。模型级可用档位、默认档位与能否关闭思考都发布在 GET /v1/models 的 capability_metadata.reasoning 中。"
               },
               "summary": {
                 "type": "string",
@@ -2129,7 +2324,7 @@
               "xhigh",
               "max"
             ],
-            "description": "reasoning.effort 的兼容别名。同时提供两种 effort 写法时，值必须一致；冲突返回 400。 思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 仅支持 max；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。"
+            "description": "reasoning.effort 的兼容别名。同时提供两种 effort 写法时，值必须一致；冲突返回 400。 思考强度。此枚举仅表示语法允许值，不代表每个模型均支持。模型不支持的值返回 400。Kimi K3 支持 low、high、max（默认 max）；GPT-5.4/5.5 支持 none、low、medium、high、xhigh。Claude 与 Gemini 限制见 /zh/models/chat-models。省略时保持模型默认行为。模型级可用档位、默认档位与能否关闭思考都发布在 GET /v1/models 的 capability_metadata.reasoning 中。"
           }
         },
         "required": [

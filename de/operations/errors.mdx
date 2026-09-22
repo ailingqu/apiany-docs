@@ -59,6 +59,12 @@ Der Fehler-`type` / `status` wird aus dem HTTP-Status abgeleitet:
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
 
+## Abgelehnte Modellparameter
+
+Wenn ein Modell einen Wert in Ihrer Anfrage nicht akzeptiert, gibt der Endpunkt HTTP `400` mit der Erklärung des Modells zurück. Für Reasoning-Einstellungen lautet der Code `invalid_reasoning_effort`, und die Meldung listet die Werte auf, die dieses Modell akzeptiert, sodass die Anfrage ohne Raten korrigiert werden kann. Die akzeptierten Reasoning-Stufen, der Standardwert und ob Reasoning deaktiviert werden kann, stehen in `GET /v1/models` unter `capability_metadata.reasoning`.
+
+Rate-Limits liefern `429`, und eine Anfrage, die das Zeitbudget überschreitet, liefert `504`. Ein `502` bedeutet, dass die Plattform nach Wiederholungsversuchen keine verwertbare Antwort des Modells erhalten konnte — es ist kein Urteil über Ihre Parameter; lesen Sie daher den Antworttext, bevor Sie sie ändern.
+
 ## Fehler bei der Mediengenerierung und Wiederholungen
 
 Entscheide bei der Bild- und Videogenerierung anhand des strukturierten `error.code`

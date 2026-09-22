@@ -1740,6 +1740,131 @@
           "parameters": {
             "type": "object",
             "additionalProperties": true
+          },
+          "group": {
+            "type": "string",
+            "description": "모델 카탈로그에 표시되는 모델 그룹입니다.",
+            "example": "GPT 5.5"
+          },
+          "capability": {
+            "type": "string",
+            "description": "쉼표로 구분된 기능 태그입니다.",
+            "example": "chat,coding,reasoning"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capability_metadata": {
+            "type": ["object", "null"],
+            "description": "모델 기능 메타데이터입니다: 지원하는 입력 및 출력 유형, 기능 플래그, 사고 및 추론 수준, 한도, 태그를 담습니다. 선언된 기능 메타데이터가 없으면 null입니다.",
+            "properties": {
+              "modality": {
+                "type": "string",
+                "example": "chat"
+              },
+              "endpoint_formats": {
+                "type": "array",
+                "items": { "type": "string" },
+                "example": ["openai-chat", "openai-responses", "anthropic-messages", "gemini-generate-content"]
+              },
+              "execution": {
+                "type": "string",
+                "example": "sync"
+              },
+              "input": {
+                "type": "object",
+                "description": "모델이 허용하는 입력 유형입니다.",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "audio": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "file": { "type": "boolean" }
+                }
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "audio": { "type": "boolean" }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "stream": { "type": "boolean" },
+                  "tools": { "type": "boolean" },
+                  "vision": { "type": "boolean" },
+                  "jsonMode": { "type": "boolean" },
+                  "thinking": { "type": "boolean" }
+                }
+              },
+              "reasoning": {
+                "type": ["object", "null"],
+                "description": "대화 모델의 사고 및 추론 강도(reasoning effort) 선언입니다. 모델에 추론 제어가 없으면 null이거나 생략됩니다.",
+                "properties": {
+                  "supported": {
+                    "type": "boolean",
+                    "description": "모델이 추론할 수 있는지 여부입니다."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["always-on", "optional", "none"],
+                    "description": "always-on: 추론을 끌 수 없습니다. optional: 끌 수 있습니다. none: 모델에 추론 모드가 없습니다."
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "reasoning_effort"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["reasoning.effort", "output_config.effort"]
+                  },
+                  "efforts": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "이 모델이 허용하는 추론 수준입니다. 빈 배열이면 모델이 effort 파라미터를 받지 않는다는 뜻입니다.",
+                    "example": ["low", "high", "max"]
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "description": "요청에서 effort를 생략했을 때 적용되는 기본 수준입니다. 기본값을 공개하지 않으면 생략됩니다.",
+                    "example": "max"
+                  },
+                  "disableWith": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "추론을 끌 수 있는 모델에서 추론을 끄는 허용 방식입니다.",
+                    "example": ["reasoning_effort=none"]
+                  },
+                  "thinkingTypes": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "모델이 thinking 객체를 제공할 때 그 객체가 허용하는 값입니다.",
+                    "example": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "limits": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "release_stage": {
+                "type": "string",
+                "example": "stable"
+              },
+              "pricing_dimensions": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
           }
         },
         "required": [
@@ -1815,7 +1940,7 @@
               "xhigh",
               "max"
             ],
-            "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
+            "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 low, high, max를, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다. 모델별 지원 값, 기본값, 추론 비활성화 가능 여부는 GET /v1/models의 capability_metadata.reasoning에 공개됩니다."
           },
           "stop": {
             "oneOf": [
@@ -1911,7 +2036,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
+                "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 low, high, max를, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다. 모델별 지원 값, 기본값, 추론 비활성화 가능 여부는 GET /v1/models의 capability_metadata.reasoning에 공개됩니다."
               }
             }
           }
@@ -2061,7 +2186,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
+                "description": "추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 low, high, max를, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다. 모델별 지원 값, 기본값, 추론 비활성화 가능 여부는 GET /v1/models의 capability_metadata.reasoning에 공개됩니다."
               },
               "summary": {
                 "type": "string",
@@ -2129,7 +2254,7 @@
               "xhigh",
               "max"
             ],
-            "description": "reasoning.effort의 호환 별칭입니다. 두 형식을 함께 지정하면 값이 같아야 하며, 충돌 시 400을 반환합니다. 추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 max만, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다."
+            "description": "reasoning.effort의 호환 별칭입니다. 두 형식을 함께 지정하면 값이 같아야 하며, 충돌 시 400을 반환합니다. 추론 강도입니다. 이 열거형은 문법상 허용 값이며 모든 모델의 지원을 보장하지 않습니다. 미지원 값은 400을 반환합니다. Kimi K3는 low, high, max를, GPT-5.4/5.5는 none, low, medium, high, xhigh를 지원합니다. Claude와 Gemini 제한은 /ko/models/chat-models를 참고하세요. 생략하면 모델 기본 동작을 유지합니다. 모델별 지원 값, 기본값, 추론 비활성화 가능 여부는 GET /v1/models의 capability_metadata.reasoning에 공개됩니다."
           }
         },
         "required": [

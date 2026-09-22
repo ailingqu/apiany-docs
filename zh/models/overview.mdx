@@ -24,3 +24,15 @@ APIAny.AI 对外暴露公开模型 ID。这些 ID 是应用集成时使用的稳
 ## 模型调用
 
 在 API 请求中使用公开模型 ID，APIAny.AI 会返回该模型家族对应的标准响应。
+
+## 能力元数据
+
+`GET /v1/models` 会为每个模型返回 `capability_metadata` 对象，客户端代码可以直接读取它来配置模型，不必把假设写死：
+
+- `input` 与 `output` 列出接受的输入类型与产生的输出类型。
+- `features` 说明是否支持 `stream`、`tools`、`vision`、`jsonMode`，以及模型是否具备思考能力（`thinking`）。
+- `reasoning` 描述思考控制方式：`mode`（`always-on`、`optional` 或 `none`）、支持的 `efforts`、省略 effort 时生效的 `defaultEffort`，以及可关闭思考的模型的 `disableWith`。
+- `limits` 给出 `contextWindow` 与 `maxOutputTokens`。
+
+官方模型 ID 也可作为等价 ID 调用：`deepseek-flash`（= `deepseek-v4.1-flash`）与
+`deepseek-v4-pro`（= `deepseek-v4`）；`GET /v1/models` 会用 `alias_of` 标注这类条目。

@@ -58,7 +58,53 @@ Setze `reasoning_effort` auf oberster Ebene, wenn das Modell konfigurierbares Re
 
 Die unterstützten Werte hängen vom Modell ab. Ohne Angabe bleibt das Standardverhalten erhalten. Siehe [modellabhängige Reasoning-Steuerung](/de/models/chat-models).
 
+Welche Efforts ein Modell akzeptiert, welcher Standard gilt und ob Reasoning deaktiviert werden kann, steht für jedes Modell in `GET /v1/models` unter `capability_metadata.reasoning`; so lässt sich ein Modell konfigurieren, ohne eine Tabelle fest zu verdrahten.
+
 Ausgabelimits wie `max_completion_tokens`, `max_output_tokens` und native Entsprechungen zählen Reasoning- und Antwort-Tokens gemeinsam. Effort ist kein Ausgabetokenlimit. Das Budget kann weiterhin erschöpft werden (`finish_reason: "length"` in Chat Completions), sodass die endgültige Antwort unvollständig oder leer bleibt.
+
+## Kimi K3-Kompatibilität
+
+`kimi-k3` verwendet denselben OpenAI-kompatiblen Endpoint, folgt aber einem
+modellspezifischen Vertrag:
+
+- K3 denkt immer und kann nicht deaktiviert werden. Akzeptiert werden `low`, `high`
+  und `max`; der Standard ist `max`, und ein niedrigerer Effort erkauft geringere
+  Latenz mit weniger Reasoning-Tiefe. Das `thinking`-Objekt aus K2.x wird nur als
+  aktivierter Kompatibilitätsalias akzeptiert.
+- Bevorzuge `max_completion_tokens`. APIAny akzeptiert das veraltete `max_tokens`
+  und verwendet für Kimi K3 `max_completion_tokens`. Ohne Angabe eines Limits gilt
+  der Modellstandard. Das explizite Maximum beträgt 1.048.576 Tokens.
+- Die Sampling-Einstellungen von K3 sind fest. APIAny entfernt `temperature`,
+  `top_p`, `frequency_penalty` und `presence_penalty` nur für K3; `n` muss `1` sein.
+- `reasoning_content` ist der Reasoning-Verlauf und `content` die endgültige
+  Antwort. Streaming liefert beide als getrennte Deltas. Führe den Reasoning-Verlauf
+  nicht mit der endgültigen Antwort zusammen.
+- Sende die vollständige Assistant-Nachricht einschließlich `reasoning_content` und
+  `tool_calls` bei mehrstufigen Anfragen und Tool-Aufrufen unverändert zurück.
+- Die letzte Assistant-Nachricht darf `partial: true` verwenden. Eine
+  Systemnachricht ohne Inhalt kann `tools` tragen, um K3-Werkzeuge dynamisch zu laden.
+- Bild- und Video-Inhaltsblöcke für K3 müssen eine Base64-`data:`-URL oder eine
+  `ms://`-Datei-ID verwenden. Öffentliche HTTP-Medien-URLs werden abgelehnt, bevor
+  die Modellanfrage gesendet wird.
+
+```bash
+curl https://apiany.ai/v1/chat/completions \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -N \
+  -d '{
+    "model": "kimi-k3",
+    "messages": [{"role": "user", "content": "Beweise, dass die Quadratwurzel aus 2 irrational ist."}],
+    "reasoning_effort": "max",
+    "max_completion_tokens": 16384,
+    "stream": true
+  }'
+```
+
+Wenn `finish_reason` `length` ist, wurde das Ausgabebudget erschöpft. Die Antwort
+bleibt OpenAI-kompatibel, aber die endgültige Antwort kann fehlen oder unvollständig
+sein; erhöhe `max_completion_tokens` oder kürze die Eingabe, bevor du es erneut
+versuchst.
 
 ## Hinweise
 

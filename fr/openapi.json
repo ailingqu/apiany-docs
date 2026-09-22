@@ -1740,6 +1740,131 @@
           "parameters": {
             "type": "object",
             "additionalProperties": true
+          },
+          "group": {
+            "type": "string",
+            "description": "Groupe de modèles affiché dans le catalogue de modèles.",
+            "example": "GPT 5.5"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Étiquettes de capacités séparées par des virgules.",
+            "example": "chat,coding,reasoning"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capability_metadata": {
+            "type": ["object", "null"],
+            "description": "Métadonnées de capacités du modèle : types d’entrée et de sortie pris en charge, indicateurs de fonctionnalités, niveaux de réflexion et de raisonnement, limites et étiquettes. Null lorsque le modèle ne déclare aucune métadonnée de capacités.",
+            "properties": {
+              "modality": {
+                "type": "string",
+                "example": "chat"
+              },
+              "endpoint_formats": {
+                "type": "array",
+                "items": { "type": "string" },
+                "example": ["openai-chat", "openai-responses", "anthropic-messages", "gemini-generate-content"]
+              },
+              "execution": {
+                "type": "string",
+                "example": "sync"
+              },
+              "input": {
+                "type": "object",
+                "description": "Types d’entrée acceptés par le modèle.",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "audio": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "file": { "type": "boolean" }
+                }
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "audio": { "type": "boolean" }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "stream": { "type": "boolean" },
+                  "tools": { "type": "boolean" },
+                  "vision": { "type": "boolean" },
+                  "jsonMode": { "type": "boolean" },
+                  "thinking": { "type": "boolean" }
+                }
+              },
+              "reasoning": {
+                "type": ["object", "null"],
+                "description": "Déclaration de la réflexion et de l’intensité de raisonnement pour les modèles de chat. Null ou absent lorsque le modèle n’expose aucun contrôle de raisonnement.",
+                "properties": {
+                  "supported": {
+                    "type": "boolean",
+                    "description": "Indique si le modèle peut raisonner."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["always-on", "optional", "none"],
+                    "description": "always-on : le raisonnement ne peut pas être désactivé. optional : il peut être désactivé. none : le modèle n’a pas de mode de raisonnement."
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "reasoning_effort"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["reasoning.effort", "output_config.effort"]
+                  },
+                  "efforts": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Niveaux de raisonnement acceptés par ce modèle. Un tableau vide signifie que le modèle n’accepte pas de paramètre d’intensité.",
+                    "example": ["low", "high", "max"]
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "description": "Niveau par défaut appliqué lorsque la requête omet l’intensité. Absent lorsque la valeur par défaut n’est pas publiée.",
+                    "example": "max"
+                  },
+                  "disableWith": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Façons acceptées de désactiver le raisonnement pour un modèle optional.",
+                    "example": ["reasoning_effort=none"]
+                  },
+                  "thinkingTypes": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Valeurs acceptées par l’objet thinking lorsque le modèle en expose un.",
+                    "example": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "limits": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "release_stage": {
+                "type": "string",
+                "example": "stable"
+              },
+              "pricing_dimensions": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
           }
         },
         "required": [
@@ -1815,7 +1940,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
+            "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte low, high et max (par défaut max) ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé. Les valeurs acceptées, la valeur par défaut et la possibilité de désactiver le raisonnement sont publiées dans GET /v1/models sous capability_metadata.reasoning."
           },
           "stop": {
             "oneOf": [
@@ -1911,7 +2036,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
+                "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte low, high et max (par défaut max) ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé. Les valeurs acceptées, la valeur par défaut et la possibilité de désactiver le raisonnement sont publiées dans GET /v1/models sous capability_metadata.reasoning."
               }
             }
           }
@@ -2061,7 +2186,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
+                "description": "Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte low, high et max (par défaut max) ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé. Les valeurs acceptées, la valeur par défaut et la possibilité de désactiver le raisonnement sont publiées dans GET /v1/models sous capability_metadata.reasoning."
               },
               "summary": {
                 "type": "string",
@@ -2129,7 +2254,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Alias de compatibilité de reasoning.effort. Si les deux formes sont présentes, leurs valeurs doivent être identiques ; sinon, la requête renvoie 400. Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte uniquement max ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé."
+            "description": "Alias de compatibilité de reasoning.effort. Si les deux formes sont présentes, leurs valeurs doivent être identiques ; sinon, la requête renvoie 400. Intensité du raisonnement. Cette liste indique les valeurs syntaxiquement valides, sans garantir leur prise en charge par tous les modèles. Les valeurs non prises en charge renvoient 400. Kimi K3 accepte low, high et max (par défaut max) ; GPT-5.4/5.5 acceptent none, low, medium, high, xhigh. Limites Claude et Gemini : /fr/models/chat-models. En l’absence de valeur, le comportement par défaut du modèle est conservé. Les valeurs acceptées, la valeur par défaut et la possibilité de désactiver le raisonnement sont publiées dans GET /v1/models sous capability_metadata.reasoning."
           }
         },
         "required": [

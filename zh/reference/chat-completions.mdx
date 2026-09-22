@@ -57,14 +57,17 @@ curl https://apiany.ai/v1/chat/completions \
 
 支持值因模型而异；省略时保持原有默认行为。详见[各模型思考控制](/zh/models/chat-models)。
 
+每个模型接受的档位、默认档位，以及是否可以关闭思考，都发布在 `GET /v1/models` 的
+`capability_metadata.reasoning` 中，客户端无需硬编码档位对照表即可配置模型。
+
 `max_completion_tokens`、`max_output_tokens` 及原生对应字段限制的是思考与最终答案共用的 token 总量。effort 不是输出 token 上限；请求仍可能耗尽预算（Chat Completions 返回 `finish_reason: "length"`），导致最终答案不完整或为空。
 
 ## Kimi K3 兼容规则
 
 `kimi-k3` 继续使用同一个 OpenAI 兼容接口，但需要遵循模型专属规则：
 
-- K3 始终开启思考。使用顶层 `reasoning_effort: "max"`；K2.x 的
-  `thinking` 仅作为“开启思考”的兼容别名接受。
+- K3 始终开启思考，无法关闭。它接受 `low`、`high`、`max`；默认档位是 `max`，
+  更低的档位会用推理深度换延迟。K2.x 的 `thinking` 仅作为“开启思考”的兼容别名接受。
 - 优先使用 `max_completion_tokens`。APIAny 仍接受已弃用的 `max_tokens`，
   Kimi K3 使用 `max_completion_tokens`。省略上限时使用模型默认值，显式上限最高为
   1,048,576 Token。

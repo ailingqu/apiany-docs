@@ -1740,6 +1740,131 @@
           "parameters": {
             "type": "object",
             "additionalProperties": true
+          },
+          "group": {
+            "type": "string",
+            "description": "モデルカタログに表示されるモデルグループ。",
+            "example": "GPT 5.5"
+          },
+          "capability": {
+            "type": "string",
+            "description": "カンマ区切りの機能タグ。",
+            "example": "chat,coding,reasoning"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capability_metadata": {
+            "type": ["object", "null"],
+            "description": "モデル能力メタデータ。対応する入力タイプと出力タイプ、機能フラグ、思考と推論の強度、上限、タグを含みます。宣言された能力メタデータを持たないモデルでは null になります。",
+            "properties": {
+              "modality": {
+                "type": "string",
+                "example": "chat"
+              },
+              "endpoint_formats": {
+                "type": "array",
+                "items": { "type": "string" },
+                "example": ["openai-chat", "openai-responses", "anthropic-messages", "gemini-generate-content"]
+              },
+              "execution": {
+                "type": "string",
+                "example": "sync"
+              },
+              "input": {
+                "type": "object",
+                "description": "モデルが受け付ける入力タイプ。",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "audio": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "file": { "type": "boolean" }
+                }
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "audio": { "type": "boolean" }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "stream": { "type": "boolean" },
+                  "tools": { "type": "boolean" },
+                  "vision": { "type": "boolean" },
+                  "jsonMode": { "type": "boolean" },
+                  "thinking": { "type": "boolean" }
+                }
+              },
+              "reasoning": {
+                "type": ["object", "null"],
+                "description": "チャットモデルの思考と推論強度の宣言。推論制御を持たないモデルでは null または省略されます。",
+                "properties": {
+                  "supported": {
+                    "type": "boolean",
+                    "description": "モデルが思考できるかどうか。"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["always-on", "optional", "none"],
+                    "description": "always-on: 思考を無効化できません。optional: 無効化できます。none: 思考モードを持ちません。"
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "reasoning_effort"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["reasoning.effort", "output_config.effort"]
+                  },
+                  "efforts": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "このモデルが受け付ける推論強度。空配列は、モデルが effort パラメータを受け付けないことを意味します。",
+                    "example": ["low", "high", "max"]
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "description": "リクエストで effort を省略した場合に適用される既定の強度。既定値が公開されていない場合は省略されます。",
+                    "example": "max"
+                  },
+                  "disableWith": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "optional のモデルで思考を無効化するために受け付けられる指定。",
+                    "example": ["reasoning_effort=none"]
+                  },
+                  "thinkingTypes": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "モデルが thinking オブジェクトを提供する場合に、そのオブジェクトが受け付ける値。",
+                    "example": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "limits": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "release_stage": {
+                "type": "string",
+                "example": "stable"
+              },
+              "pricing_dimensions": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
           }
         },
         "required": [
@@ -1815,7 +1940,7 @@
               "xhigh",
               "max"
             ],
-            "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
+            "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は low、high、max（既定は max）に対応し、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。モデルごとの対応値・既定値・無効化可否は GET /v1/models の capability_metadata.reasoning で公開されています。"
           },
           "stop": {
             "oneOf": [
@@ -1911,7 +2036,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
+                "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は low、high、max（既定は max）に対応し、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。モデルごとの対応値・既定値・無効化可否は GET /v1/models の capability_metadata.reasoning で公開されています。"
               }
             }
           }
@@ -2061,7 +2186,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
+                "description": "推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は low、high、max（既定は max）に対応し、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。モデルごとの対応値・既定値・無効化可否は GET /v1/models の capability_metadata.reasoning で公開されています。"
               },
               "summary": {
                 "type": "string",
@@ -2129,7 +2254,7 @@
               "xhigh",
               "max"
             ],
-            "description": "reasoning.effort の互換エイリアス。両方の形式を指定する場合、値を一致させてください。不一致は 400 になります。 推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は max のみ、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。"
+            "description": "reasoning.effort の互換エイリアス。両方の形式を指定する場合、値を一致させてください。不一致は 400 になります。 推論強度。この列挙は構文上の許容値であり、全モデルでの対応を保証しません。非対応の値は 400 になります。Kimi K3 は low、high、max（既定は max）に対応し、GPT-5.4/5.5 は none、low、medium、high、xhigh に対応します。Claude と Gemini の制限は /ja/models/chat-models を参照。省略時はモデルの既定動作を維持します。モデルごとの対応値・既定値・無効化可否は GET /v1/models の capability_metadata.reasoning で公開されています。"
           }
         },
         "required": [

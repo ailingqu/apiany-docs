@@ -59,6 +59,12 @@ The error `type` / `status` is derived from the HTTP status:
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
 
+## Model parameter rejections
+
+When a model does not accept a value in your request, the endpoint returns HTTP `400` with the model's own explanation. Reasoning settings use the code `invalid_reasoning_effort`, and the message lists the values that model accepts, so the request can be corrected without guessing. Each model's accepted reasoning levels, its default and whether reasoning can be disabled are published in `GET /v1/models` under `capability_metadata.reasoning`.
+
+Rate limiting returns `429`, and a request that exceeds the time budget returns `504`. A `502` means the platform could not obtain a usable answer from the model after retrying — it is not a verdict on your parameters, so read the response body before changing them.
+
 ## Media generation errors and retries
 
 For image and video generation, use the structured `error.code` and the task's

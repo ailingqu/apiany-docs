@@ -1740,9 +1740,133 @@
           "parameters": {
             "type": "object",
             "additionalProperties": true
+          },
+          "group": {
+            "type": "string",
+            "description": "Grupo del modelo que se muestra en el catálogo de modelos.",
+            "example": "GPT 5.5"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Etiquetas de capacidad separadas por comas.",
+            "example": "chat,coding,reasoning"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capability_metadata": {
+            "type": ["object", "null"],
+            "description": "Metadatos de capacidades del modelo: tipos de entrada y salida admitidos, indicadores de funciones, niveles de pensamiento y razonamiento, límites y etiquetas. Es null cuando el modelo no declara metadatos de capacidades.",
+            "properties": {
+              "modality": {
+                "type": "string",
+                "example": "chat"
+              },
+              "endpoint_formats": {
+                "type": "array",
+                "items": { "type": "string" },
+                "example": ["openai-chat", "openai-responses", "anthropic-messages", "gemini-generate-content"]
+              },
+              "execution": {
+                "type": "string",
+                "example": "sync"
+              },
+              "input": {
+                "type": "object",
+                "description": "Tipos de entrada que acepta el modelo.",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "audio": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "file": { "type": "boolean" }
+                }
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "audio": { "type": "boolean" }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "stream": { "type": "boolean" },
+                  "tools": { "type": "boolean" },
+                  "vision": { "type": "boolean" },
+                  "jsonMode": { "type": "boolean" },
+                  "thinking": { "type": "boolean" }
+                }
+              },
+              "reasoning": {
+                "type": ["object", "null"],
+                "description": "Declaración del pensamiento y de los niveles de effort para modelos de chat. Es null o no está presente cuando el modelo no tiene controles de razonamiento.",
+                "properties": {
+                  "supported": {
+                    "type": "boolean",
+                    "description": "Indica si el modelo puede razonar."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["always-on", "optional", "none"],
+                    "description": "always-on: el razonamiento no se puede desactivar. optional: se puede desactivar. none: el modelo no tiene modo de razonamiento."
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "reasoning_effort"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["reasoning.effort", "output_config.effort"]
+                  },
+                  "efforts": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Niveles de razonamiento que acepta este modelo. Una lista vacía significa que el modelo no acepta un parámetro effort.",
+                    "example": ["low", "high", "max"]
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "description": "Nivel predeterminado que se aplica cuando la solicitud omite effort. No está presente cuando el valor predeterminado no se publica.",
+                    "example": "max"
+                  },
+                  "disableWith": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Formas aceptadas de desactivar el razonamiento en un modelo opcional.",
+                    "example": ["reasoning_effort=none"]
+                  },
+                  "thinkingTypes": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Valores que acepta el objeto thinking cuando el modelo expone uno.",
+                    "example": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "limits": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "release_stage": {
+                "type": "string",
+                "example": "stable"
+              },
+              "pricing_dimensions": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
           }
-        },
-        "required": [
+        },        "required": [
           "id",
           "object",
           "type",
@@ -1815,7 +1939,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 solo admite max; GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo."
+            "description": "Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 admite low, high y max (por defecto max); GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo. Los niveles aceptados, el valor predeterminado y si el razonamiento se puede desactivar se publican en GET /v1/models dentro de capability_metadata.reasoning."
           },
           "stop": {
             "oneOf": [
@@ -1911,7 +2035,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 solo admite max; GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo."
+                "description": "Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 admite low, high y max (por defecto max); GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo. Los niveles aceptados, el valor predeterminado y si el razonamiento se puede desactivar se publican en GET /v1/models dentro de capability_metadata.reasoning."
               }
             }
           }
@@ -2061,7 +2185,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 solo admite max; GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo."
+                "description": "Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 admite low, high y max (por defecto max); GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo. Los niveles aceptados, el valor predeterminado y si el razonamiento se puede desactivar se publican en GET /v1/models dentro de capability_metadata.reasoning."
               },
               "summary": {
                 "type": "string",
@@ -2129,7 +2253,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Alias de compatibilidad de reasoning.effort. Si se indican ambas formas, los valores deben coincidir; los conflictos devuelven 400. Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 solo admite max; GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo."
+            "description": "Alias de compatibilidad de reasoning.effort. Si se indican ambas formas, los valores deben coincidir; los conflictos devuelven 400. Intensidad del razonamiento. La enumeración indica valores sintácticamente válidos, no compatibilidad con todos los modelos. Los valores no admitidos devuelven 400. Kimi K3 admite low, high y max (por defecto max); GPT-5.4/5.5 admiten none, low, medium, high, xhigh. Límites de Claude y Gemini: /es/models/chat-models. Si se omite, se mantiene el comportamiento predeterminado del modelo. Los niveles aceptados, el valor predeterminado y si el razonamiento se puede desactivar se publican en GET /v1/models dentro de capability_metadata.reasoning."
           }
         },
         "required": [

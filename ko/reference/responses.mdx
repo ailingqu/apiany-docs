@@ -39,6 +39,8 @@ curl https://apiany.ai/v1/responses \
 
 지원 값은 모델마다 다릅니다. 생략하면 기존 기본 동작을 유지합니다. [모델별 추론 제어](/ko/models/chat-models)를 참고하세요.
 
+각 모델이 허용하는 effort, 기본값, 그리고 추론을 끌 수 있는지 여부는 `GET /v1/models`의 `capability_metadata.reasoning`에 공개되므로, 클라이언트는 표를 하드코딩하지 않고 모델을 설정할 수 있습니다.
+
 `max_completion_tokens`, `max_output_tokens` 및 네이티브 대응 필드는 추론과 최종 답변 토큰의 합계를 제한합니다. effort 자체는 출력 토큰 상한이 아닙니다. 예산이 소진되면(Chat Completions의 `finish_reason: "length"`) 최종 답변이 불완전하거나 비어 있을 수 있습니다.
 
 ## 웹 검색

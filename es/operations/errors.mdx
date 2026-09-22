@@ -59,6 +59,12 @@ El `type` / `status` del error se deriva del estado HTTP:
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
 
+## Parámetros rechazados
+
+Cuando un modelo no acepta un valor de tu solicitud, el endpoint devuelve HTTP `400` con la explicación del propio modelo. Los ajustes de razonamiento usan el código `invalid_reasoning_effort`, y el mensaje enumera los valores que acepta ese modelo, de modo que puedes corregir la solicitud sin adivinar. Los niveles de razonamiento admitidos por cada modelo, su valor predeterminado y si el razonamiento se puede desactivar se publican en `GET /v1/models` dentro de `capability_metadata.reasoning`.
+
+El límite de solicitudes devuelve `429`, y una solicitud que supera el tiempo disponible devuelve `504`. Un `502` significa que la plataforma no pudo obtener una respuesta utilizable del modelo tras reintentar — no es un juicio sobre tus parámetros, así que lee el cuerpo de la respuesta antes de cambiarlos.
+
 ## Errores de generación multimedia y reintentos
 
 Para generar imágenes y vídeos, usa el campo estructurado `error.code` y el `status`

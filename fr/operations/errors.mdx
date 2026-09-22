@@ -59,6 +59,21 @@ Le `type` / `status` de l'erreur est dérivé du statut HTTP :
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
 
+## Paramètres de modèle refusés
+
+Lorsqu'un modèle n'accepte pas une valeur de votre requête, l'endpoint renvoie un
+HTTP `400` accompagné de l'explication fournie par le modèle. Les paramètres de
+raisonnement utilisent le code `invalid_reasoning_effort`, et le message indique
+les valeurs que ce modèle accepte : vous pouvez donc corriger la requête sans
+deviner. Les niveaux de raisonnement acceptés par chaque modèle, sa valeur par
+défaut et la possibilité de désactiver le raisonnement sont publiés dans
+`GET /v1/models`, sous `capability_metadata.reasoning`.
+
+La limitation de débit renvoie `429`, et une requête qui dépasse le temps imparti
+renvoie `504`. Un `502` signifie que la plateforme n'a pas pu obtenir de réponse
+exploitable du modèle après plusieurs tentatives : ce n'est pas un jugement sur
+vos paramètres, lisez donc le corps de la réponse avant de les modifier.
+
 ## Erreurs de génération multimédia et nouvelles tentatives
 
 Pour générer des images et des vidéos, utilisez le champ structuré `error.code` et le

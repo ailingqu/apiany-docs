@@ -39,6 +39,8 @@ curl https://apiany.ai/v1/responses \
 
 Los valores admitidos dependen del modelo. Si se omiten, se mantiene el comportamiento predeterminado. Consulta los [controles de razonamiento por modelo](/es/models/chat-models).
 
+Cada modelo publica en `GET /v1/models`, dentro de `capability_metadata.reasoning`, los niveles que acepta, su valor predeterminado y si el razonamiento se puede desactivar, para que los clientes configuren un modelo sin codificar una tabla fija.
+
 Los límites como `max_completion_tokens`, `max_output_tokens` y sus equivalentes nativos incluyen tokens de razonamiento y de respuesta final. effort no es un límite de tokens de salida. El presupuesto puede agotarse (`finish_reason: "length"` en Chat Completions) y dejar la respuesta final incompleta o vacía.
 
 ## Búsqueda web

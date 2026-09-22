@@ -24,3 +24,14 @@ Utilisez l'ID de modèle affiché dans le tableau de bord et sur les pages de mo
 ## Utilisation des modèles
 
 Utilisez l'ID de modèle public dans les requêtes API et APIAny.AI renvoie une réponse standardisée pour cette famille de modèles.
+
+## Métadonnées de capacités
+
+`GET /v1/models` renvoie un objet `capability_metadata` pour chaque modèle, afin que votre code client puisse configurer un modèle sans hypothèses codées en dur :
+
+- `input` et `output` listent les types d’entrée acceptés et les types produits.
+- `features` indique `stream`, `tools`, `vision`, `jsonMode`, ainsi que la présence d’un raisonnement au niveau du modèle (`thinking`).
+- `reasoning` décrit les contrôles de raisonnement : `mode` (`always-on`, `optional` ou `none`), les `efforts` acceptés, le `defaultEffort` appliqué lorsque vous omettez effort, et `disableWith` pour les modèles dont le raisonnement peut être désactivé.
+- `limits` indique `contextWindow` et `maxOutputTokens`.
+
+Les ID de modèles officiels sont acceptés comme ID équivalents de `deepseek-flash` (= `deepseek-v4.1-flash`) et `deepseek-v4-pro` (= `deepseek-v4`) ; `GET /v1/models` marque ces entrées avec `alias_of`.

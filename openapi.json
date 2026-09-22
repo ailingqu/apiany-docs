@@ -1939,7 +1939,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
+            "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports low, high and max (default max); GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default. Per-model levels, defaults and whether reasoning can be disabled are published in GET /v1/models under capability_metadata.reasoning."
           },
           "stop": {
             "oneOf": [
@@ -2035,7 +2035,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
+                "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports low, high and max (default max); GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default. Per-model levels, defaults and whether reasoning can be disabled are published in GET /v1/models under capability_metadata.reasoning."
               }
             }
           }
@@ -2185,7 +2185,7 @@
                   "xhigh",
                   "max"
                 ],
-                "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
+                "description": "Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports low, high and max (default max); GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default. Per-model levels, defaults and whether reasoning can be disabled are published in GET /v1/models under capability_metadata.reasoning."
               },
               "summary": {
                 "type": "string",
@@ -2253,7 +2253,7 @@
               "xhigh",
               "max"
             ],
-            "description": "Compatibility alias for reasoning.effort. When both effort forms are present, their values must match; conflicting values return 400. Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports only max; GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default."
+            "description": "Compatibility alias for reasoning.effort. When both effort forms are present, their values must match; conflicting values return 400. Reasoning effort. These are syntactic values, not a support guarantee for every model. Supported values vary by model; unsupported values return 400. Kimi K3 supports low, high and max (default max); GPT-5.4/5.5 support none, low, medium, high, xhigh. See /models/chat-models for Claude and Gemini limits. Omission keeps the model default. Per-model levels, defaults and whether reasoning can be disabled are published in GET /v1/models under capability_metadata.reasoning."
           }
         },
         "required": [

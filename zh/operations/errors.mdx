@@ -57,6 +57,12 @@ description: APIAny.AI 标准错误分类。
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
 
+## 模型参数被拒绝
+
+当模型不接受请求中的某个取值时，接口返回 HTTP `400` 并附带模型自己的说明。思考相关设置返回错误码 `invalid_reasoning_effort`，消息中会列出该模型接受的取值，便于直接改正而不必反复试错。每个模型支持的思考档位、默认档位以及能否关闭思考，都记录在 `GET /v1/models` 的 `capability_metadata.reasoning` 中。
+
+限流返回 `429`，超出时间预算的请求返回 `504`。`502` 表示平台在重试后仍未从模型获得可用答案，并不代表参数有问题，建议先读响应内容再调整参数。
+
 ## 媒体生成错误与重试
 
 图片和视频生成应依据结构化的 `error.code` 和任务的 `status`（客户端中的

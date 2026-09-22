@@ -58,6 +58,8 @@ Set top-level `reasoning_effort` for models that support configurable reasoning.
 
 Supported values vary by model; omission preserves the existing default. See [model-specific reasoning controls](/models/chat-models).
 
+Each model's accepted efforts, its default and whether reasoning can be disabled are published in `GET /v1/models` under `capability_metadata.reasoning`, so clients can configure a model without hardcoding a table.
+
 Output limits such as `max_completion_tokens`, `max_output_tokens`, and the native equivalents include reasoning and final-answer tokens. Effort is not an output-token limit. A request can still exhaust its budget (`finish_reason: "length"` in Chat Completions) and return an incomplete or empty final answer.
 
 ## Kimi K3 compatibility
@@ -65,8 +67,10 @@ Output limits such as `max_completion_tokens`, `max_output_tokens`, and the nati
 `kimi-k3` uses the same OpenAI-compatible endpoint, but its native contract has
 model-specific rules:
 
-- K3 always reasons. Use top-level `reasoning_effort: "max"`; the K2.x
-  `thinking` object is accepted only as an enabled compatibility alias.
+- K3 always reasons and cannot be turned off. It accepts `low`, `high` and
+  `max`; the default is `max`, and a lower effort trades reasoning depth for
+  latency. The K2.x `thinking` object is accepted only as an enabled
+  compatibility alias.
 - Prefer `max_completion_tokens`. APIAny accepts deprecated `max_tokens` and
   uses `max_completion_tokens` for Kimi K3. If no limit is provided, the model's
   default is used. The explicit maximum is 1,048,576 tokens.

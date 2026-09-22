@@ -24,3 +24,14 @@ APIAny.AI는 공개 모델 ID를 제공합니다. 이 ID는 애플리케이션 �
 ## 모델 사용
 
 API 요청에서 공개 모델 ID를 사용하면 APIAny.AI가 해당 모델 패밀리에 대한 표준 응답을 반환합니다.
+
+## 기능 메타데이터
+
+`GET /v1/models`는 모든 모델에 대해 `capability_metadata` 객체를 반환하므로, 클라이언트 코드는 가정을 하드코딩하지 않고 모델을 설정할 수 있습니다:
+
+- `input`과 `output`은 허용하는 입력 유형과 생성하는 출력 유형을 나열합니다.
+- `features`는 `stream`, `tools`, `vision`, `jsonMode`, 그리고 해당 모델이 추론을 하는지 여부(`thinking`)를 알려줍니다.
+- `reasoning`은 추론 제어를 알려줍니다: `mode`(`always-on`, `optional`, `none`), 허용되는 `efforts`, effort를 생략했을 때 적용되는 `defaultEffort`, 그리고 추론을 끌 수 있는 모델의 `disableWith`입니다.
+- `limits`는 `contextWindow`와 `maxOutputTokens`를 알려줍니다.
+
+`deepseek-flash`(=`deepseek-v4.1-flash`)와 `deepseek-v4-pro`(=`deepseek-v4`)의 공식 모델 ID도 동등한 ID로 허용됩니다. `GET /v1/models`는 해당 항목에 `alias_of`를 표시합니다.

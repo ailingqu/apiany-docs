@@ -58,6 +58,18 @@ description: APIAny.AI가 반환하는 표준 오류 분류.
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
 | 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
 
+## 모델 파라미터 거부
+
+모델이 요청의 특정 값을 받아들이지 않으면 엔드포인트는 해당 모델의 설명과 함께 HTTP `400`을
+반환합니다. 추론 설정으로 인한 거부는 오류 코드 `invalid_reasoning_effort`로 반환되며, 메시지에
+그 모델이 허용하는 값이 나열되므로 추측 없이 요청을 바로 고칠 수 있습니다. 각 모델이 지원하는
+추론 effort와 기본값, 추론 비활성화 가능 여부는 `GET /v1/models`의
+`capability_metadata.reasoning`에 공개되어 있습니다.
+
+속도 제한은 `429`를, 시간 예산을 초과한 요청은 `504`를 반환합니다. `502`는 재시도 후에도
+플랫폼이 모델에서 사용할 수 있는 답변을 얻지 못했다는 의미이며, 파라미터에 대한 판정이
+아닙니다. 따라서 파라미터를 바꾸기 전에 응답 본문을 먼저 확인하세요.
+
 ## 미디어 생성 오류와 재시도
 
 이미지와 영상 생성에서는 구조화된 `error.code`와 작업의 `status`

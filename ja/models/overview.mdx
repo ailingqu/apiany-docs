@@ -24,3 +24,14 @@ APIAny.AI は公開モデル ID を提供します。これらの ID は、ア�
 ## モデルの利用
 
 API リクエストで公開モデル ID を使用すると、APIAny.AI はそのモデルファミリーに対応した標準レスポンスを返します。
+
+## モデル能力メタデータ
+
+`GET /v1/models` はすべてのモデルについて `capability_metadata` オブジェクトを返すため、クライアントコードは前提をハードコードせずにモデルを設定できます：
+
+- `input` と `output` は、受け付けるタイプと生成されるタイプを示します。
+- `features` は `stream`、`tools`、`vision`、`jsonMode`、およびモデルが思考するかどうか（`thinking`）を報告します。
+- `reasoning` は推論の制御を報告します：思考の `mode`（`always-on`、`optional`、`none`）、受け付ける `efforts`、effort を省略した場合に適用される `defaultEffort`、思考を無効化できるモデルの `disableWith` です。
+- `limits` は `contextWindow` と `maxOutputTokens` を報告します。
+
+公式モデル ID は、`deepseek-flash`（= `deepseek-v4.1-flash`）と `deepseek-v4-pro`（= `deepseek-v4`）の等価な ID として受け付けられます。`GET /v1/models` はそのようなエントリーに `alias_of` を付けます。
