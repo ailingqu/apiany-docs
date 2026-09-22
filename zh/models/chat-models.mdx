@@ -83,18 +83,28 @@ Responses 工具续接时，把完整返回的 `output`（包含推理项和函�
 
 Chat Completions 使用 `reasoning_effort`，Responses 使用 `reasoning: { "effort": "high" }`。两个接口也接受另一种写法作为兼容别名；同时提供时值必须一致，冲突返回 `400`。省略 effort 时保持模型原有默认行为。
 
-语法允许 `none`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`，但不代表每个模型都支持全部值。非法值，以及超出已声明模型支持范围的值，返回 `400`。
+语法允许 `none`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`、`ultra`，但不代表每个模型都支持全部值。非法值，以及超出已声明模型支持范围的值，返回 `400`。
 
-| 模型 | 支持的 effort |
-| --- | --- |
-| Kimi K3 | `max` |
-| GPT-5.4 / GPT-5.5 | `none`, `low`, `medium`, `high`, `xhigh` |
-| GPT-5.4 Pro / GPT-5.5 Pro | `medium`, `high`, `xhigh` |
-| Claude Opus 4.7 / 4.8 | `low`, `medium`, `high`, `xhigh`, `max` |
-| Claude Opus 4.6 / Sonnet 4.6 | `low`, `medium`, `high`, `max` |
-| Claude Opus 4.5 | `low`, `medium`, `high` |
-| Gemini 3 | 支持级别因模型而异；不支持 `none` |
-| Gemini 2.5 | `none`、`minimal`、`low`、`medium`、`high`；Pro 不支持 `none` |
+| 模型 ID | 支持的 effort | 默认值 |
+| --- | --- | --- |
+| `kimi-k3` | `low`、`high`、`max` | `max` |
+| `glm-5.3-flash` | `low`、`high`、`max` | `max` |
+| `deepseek-v4.1-flash`、`deepseek-v4-flash` | `none`、`minimal`、`low`、`medium`、`high`、`xhigh`、`max`、`ultra` | `high` |
+| `gpt-5.6-sol`、`gpt-5.6-terra` | `none`、`low`、`medium`、`high`、`xhigh`、`max` | `medium` |
+| `gpt-6-astra` | `low`、`medium`、`high`、`xhigh`、`max` | — |
+| `gpt-5.5` | `none`、`low`、`medium`、`high`、`xhigh` | `medium` |
+| `gpt-5.4`、`gpt-5.4-mini`、`gpt-5.4-nano` | `none`、`low`、`medium`、`high`、`xhigh` | `none` |
+| `gpt-4o-mini` | 不支持 | — |
+| `claude-opus-5`、`claude-opus-4-8` | `low`、`medium`、`high`、`xhigh`、`max` | `high` |
+| `claude-sonnet-4-6` | `low`、`medium`、`high`、`max` | `high` |
+| `grok-4.5`、`grok-4.5-latest`、`grok-4.6`、`grok-4.7` | `low`、`medium`、`high`、`xhigh` | `high` |
+| `gemini-3.1-pro` | `low`、`medium`、`high` | `high` |
+| `gemini-3.1-flash-lite` | `minimal`、`low`、`medium`、`high` | `minimal` |
+| `gemini-3.5-flash` | `minimal`、`low`、`medium`、`high` | `medium` |
+| `gemini-2.5-flash-lite` | `none`、`minimal`、`low`、`medium`、`high` | — |
+| `minimax-m3` | 不支持；请使用 `thinking` | — |
+
+`kimi-k3`、`glm-5.3-flash`、`gpt-6-astra`、Grok 4.5 系列与 Gemini 3 系列始终开启思考，传入关闭思考的值会返回 `400`。`gpt-5.4` 及其 `mini`、`nano` 版本默认不思考，需要显式传 `low` 或更高档位。`minimax-m3` 与 `gpt-4o-mini` 不接受任何 effort 参数；`minimax-m3` 改用 `thinking` 对象控制。
 
 Anthropic Messages 使用 `output_config.effort`。原生 `thinking` 独立保留：effort 不会自动开启思考，也不会设置 `budget_tokens`。
 
@@ -103,5 +113,34 @@ Gemini 3 原生请求使用 `generationConfig.thinkingConfig.thinkingLevel`，�
 其他 OpenAI 兼容模型可以提交语法有效的 effort，但这不构成模型支持承诺。依赖特定值前，请先确认模型能力。
 
 `max_completion_tokens`、`max_output_tokens` 及原生对应字段限制的是思考与最终答案共用的 token 总量。effort 不是输出 token 上限；请求仍可能耗尽预算（Chat Completions 返回 `finish_reason: "length"`），导致最终答案不完整或为空。
+
+## 模型能力元数据
+
+`GET /v1/models` 会为每个已声明能力的模型返回 `capability_metadata`，可以先读它再配置模型，不必猜测：
+
+- `input` 列出支持的输入类型：`text`、`image`、`video`、`audio`、`file`。
+- `output` 列出输出类型。
+- `features` 说明是否支持 `stream`、`tools`、`vision`、`jsonMode`，以及模型是否具备思考能力（`thinking`）。
+- `reasoning` 描述思考控制方式：`mode`（`always-on`、`optional` 或 `none`）、支持的 `efforts`、省略 effort 时生效的 `defaultEffort`，以及可关闭思考的模型的 `disableWith`。
+- `limits` 给出 `contextWindow` 与 `maxOutputTokens`。
+
+提交 effort 之前先看 `reasoning.mode`：`always-on` 表示无法关闭思考，`optional` 表示适用 `disableWith`，`none` 表示该模型没有思考模式。
+
+```json
+{
+  "id": "glm-5.3-flash",
+  "capability_metadata": {
+    "input": { "text": true, "image": true, "video": true },
+    "features": { "stream": true, "tools": true, "thinking": true },
+    "reasoning": {
+      "supported": true,
+      "mode": "always-on",
+      "efforts": ["low", "high", "max"],
+      "defaultEffort": "max"
+    },
+    "limits": { "contextWindow": 1048576, "maxOutputTokens": 131072 }
+  }
+}
+```
 
 API 格式参考: [OpenAI](https://developers.openai.com/api/docs/guides/reasoning#reasoning-effort), [Anthropic Messages](https://platform.claude.com/docs/en/build-with-claude/effort), [Gemini](https://ai.google.dev/gemini-api/docs/generate-content/thinking), [Gemini OpenAI](https://ai.google.dev/gemini-api/docs/openai).

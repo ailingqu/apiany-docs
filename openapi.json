@@ -1739,6 +1739,131 @@
           "parameters": {
             "type": "object",
             "additionalProperties": true
+          },
+          "group": {
+            "type": "string",
+            "description": "Model group shown in the model catalog.",
+            "example": "GPT 5.5"
+          },
+          "capability": {
+            "type": "string",
+            "description": "Comma-separated capability tags.",
+            "example": "chat,coding,reasoning"
+          },
+          "description": {
+            "type": "string"
+          },
+          "capability_metadata": {
+            "type": ["object", "null"],
+            "description": "Model capability metadata: supported input and output types, feature flags, thinking and reasoning levels, limits and tags. Null when the model has no declared capability metadata.",
+            "properties": {
+              "modality": {
+                "type": "string",
+                "example": "chat"
+              },
+              "endpoint_formats": {
+                "type": "array",
+                "items": { "type": "string" },
+                "example": ["openai-chat", "openai-responses", "anthropic-messages", "gemini-generate-content"]
+              },
+              "execution": {
+                "type": "string",
+                "example": "sync"
+              },
+              "input": {
+                "type": "object",
+                "description": "Input types the model accepts.",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "audio": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "file": { "type": "boolean" }
+                }
+              },
+              "output": {
+                "type": "object",
+                "properties": {
+                  "text": { "type": "boolean" },
+                  "image": { "type": "boolean" },
+                  "video": { "type": "boolean" },
+                  "audio": { "type": "boolean" }
+                }
+              },
+              "features": {
+                "type": "object",
+                "properties": {
+                  "stream": { "type": "boolean" },
+                  "tools": { "type": "boolean" },
+                  "vision": { "type": "boolean" },
+                  "jsonMode": { "type": "boolean" },
+                  "thinking": { "type": "boolean" }
+                }
+              },
+              "reasoning": {
+                "type": ["object", "null"],
+                "description": "Thinking and reasoning-effort declaration for chat models. Null or absent when the model has no reasoning controls.",
+                "properties": {
+                  "supported": {
+                    "type": "boolean",
+                    "description": "Whether the model can reason."
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": ["always-on", "optional", "none"],
+                    "description": "always-on: reasoning cannot be disabled. optional: it can be disabled. none: the model has no reasoning mode."
+                  },
+                  "parameter": {
+                    "type": "string",
+                    "example": "reasoning_effort"
+                  },
+                  "aliases": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "example": ["reasoning.effort", "output_config.effort"]
+                  },
+                  "efforts": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Reasoning levels this model accepts. An empty array means the model does not accept an effort parameter.",
+                    "example": ["low", "high", "max"]
+                  },
+                  "defaultEffort": {
+                    "type": "string",
+                    "description": "Default level applied when the request omits effort. Absent when the default is not published.",
+                    "example": "max"
+                  },
+                  "disableWith": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Accepted ways to turn reasoning off for an optional model.",
+                    "example": ["reasoning_effort=none"]
+                  },
+                  "thinkingTypes": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "Values accepted by the thinking object when the model exposes one.",
+                    "example": ["enabled", "disabled"]
+                  }
+                }
+              },
+              "limits": {
+                "type": "object",
+                "additionalProperties": true
+              },
+              "tags": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "release_stage": {
+                "type": "string",
+                "example": "stable"
+              },
+              "pricing_dimensions": {
+                "type": "array",
+                "items": { "type": "object", "additionalProperties": true }
+              }
+            }
           }
         },
         "required": [

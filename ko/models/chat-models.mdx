@@ -41,27 +41,66 @@ description: 텍스트 생성 및 멀티모달 채팅 모델 동작.
 
 ## 추론 강도
 
-Chat Completions에서는 `reasoning_effort`, Responses에서는 `reasoning: { "effort": "high" }`를 사용합니다. 각 엔드포인트는 다른 형식도 호환 별칭으로 받습니다. 둘 다 지정하면 값이 같아야 하며, 충돌 시 `400`을 반환합니다. 생략하면 기존 모델 기본 동작을 유지합니다.
+Chat Completions에서는 `reasoning_effort`를, Responses에서는 `reasoning: { "effort": "high" }`를 사용합니다. 각 엔드포인트는 다른 형식도 호환 별칭으로 허용합니다. 둘 다 지정하면 값이 일치해야 하며, 충돌하면 `400`을 반환합니다. effort를 생략하면 모델 기본값이 유지됩니다.
 
-문법상 허용 값은 `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`입니다. 모든 모델이 모든 값을 지원한다는 뜻은 아닙니다. 잘못된 값이나 지원 범위가 명시된 모델의 미지원 값은 `400`을 반환합니다.
+문법상 허용되는 값은 `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, `ultra`입니다. 모든 모델이 모든 값을 지원한다는 의미는 아닙니다. 잘못된 값과 문서에 명시된 모델 지원 범위를 벗어난 값은 `400`을 반환합니다.
 
-| 모델 | 지원 effort |
-| --- | --- |
-| Kimi K3 | `max` |
-| GPT-5.4 / GPT-5.5 | `none`, `low`, `medium`, `high`, `xhigh` |
-| GPT-5.4 Pro / GPT-5.5 Pro | `medium`, `high`, `xhigh` |
-| Claude Opus 4.7 / 4.8 | `low`, `medium`, `high`, `xhigh`, `max` |
-| Claude Opus 4.6 / Sonnet 4.6 | `low`, `medium`, `high`, `max` |
-| Claude Opus 4.5 | `low`, `medium`, `high` |
-| Gemini 3 | 지원 수준은 모델별로 다름. `none` 미지원 |
-| Gemini 2.5 | `none`, `minimal`, `low`, `medium`, `high`. Pro는 `none` 미지원 |
+| 모델 ID | 지원 effort | 기본값 |
+| --- | --- | --- |
+| `kimi-k3` | `low`, `high`, `max` | `max` |
+| `glm-5.3-flash` | `low`, `high`, `max` | `max` |
+| `deepseek-v4.1-flash`, `deepseek-v4-flash` | `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, `ultra` | `high` |
+| `gpt-5.6-sol`, `gpt-5.6-terra` | `none`, `low`, `medium`, `high`, `xhigh`, `max` | `medium` |
+| `gpt-6-astra` | `low`, `medium`, `high`, `xhigh`, `max` | — |
+| `gpt-5.5` | `none`, `low`, `medium`, `high`, `xhigh` | `medium` |
+| `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano` | `none`, `low`, `medium`, `high`, `xhigh` | `none` |
+| `gpt-4o-mini` | 지원하지 않음 | — |
+| `claude-opus-5`, `claude-opus-4-8` | `low`, `medium`, `high`, `xhigh`, `max` | `high` |
+| `claude-sonnet-4-6` | `low`, `medium`, `high`, `max` | `high` |
+| `grok-4.5`, `grok-4.5-latest`, `grok-4.6`, `grok-4.7` | `low`, `medium`, `high`, `xhigh` | `high` |
+| `gemini-3.1-pro` | `low`, `medium`, `high` | `high` |
+| `gemini-3.1-flash-lite` | `minimal`, `low`, `medium`, `high` | `minimal` |
+| `gemini-3.5-flash` | `minimal`, `low`, `medium`, `high` | `medium` |
+| `gemini-2.5-flash-lite` | `none`, `minimal`, `low`, `medium`, `high` | — |
+| `minimax-m3` | 지원하지 않음; `thinking` 사용 | — |
 
-Anthropic Messages에서는 `output_config.effort`를 사용합니다. 네이티브 `thinking`은 독립적이며, effort는 추론을 켜거나 `budget_tokens`를 설정하지 않습니다.
+`kimi-k3`, `glm-5.3-flash`, `gpt-6-astra`, Grok 4.5 패밀리와 Gemini 3 패밀리는 추론이 항상 켜져 있으며, 추론을 끄는 값은 `400`을 반환합니다. `gpt-5.4`와 그 `mini`, `nano` 변형은 `low` 이상을 요청한 경우에만 추론합니다. `minimax-m3`와 `gpt-4o-mini`는 effort 파라미터를 전혀 받지 않으며, `minimax-m3`는 대신 `thinking` 객체를 제공합니다.
 
-Gemini 3 네이티브 요청은 `generationConfig.thinkingConfig.thinkingLevel`을 사용하며 지원 수준은 모델별로 다릅니다. Gemini 2.5는 `thinkingBudget`을 사용합니다. OpenAI 호환 형식에서 Gemini 2.5의 `minimal`/`low`는 `1024`, `medium`은 `8192`, `high`는 `24576`, `none`은 `0`(Pro 제외)으로 매핑됩니다. 명시적인 effort와 네이티브 `thinkingLevel` 또는 `thinkingBudget`은 동시에 지정할 수 없으며, 설정이 동등해도 `400`을 반환합니다. `includeThoughts`만 있으면 effort와 함께 사용할 수 있습니다.
+Anthropic Messages에서는 `output_config.effort`를 사용합니다. 네이티브 `thinking`은 그대로 독립적입니다. effort는 추론을 켜거나 `budget_tokens`를 선택하지 않습니다.
 
-다른 OpenAI 호환 모델에도 문법상 유효한 effort를 제출할 수 있지만 모델 지원을 보장하지는 않습니다. 특정 값에 의존하기 전에 모델 기능을 확인하세요.
+Gemini 3의 네이티브 요청은 `generationConfig.thinkingConfig.thinkingLevel`을 사용하며, 허용되는 레벨은 모델마다 다릅니다. Gemini 2.5는 `thinkingBudget`을 사용합니다. OpenAI 호환 형식에서 Gemini 2.5는 `minimal`/`low`를 `1024`, `medium`을 `8192`, `high`를 `24576`, `none`을 `0`(Pro 제외)으로 매핑합니다. 명시적 effort와 네이티브 `thinkingLevel` 또는 `thinkingBudget`을 함께 지정하지 마세요. 설정이 동등하더라도 `400`을 반환합니다. `includeThoughts`만 단독으로는 effort와 함께 사용할 수 있습니다.
 
-`max_completion_tokens`, `max_output_tokens` 및 네이티브 대응 필드는 추론과 최종 답변 토큰의 합계를 제한합니다. effort 자체는 출력 토큰 상한이 아닙니다. 예산이 소진되면(Chat Completions의 `finish_reason: "length"`) 최종 답변이 불완전하거나 비어 있을 수 있습니다.
+다른 OpenAI 호환 모델의 경우 문법상 유효한 effort가 선언된 지원 보장 없이 모델 실행에 전달됩니다. effort 값에 의존하기 전에 해당 모델의 기능을 확인하세요.
+
+`max_completion_tokens`, `max_output_tokens` 및 이에 대응하는 네이티브 필드와 같은 출력 한도에는 추론 토큰과 최종 답변 토큰이 함께 포함됩니다. effort는 출력 토큰 한도가 아닙니다. 요청은 여전히 예산을 소진해(Chat Completions의 `finish_reason: "length"`) 최종 답변이 불완전하거나 비어 있을 수 있습니다.
+
+## 모델 기능 메타데이터
+
+`GET /v1/models`는 기능을 선언한 모든 모델에 대해 `capability_metadata` 객체를 반환합니다. 추측하지 않고 모델을 구성하려면 이 객체를 먼저 읽으세요:
+
+- `input`은 허용되는 입력 유형을 나열합니다: `text`, `image`, `video`, `audio`, `file`.
+- `output`은 생성되는 유형을 나열합니다.
+- `features`는 `stream`, `tools`, `vision`, `jsonMode`, 그리고 모델이 추론을 수행하는지 여부(`thinking`)를 알려줍니다.
+- `reasoning`은 추론 제어 방식을 설명합니다: `mode`(`always-on`, `optional`, `none`), 허용되는 `efforts`, effort를 생략할 때 적용되는 `defaultEffort`, 그리고 추론을 끌 수 있는 모델의 `disableWith`.
+- `limits`는 `contextWindow`와 `maxOutputTokens`를 알려줍니다.
+
+`reasoning.mode`는 effort 값을 보내기 전에 확인해야 할 필드입니다. `always-on`은 추론을 끌 수 없음을, `optional`은 `disableWith`가 적용됨을, `none`은 해당 모델에 추론 모드가 없음을 의미합니다.
+
+```json
+{
+  "id": "glm-5.3-flash",
+  "capability_metadata": {
+    "input": { "text": true, "image": true, "video": true },
+    "features": { "stream": true, "tools": true, "thinking": true },
+    "reasoning": {
+      "supported": true,
+      "mode": "always-on",
+      "efforts": ["low", "high", "max"],
+      "defaultEffort": "max"
+    },
+    "limits": { "contextWindow": 1048576, "maxOutputTokens": 131072 }
+  }
+}
+```
 
 API 형식 참고: [OpenAI](https://developers.openai.com/api/docs/guides/reasoning#reasoning-effort), [Anthropic Messages](https://platform.claude.com/docs/en/build-with-claude/effort), [Gemini](https://ai.google.dev/gemini-api/docs/generate-content/thinking), [Gemini OpenAI](https://ai.google.dev/gemini-api/docs/openai).
