@@ -22,6 +22,18 @@ Context window and maximum output limits are model-level capability metadata.
 
 ## Available models
 
+### Grok 4.7
+
+Use the independent model ID `grok-4.7` with `/v1/chat/completions`. Grok 4.6 remains a separate model. APIAny input and cached-input pricing is 1.2 credits per 1,000 tokens; output pricing is 2.4 credits per 1,000 tokens, matching Grok 4.6 at launch. Credit-pack discounts continue to apply.
+
+```json
+{"model":"grok-4.7","messages":[{"role":"user","content":"Explain caching in three concise points."}],"max_tokens":1024}
+```
+
+This integration initially advertises text input and text output only. Vision, document input, context-window limits and reasoning controls are not verified. Check `/v1/models` for current availability and pricing.
+
+Launch testing observed refusals for some harmless exact-phrase echo requests, despite successful ordinary text and code responses. Do not rely on exact-string echo behavior as an availability probe. This is an observed model limitation, not a guarantee that every instruction will be followed.
+
 | Model ID | Description |
 | --- | --- |
 | `gpt-5.5` | OpenAI GPT-5.5 — flagship model for advanced reasoning, coding, and complex multi-step instructions. |
