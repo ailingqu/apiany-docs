@@ -79,7 +79,11 @@ GLM 5.3 Flash 始终思考，仅支持 `low`、`high`、`max`（模型默认）�
 
 GLM 可将示例模型改成 `glm-5.3-flash`。Responses 使用 `input`、`max_output_tokens` 和 `reasoning: { "effort": "low" }`。
 
-Responses 工具续接时，把完整返回的 `output`（包含推理项和函数调用）及配对的 `function_call_output` 追加到下一轮 `input`，不要删除推理项。DeepSeek Responses 是无状态接口，需回传对话历史，不能依赖 `previous_response_id`。
+Responses 工具续接时，把完整返回的 `output`（包含推理项和函数调用）及配对的 `function_call_output` 追加到下一轮 `input`，不要删除推理项。DeepSeek Responses 是无状态接口，需回传对话历史，不能依赖 `previous_response_id`。图片用 Chat 的 `image_url` 或 Responses 的 `input_image` 提交。`glm-5.3-flash` 额外支持文档（`file` / `input_file`）与视频；`deepseek-v4.1-flash`、`deepseek-v4-flash` 不接受文档、音频与视频。
+
+### 官方模型 ID
+
+`deepseek-flash` 与 `deepseek-v4-pro` 可作为 `deepseek-v4.1-flash` 与 `deepseek-v4` 的等价 ID 直接使用，按官方名称编写的客户端无需改动。用量与计费统一记在 APIAny.AI 模型 ID 下。`GET /v1/models` 会同时列出两个 ID，并用 `alias_of` 标出等价条目。
 
 Chat Completions 使用 `reasoning_effort`，Responses 使用 `reasoning: { "effort": "high" }`。两个接口也接受另一种写法作为兼容别名；同时提供时值必须一致，冲突返回 `400`。省略 effort 时保持模型原有默认行为。
 

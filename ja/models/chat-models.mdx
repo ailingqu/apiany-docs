@@ -74,6 +74,12 @@ Gemini 3 のネイティブリクエストは `generationConfig.thinkingConfig.t
 
 `max_completion_tokens`、`max_output_tokens` およびネイティブの相当フィールドは、推論と最終回答のトークンを含みます。effort は出力トークンの上限ではありません。リクエストが予算を使い切ると（Chat Completions では `finish_reason: "length"`）、最終回答が不完全または空になる場合があります。
 
+画像は Chat の `image_url` または Responses の `input_image` で送信します。`glm-5.3-flash` はさらにドキュメント（`file` / `input_file`）と動画を受け付けます。`deepseek-v4.1-flash` と `deepseek-v4-flash` はドキュメント、音声、動画を受け付けません。
+
+### 公式モデル ID
+
+`deepseek-flash` と `deepseek-v4-pro` は、`deepseek-v4.1-flash` と `deepseek-v4` の等価な ID としてそのまま使用できます。公式名で作成されたクライアントは変更なしで動作します。使用量と課金は APIAny.AI のモデル ID で一度だけ記録されます。`GET /v1/models` は両方の ID を一覧し、等価なエントリを `alias_of` で示します。
+
 ## モデル能力メタデータ
 
 `GET /v1/models` は、能力を宣言しているすべてのモデルについて `capability_metadata` オブジェクトを返します。推測せずにモデルを設定するために、これを読んでください。

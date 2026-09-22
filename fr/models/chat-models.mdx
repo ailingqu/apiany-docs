@@ -74,6 +74,12 @@ Pour les autres modèles compatibles OpenAI, les efforts syntaxiquement valides 
 
 Les limites de sortie telles que `max_completion_tokens`, `max_output_tokens` et les équivalents natifs incluent les tokens de raisonnement et de réponse finale. Effort n’est pas une limite de tokens de sortie. Une requête peut toujours épuiser son budget (`finish_reason: "length"` dans Chat Completions) et renvoyer une réponse finale incomplète ou vide.
 
+Envoyez les images avec Chat `image_url` ou Responses `input_image`. `glm-5.3-flash` accepte en plus les documents (`file` / `input_file`) et la vidéo ; les documents, l’audio et la vidéo ne sont pas acceptés pour `deepseek-v4.1-flash` ni `deepseek-v4-flash`.
+
+### ID de modèles officiels
+
+`deepseek-flash` et `deepseek-v4-pro` sont acceptés comme ID équivalents de `deepseek-v4.1-flash` et `deepseek-v4` : un client écrit pour ces noms officiels fonctionne sans modification. L’usage et la facturation sont enregistrés une seule fois sous l’ID de modèle APIAny.AI. `GET /v1/models` liste les deux ID et marque l’entrée équivalente avec `alias_of`.
+
 ## Métadonnées de capacités du modèle
 
 `GET /v1/models` renvoie un objet `capability_metadata` pour chaque modèle qui déclare ses capacités. Lisez-le pour configurer un modèle sans deviner :

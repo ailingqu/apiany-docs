@@ -66,7 +66,11 @@ For `deepseek-v4.1-flash` Chat Completions, thinking is enabled by default. Forc
 
 GLM 5.3 Flash always thinks. Its effort values are `low`, `high`, and `max` (model default); disabling thinking returns `400`. For a quick smoke test, use `low`. Allocate enough tokens for thinking plus the final answer, for example `max_tokens: 32768`. Explicit limits are honored, not silently increased. `max_completion_tokens` is accepted as an alias; different simultaneous limits return `400`.
 
-When continuing a tool conversation with these models, preserve the assistant's `reasoning_content`, `tool_calls`, and matching tool result messages. Cache-hit input tokens are included in total input tokens, not added again. Submit images with Chat `image_url` or Responses `input_image`; generic documents, audio, and DeepSeek video URL inputs are not accepted by this integration.
+When continuing a tool conversation with these models, preserve the assistant's `reasoning_content`, `tool_calls`, and matching tool result messages. Cache-hit input tokens are included in total input tokens, not added again. Submit images with Chat `image_url` or Responses `input_image`. `glm-5.3-flash` additionally accepts documents (`file` / `input_file`) and video; documents, audio, and video are not accepted for `deepseek-v4.1-flash` or `deepseek-v4-flash`.
+
+### Official model IDs
+
+`deepseek-flash` and `deepseek-v4-pro` are accepted as equivalent IDs for `deepseek-v4.1-flash` and `deepseek-v4`, so a client written against those official names works unchanged. Usage and billing are recorded once under the APIAny.AI model ID. `GET /v1/models` lists both IDs and marks the equivalent entry with `alias_of`.
 
 ```json
 {
