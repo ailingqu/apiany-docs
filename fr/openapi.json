@@ -1829,6 +1829,11 @@
                     "description": "Niveaux de raisonnement acceptés par ce modèle. Un tableau vide signifie que le modèle n’accepte pas de paramètre d’intensité.",
                     "example": ["low", "high", "max"]
                   },
+                  "compatEfforts": {
+                    "type": "object",
+                    "description": "Orthographes de compatibilité acceptées pour les intégrations plus anciennes, associées au niveau officiel réellement utilisé. Préférez les valeurs de efforts pour les nouvelles intégrations.",
+                    "example": { "max": "xhigh", "minimal": "low" }
+                  },
                   "defaultEffort": {
                     "type": "string",
                     "description": "Niveau par défaut appliqué lorsque la requête omet l’intensité. Absent lorsque la valeur par défaut n’est pas publiée.",

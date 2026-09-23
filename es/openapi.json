@@ -1829,6 +1829,11 @@
                     "description": "Niveles de razonamiento que acepta este modelo. Una lista vacía significa que el modelo no acepta un parámetro effort.",
                     "example": ["low", "high", "max"]
                   },
+                  "compatEfforts": {
+                    "type": "object",
+                    "description": "Grafías de compatibilidad que se aceptan para integraciones anteriores y se asignan al nivel oficial que se usa realmente. Para las integraciones nuevas, es preferible usar los valores de efforts.",
+                    "example": { "max": "xhigh", "minimal": "low" }
+                  },
                   "defaultEffort": {
                     "type": "string",
                     "description": "Nivel predeterminado que se aplica cuando la solicitud omite effort. No está presente cuando el valor predeterminado no se publica.",

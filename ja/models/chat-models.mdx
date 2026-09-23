@@ -67,6 +67,8 @@ Chat Completions では `reasoning_effort`、Responses では `reasoning: { "eff
 
 `kimi-k3`、`glm-5.3-flash`、`gpt-6-astra`、Grok 4.5 シリーズ、Gemini 3 シリーズでは推論は常に有効で、推論を無効化する値は `400` になります。`gpt-5.4` とその `mini`、`nano` は、`low` 以上を指定した場合にのみ推論します。`minimax-m3` と `gpt-4o-mini` は effort パラメータ自体を受け付けません。`minimax-m3` は代わりに `thinking` オブジェクトを使用します。
 
+一部のモデルは、古い連携で使われていた互換表記も受け付けます。`grok-4.5`、`grok-4.5-latest`、`grok-4.6`、`grok-4.7` は `max`（`xhigh` として実行）と `minimal`（`low` として実行）を受け付け、`gemini-3.1-pro` は `minimal`（`low` として実行）を受け付けます。これらはリクエストの実行前に正規化されるため、モデルは常に公式の強度を受け取ります。`capability_metadata.reasoning.compatEfforts` がこのマッピングを公開しています。新しい連携では `efforts` の値を使用してください。
+
 Anthropic Messages では `output_config.effort` を使用します。ネイティブの `thinking` は独立した設定のままです。effort は思考を有効化せず、`budget_tokens` も選択しません。
 
 Gemini 3 のネイティブリクエストは `generationConfig.thinkingConfig.thinkingLevel` を使用し、受け付けられるレベルはモデルごとに異なります。Gemini 2.5 は `thinkingBudget` を使用します。OpenAI 互換形式では、Gemini 2.5 の `minimal`/`low` は `1024`、`medium` は `8192`、`high` は `24576`、`none` は `0`（Pro を除く）に対応します。明示的な effort とネイティブの `thinkingLevel` または `thinkingBudget` は併用しないでください。設定が同等であっても `400` になります。`includeThoughts` のみであれば effort と併用できます。

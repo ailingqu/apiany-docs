@@ -1829,6 +1829,11 @@
                     "description": "このモデルが受け付ける推論強度。空配列は、モデルが effort パラメータを受け付けないことを意味します。",
                     "example": ["low", "high", "max"]
                   },
+                  "compatEfforts": {
+                    "type": "object",
+                    "description": "古い連携のために受け付けられる互換表記。実際に使用される公式の強度に対応します。新しい連携では efforts の値を推奨します。",
+                    "example": { "max": "xhigh", "minimal": "low" }
+                  },
                   "defaultEffort": {
                     "type": "string",
                     "description": "リクエストで effort を省略した場合に適用される既定の強度。既定値が公開されていない場合は省略されます。",

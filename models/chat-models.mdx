@@ -112,6 +112,8 @@ The syntax accepts `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`, a
 
 Reasoning is always on for `kimi-k3`, `glm-5.3-flash`, `gpt-6-astra`, the Grok 4.5 family and the Gemini 3 family; a value that disables reasoning returns `400`. `gpt-5.4` and its `mini` and `nano` variants reason only when you ask for `low` or higher. `minimax-m3` and `gpt-4o-mini` take no effort parameter at all; `minimax-m3` exposes the `thinking` object instead.
 
+Some models also accept the compatibility spellings that older integrations used: `grok-4.5`, `grok-4.5-latest`, `grok-4.6` and `grok-4.7` accept `max` (executed as `xhigh`) and `minimal` (executed as `low`), and `gemini-3.1-pro` accepts `minimal` (executed as `low`). They are normalized before the request runs, so the model always receives an official level. `capability_metadata.reasoning.compatEfforts` publishes these mappings; new integrations should use the values in `efforts`.
+
 For Anthropic Messages, use `output_config.effort`. Native `thinking` remains independent: effort does not enable thinking or select `budget_tokens`.
 
 For Gemini 3, native requests use `generationConfig.thinkingConfig.thinkingLevel`; the accepted levels vary by model. Gemini 2.5 uses `thinkingBudget`. In the OpenAI-compatible format, Gemini 2.5 maps `minimal`/`low` to `1024`, `medium` to `8192`, `high` to `24576`, and `none` to `0` (except Pro). Do not combine explicit effort with native `thinkingLevel` or `thinkingBudget`: this returns `400` even if the settings are equivalent. `includeThoughts` alone can be combined with effort.

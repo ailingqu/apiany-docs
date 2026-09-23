@@ -67,6 +67,8 @@ La sintaxis acepta `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max` y 
 
 El razonamiento está siempre activo en `kimi-k3`, `glm-5.3-flash`, `gpt-6-astra`, la familia Grok 4.5 y la familia Gemini 3; un valor que desactive el razonamiento devuelve `400`. `gpt-5.4` y sus variantes `mini` y `nano` solo razonan cuando solicitas `low` o un valor superior. `minimax-m3` y `gpt-4o-mini` no aceptan ningún parámetro effort; `minimax-m3` expone en su lugar el objeto `thinking`.
 
+Algunos modelos también aceptan las grafías de compatibilidad que usaban las integraciones anteriores: `grok-4.5`, `grok-4.5-latest`, `grok-4.6` y `grok-4.7` aceptan `max` (se ejecuta como `xhigh`) y `minimal` (se ejecuta como `low`), y `gemini-3.1-pro` acepta `minimal` (se ejecuta como `low`). Se normalizan antes de ejecutar la solicitud, por lo que el modelo siempre recibe un nivel oficial. `capability_metadata.reasoning.compatEfforts` publica estas correspondencias; las integraciones nuevas deberían usar los valores de `efforts`.
+
 En Anthropic Messages, usa `output_config.effort`. La configuración nativa `thinking` sigue siendo independiente: effort no activa el pensamiento ni establece `budget_tokens`.
 
 Las solicitudes nativas de Gemini 3 usan `generationConfig.thinkingConfig.thinkingLevel`; los niveles admitidos dependen del modelo. Gemini 2.5 usa `thinkingBudget`. En el formato compatible con OpenAI, Gemini 2.5 asigna `minimal`/`low` a `1024`, `medium` a `8192`, `high` a `24576` y `none` a `0` (excepto Pro). No combines effort explícito con `thinkingLevel` o `thinkingBudget` nativos: se devuelve `400` incluso si los ajustes son equivalentes. `includeThoughts` por sí solo puede combinarse con effort.

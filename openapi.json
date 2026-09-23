@@ -1828,6 +1828,11 @@
                     "description": "Reasoning levels this model accepts. An empty array means the model does not accept an effort parameter.",
                     "example": ["low", "high", "max"]
                   },
+                  "compatEfforts": {
+                    "type": "object",
+                    "description": "Compatibility spellings accepted for older integrations, mapped to the official level that is actually used. Prefer the values in efforts for new integrations.",
+                    "example": { "max": "xhigh", "minimal": "low" }
+                  },
                   "defaultEffort": {
                     "type": "string",
                     "description": "Default level applied when the request omits effort. Absent when the default is not published.",

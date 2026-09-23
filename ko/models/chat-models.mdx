@@ -99,6 +99,8 @@ Chat Completions에서는 `reasoning_effort`를, Responses에서는 `reasoning: 
 
 `kimi-k3`, `glm-5.3-flash`, `gpt-6-astra`, Grok 4.5 패밀리와 Gemini 3 패밀리는 추론이 항상 켜져 있으며, 추론을 끄는 값은 `400`을 반환합니다. `gpt-5.4`와 그 `mini`, `nano` 변형은 `low` 이상을 요청한 경우에만 추론합니다. `minimax-m3`와 `gpt-4o-mini`는 effort 파라미터를 전혀 받지 않으며, `minimax-m3`는 대신 `thinking` 객체를 제공합니다.
 
+일부 모델은 이전 통합에서 사용하던 호환 표기도 허용합니다. `grok-4.5`, `grok-4.5-latest`, `grok-4.6`, `grok-4.7`은 `max`(`xhigh`로 실행)와 `minimal`(`low`로 실행)을 허용하고, `gemini-3.1-pro`는 `minimal`(`low`로 실행)을 허용합니다. 이 표기들은 요청이 실행되기 전에 정규화되므로 모델은 항상 공식 수준을 받습니다. `capability_metadata.reasoning.compatEfforts`가 이 매핑을 공개하며, 새 통합에서는 `efforts`의 값을 사용하세요.
+
 Anthropic Messages에서는 `output_config.effort`를 사용합니다. 네이티브 `thinking`은 그대로 독립적입니다. effort는 추론을 켜거나 `budget_tokens`를 선택하지 않습니다.
 
 Gemini 3의 네이티브 요청은 `generationConfig.thinkingConfig.thinkingLevel`을 사용하며, 허용되는 레벨은 모델마다 다릅니다. Gemini 2.5는 `thinkingBudget`을 사용합니다. OpenAI 호환 형식에서 Gemini 2.5는 `minimal`/`low`를 `1024`, `medium`을 `8192`, `high`를 `24576`, `none`을 `0`(Pro 제외)으로 매핑합니다. 명시적 effort와 네이티브 `thinkingLevel` 또는 `thinkingBudget`을 함께 지정하지 마세요. 설정이 동등하더라도 `400`을 반환합니다. `includeThoughts`만 단독으로는 effort와 함께 사용할 수 있습니다.

@@ -1829,6 +1829,11 @@
                     "description": "Reasoning-Stufen, die dieses Modell akzeptiert. Ein leeres Array bedeutet, dass das Modell keinen effort-Parameter akzeptiert.",
                     "example": ["low", "high", "max"]
                   },
+                  "compatEfforts": {
+                    "type": "object",
+                    "description": "Kompatibilitätsschreibweisen, die für ältere Integrationen akzeptiert werden, abgebildet auf die offizielle Stufe, die tatsächlich verwendet wird. Für neue Integrationen sind die Werte in efforts zu bevorzugen.",
+                    "example": { "max": "xhigh", "minimal": "low" }
+                  },
                   "defaultEffort": {
                     "type": "string",
                     "description": "Standardstufe, die gilt, wenn die Anfrage effort weglässt. Fehlt, wenn der Standard nicht veröffentlicht wird.",

@@ -1885,6 +1885,14 @@
                       "max"
                     ]
                   },
+                  "compatEfforts": {
+                    "type": "object",
+                    "description": "兼容旧集成使用的历史写法，这些写法会映射为实际执行的官方档位。新集成请使用 efforts 中的取值。",
+                    "example": {
+                      "max": "xhigh",
+                      "minimal": "low"
+                    }
+                  },
                   "defaultEffort": {
                     "type": "string",
                     "description": "请求省略 effort 时生效的默认档位。未公布默认值时省略。",
