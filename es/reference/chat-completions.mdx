@@ -115,3 +115,5 @@ incompleta; aumenta `max_completion_tokens` o reduce la entrada antes de reinten
 En `gpt-6-astra`, los bloques iniciales de reflexión reconocibles se separan de la respuesta final. Lea `content` / `output_text` para la respuesta y los campos de razonamiento o eventos summary para la reflexión. Se conservan los ejemplos explícitos de etiquetas y los casos ambiguos. El formato no cambia el esfuerzo de razonamiento ni los límites de tokens.
 
 Un flujo HTTP `200` no garantiza una generación correcta. Gestione los eventos de error y marque las respuestas parciales como incompletas. En Chat, lea el último usage antes de `[DONE]`; en Responses, distinga `response.completed`, `response.incomplete` y `response.failed` / `error`.
+
+En GPT-6 Chat, `[DONE]` finaliza el flujo, pero no anula un error anterior ni garantiza una respuesta completa. Compruebe también `finish_reason`: `length` indica que se alcanzó el límite de salida y `content_filter` indica contenido filtrado. Ninguno se cambia a `stop`. Si la conexión se cierra antes de finalizar o se recibe un evento de error, no trate el texto parcial como una respuesta completa.

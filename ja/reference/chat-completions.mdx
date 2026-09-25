@@ -99,3 +99,5 @@ curl https://apiany.ai/v1/chat/completions \
 `gpt-6-astra` では、認識可能な先頭の思考ブロックを最終回答から分離します。回答は `content` / `output_text`、思考内容は独立した reasoning フィールドまたは summary イベントから読み取ってください。明示的なタグの例や曖昧な記述は保持されます。推論強度や出力 Token 上限は変更しません。
 
 ストリームの HTTP `200` だけでは生成成功を意味しません。エラーイベントを処理し、途中までの回答は未完了と表示してください。Chat では `[DONE]` 前の最後の usage を読み取り、Responses では `response.completed`、`response.incomplete`、`response.failed` / `error` を区別してください。
+
+GPT-6 Chat の `[DONE]` はストリームの終了を示しますが、先行するエラーを取り消したり、回答の完全性を保証したりするものではありません。`finish_reason` も確認してください。`length` は出力上限への到達、`content_filter` はコンテンツのフィルタリングを意味し、どちらも `stop` に書き換えられません。完了前に接続が閉じた場合やエラーイベントを受信した場合は、部分的なテキストを完全な回答として扱わないでください。

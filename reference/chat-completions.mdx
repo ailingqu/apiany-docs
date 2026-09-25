@@ -114,3 +114,5 @@ increase `max_completion_tokens` or reduce the input before retrying.
 For `gpt-6-astra`, recognizable leading thinking wrappers are separated from the final answer. Read `content` / `output_text` for the answer and the independent reasoning fields or summary events for thinking. Explicit tag examples and ambiguous markup are preserved. Reasoning effort and output-token limits are not changed by this formatting.
 
 An HTTP `200` stream is not proof of a successful generation. Handle error events, keep any partial answer clearly marked as incomplete, and wait for the protocol's completion event. In Chat, read the final usage chunk before `[DONE]`; in Responses, distinguish `response.completed`, `response.incomplete`, and `response.failed` / `error`.
+
+For GPT-6 Chat streams, `[DONE]` ends the stream; it does not override an earlier error or guarantee that the answer is complete. Always inspect `finish_reason`: `length` means the output limit was reached, and `content_filter` means content was filtered. Neither is rewritten to `stop`. If the connection closes before completion or an error event is received, do not treat the partial text as a complete answer.

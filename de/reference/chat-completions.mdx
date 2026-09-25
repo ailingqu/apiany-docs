@@ -116,3 +116,5 @@ versuchst.
 Bei `gpt-6-astra` werden erkennbare führende Denkblöcke von der endgültigen Antwort getrennt. Die Antwort steht in `content` / `output_text`, der Denktext in separaten Reasoning-Feldern oder Summary-Ereignissen. Explizite Tag-Beispiele und mehrdeutige Markierungen bleiben erhalten. Reasoning-Effort und Token-Limits ändern sich dadurch nicht.
 
 HTTP `200` bei einem Stream garantiert keinen Erfolg. Behandeln Sie Fehlerereignisse und kennzeichnen Sie Teilantworten als unvollständig. Lesen Sie bei Chat den letzten usage-Block vor `[DONE]`; unterscheiden Sie bei Responses zwischen `response.completed`, `response.incomplete` und `response.failed` / `error`.
+
+Bei GPT-6 Chat beendet `[DONE]` den Stream, hebt aber frühere Fehler nicht auf und garantiert keine vollständige Antwort. Prüfen Sie auch `finish_reason`: `length` bedeutet, dass das Ausgabelimit erreicht wurde, und `content_filter` weist auf gefilterte Inhalte hin. Beide Werte bleiben erhalten und werden nicht zu `stop`. Wird die Verbindung vor dem Abschluss geschlossen oder ein Fehlerereignis empfangen, gilt der Teiltext nicht als vollständige Antwort.

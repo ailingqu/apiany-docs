@@ -113,3 +113,5 @@ curl https://apiany.ai/v1/chat/completions \
 `gpt-6-astra`는 식별 가능한 앞부분의 사고 블록을 최종 답변과 분리합니다. 답변은 `content` / `output_text`, 사고 내용은 별도의 reasoning 필드 또는 summary 이벤트에서 읽으세요. 명시적인 태그 예제와 모호한 표기는 그대로 유지합니다. 추론 강도나 출력 토큰 한도는 변경하지 않습니다.
 
 스트림의 HTTP `200`만으로 생성 성공을 판단할 수 없습니다. 오류 이벤트를 처리하고 부분 답변은 미완료로 표시하세요. Chat에서는 `[DONE]` 이전의 마지막 usage를 읽고, Responses에서는 `response.completed`, `response.incomplete`, `response.failed` / `error`를 구분하세요.
+
+GPT-6 Chat의 `[DONE]`은 스트림 종료를 뜻하며, 앞선 오류를 무효화하거나 답변의 완전성을 보장하지 않습니다. `finish_reason`도 확인하세요. `length`는 출력 한도 도달, `content_filter`는 콘텐츠 필터링을 의미하며 둘 다 `stop`으로 바뀌지 않습니다. 완료 전에 연결이 닫히거나 오류 이벤트를 받으면 부분 텍스트를 완전한 답변으로 취급하지 마세요.
