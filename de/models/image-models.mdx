@@ -26,6 +26,20 @@ Produktionsintegrationen sollten `/v1/images/generations` bevorzugen und `/v1/ta
 | `gpt-image-2.5-sunburst` | Präzise Sunburst-Route für komplexe Generierung, lokale Änderungen, Text und mehrere Referenzen. |
 | `nano-banana-pro` | Nano Banana Pro High-Fidelity-Bildgenerierung. |
 | `nano-banana-2` | Nano Banana 2 hochwertige Bildgenerierung. |
+| `nano-banana-2.1` | Text-zu-Bild und referenzbasierte Bearbeitung mit 1K, 2K und 4K sowie flexiblen Seitenverhältnissen. |
 | `nano-banana` | Nano Banana Bildgenerierung für zuverlässigen Produktionseinsatz. |
 | `z-image` | Schnelle Z-Image-Generierung für latenzarme Bildaufgaben. |
 | `seedance-5.0` | Seedance 5.0 Bildgenerierung über Volcengine Ark. |
+
+## Nano Banana 2.1
+
+Wählen Sie mit `quality` die Stufe `1K`, `2K` oder `4K` (Standard: `1K`). Die Aliase `img_size`, `imageSize` und `resolution` werden unterstützt, dürfen sich aber nicht widersprechen. `size` legt das Seitenverhältnis fest; `image_urls` übergibt Referenzbilder. `0.5K`, Such- und Denkparameter sind nicht verfügbar.
+
+```bash
+curl https://apiany.ai/api/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "nano-banana-2.1", "prompt": "A ceramic vase on a clean studio table, soft natural light", "quality": "1K", "size": "1:1", "n": 1}'
+```
+
+Fragen Sie das Ergebnis über `/v1/tasks/{task_id}` ab. Preis je Bild: 25 Credits für 1K, 50 für 2K und 75 für 4K.

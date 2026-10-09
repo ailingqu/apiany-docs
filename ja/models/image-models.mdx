@@ -26,6 +26,20 @@ description: 画像生成と画像編集モデルの動作。
 | `gpt-image-2.5-sunburst` | 複雑な生成、局所編集、文字、多参照用途向けの高精度 Sunburst ルート。 |
 | `nano-banana-pro` | Nano Banana Pro の高忠実度な画像生成。 |
 | `nano-banana-2` | Nano Banana 2 の高品質な画像生成。 |
+| `nano-banana-2.1` | テキストからの生成と参照画像の編集に対応し、1K・2K・4K と多様な縦横比を提供します。 |
 | `nano-banana` | Nano Banana の画像生成。安定した本番呼び出しに適しています。 |
 | `z-image` | 高速な Z-Image 生成。低レイテンシの画像タスクに適しています。 |
 | `seedance-5.0` | Volcengine Ark 経由の Seedance 5.0 画像生成。 |
+
+## Nano Banana 2.1
+
+`quality` で `1K`、`2K`、`4K` を選択します。既定値は `1K` です。`img_size`、`imageSize`、`resolution` も使用できますが、矛盾する値は指定できません。`size` はアスペクト比、`image_urls` は編集用の参照画像です。`0.5K`、検索、思考パラメーターには対応していません。
+
+```bash
+curl https://apiany.ai/api/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "nano-banana-2.1", "prompt": "A ceramic vase on a clean studio table, soft natural light", "quality": "1K", "size": "1:1", "n": 1}'
+```
+
+`/v1/tasks/{task_id}` で結果を確認します。画像 1 枚の料金は 1K が 25 クレジット、2K が 50 クレジット、4K が 75 クレジットです。

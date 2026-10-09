@@ -26,6 +26,20 @@ description: 이미지 생성 및 이미지 편집 모델 동작.
 | `gpt-image-2.5-sunburst` | 복잡한 생성, 국소 편집, 텍스트와 다중 참조 작업을 위한 정밀 Sunburst 경로입니다. |
 | `nano-banana-pro` | Nano Banana Pro 고충실도 이미지 생성. |
 | `nano-banana-2` | Nano Banana 2 고품질 이미지 생성. |
+| `nano-banana-2.1` | 1K, 2K, 4K 출력과 다양한 화면비를 지원하는 텍스트 기반 생성 및 참조 이미지 편집. |
 | `nano-banana` | Nano Banana 이미지 생성, 안정적인 프로덕션 사용에 적합. |
 | `z-image` | 빠른 Z-Image 생성, 저지연 이미지 작업에 적합. |
 | `seedance-5.0` | Volcengine Ark를 통한 Seedance 5.0 이미지 생성. |
+
+## Nano Banana 2.1
+
+`quality`를 `1K`, `2K` 또는 `4K`로 설정합니다. 기본값은 `1K`입니다. `img_size`, `imageSize`, `resolution` 별칭도 지원하지만 서로 충돌하는 값을 지정하면 안 됩니다. `size`는 화면 비율이며, 참조 이미지 편집에는 `image_urls`를 사용합니다. `0.5K`, 검색 및 추론 매개변수는 제공하지 않습니다.
+
+```bash
+curl https://apiany.ai/api/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "nano-banana-2.1", "prompt": "A ceramic vase on a clean studio table, soft natural light", "quality": "1K", "size": "1:1", "n": 1}'
+```
+
+`/v1/tasks/{task_id}`에서 결과를 조회합니다. 이미지당 가격은 1K 25크레딧, 2K 50크레딧, 4K 75크레딧입니다.

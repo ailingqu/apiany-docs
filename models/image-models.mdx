@@ -26,6 +26,20 @@ Production integrations should prefer `/v1/images/generations` and poll `/v1/tas
 | `gpt-image-2.5-sunburst` | Precision-focused Sunburst route for complex generation, local edits, text, and multi-reference work. |
 | `nano-banana-pro` | Nano Banana Pro high-fidelity image generation. |
 | `nano-banana-2` | Nano Banana 2 high-quality image generation. |
+| `nano-banana-2.1` | Text-to-image and reference-guided editing with 1K, 2K and 4K output and flexible aspect ratios. |
 | `nano-banana` | Nano Banana image generation for reliable production usage. |
 | `z-image` | Fast Z-Image generation for low-latency image tasks. |
 | `seedance-5.0` | Seedance 5.0 image generation through Volcengine Ark. |
+
+## Nano Banana 2.1
+
+Use `quality` to select `1K`, `2K` or `4K` (default `1K`). Equivalent size fields are `img_size`, `imageSize` and `resolution`; do not send conflicting values. `size` selects the aspect ratio. Use `image_urls` to provide reference images for editing. `0.5K` and search or thinking controls are not available for this model.
+
+```bash
+curl https://apiany.ai/api/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "nano-banana-2.1", "prompt": "A ceramic vase on a clean studio table, soft natural light", "quality": "1K", "size": "1:1", "n": 1}'
+```
+
+Poll `/v1/tasks/{task_id}` until the task reaches a terminal state. Prices per output image are 25 credits for 1K, 50 for 2K and 75 for 4K.

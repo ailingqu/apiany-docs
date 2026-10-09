@@ -26,6 +26,20 @@ description: 图片生成和图片编辑模型能力。
 | `gpt-image-2.5-sunburst` | 精细 Sunburst 路线，适合复杂生成、局部编辑、文字排版与多参考图工作流。 |
 | `nano-banana-pro` | Nano Banana Pro 高保真图像生成。 |
 | `nano-banana-2` | Nano Banana 2 高质量图像生成。 |
+| `nano-banana-2.1` | 支持文生图与参考图编辑，提供 1K、2K、4K 输出和多种宽高比。 |
 | `nano-banana` | Nano Banana 图像生成，适合稳定的生产调用。 |
 | `z-image` | 快速 Z-Image 生成，适合低延迟图片任务。 |
 | `seedance-5.0` | 通过火山方舟（Volcengine Ark）的 Seedance 5.0 图像生成。 |
+
+## Nano Banana 2.1
+
+用 `quality` 选择 `1K`、`2K` 或 `4K`，默认 `1K`。兼容 `img_size`、`imageSize` 和 `resolution` 别名，但不能传入互相冲突的档位。`size` 表示宽高比；图生图请求可传 `image_urls`。本模型不提供 `0.5K`、搜索或思考参数。
+
+```bash
+curl https://apiany.ai/api/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "nano-banana-2.1", "prompt": "A ceramic vase on a clean studio table, soft natural light", "quality": "1K", "size": "1:1", "n": 1}'
+```
+
+通过 `/v1/tasks/{task_id}` 查询结果。每张图片的价格为：1K 25 积分、2K 50 积分、4K 75 积分。
