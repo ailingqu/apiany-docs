@@ -42,8 +42,55 @@ APIAny.AI validates public request parameters before execution, so unsupported m
 | `seedance-2.5-text-to-video` | Seedance 2.5 text-to-video via EvoLink — 4-30s at 480p/720p/1080p, `duration: -1` for auto length. |
 | `seedance-2.5-image-to-video` | Seedance 2.5 image-to-video via EvoLink with first/last-frame control. |
 | `seedance-2.5-reference-to-video` | Seedance 2.5 reference-to-video via EvoLink with up to 30 images, 10 videos, and 10 audios. |
-| `seedance-2.5-video-edit` | Seedance 2.5 video edit via EvoLink — rewrite an existing clip from a prompt. |
+| `seedance-2.5-video-edit` | Edit a required source clip with a prompt and optional image, video, or audio references. Output follows the source duration. |
 | `seedance-2.5-video-extend` | Seedance 2.5 video extend via EvoLink — continue an existing clip from a prompt. |
 | `seedance-2.0-mini-text-to-video` | Seedance 2.0 Mini text-to-video via EvoLink — low-cost 4-15s drafts at 480p/720p. |
 | `seedance-2.0-mini-image-to-video` | Seedance 2.0 Mini image-to-video via EvoLink with first/last-frame control. |
 | `seedance-2.0-mini-reference-to-video` | Seedance 2.0 Mini reference-to-video via EvoLink with image, video, or audio references. |
+
+## Seedance 2.5 video edit
+
+Send `seedance-2.5-video-edit` to `/v1/videos/generations` with a non-empty
+editing `prompt` and `video_urls`. The first video is the edit target;
+additional videos provide references. Images can guide clothing colors,
+lighting and background styling, identified in the prompt as `@image1`.
+
+| Parameter | Edit contract |
+| --- | --- |
+| `video_urls` | Required, 1–10 videos; each 4–30 seconds, combined duration at most 30 seconds. |
+| `image_urls` | Optional, up to 30 reference images. |
+| `audio_urls` | Optional, up to 10 audio clips; each 2–30 seconds, combined duration at most 30 seconds. |
+| `duration` | Only `-1` or omitted; output follows the first video and may be up to 0.4 seconds shorter. Custom durations such as `5` are rejected. |
+| `aspect_ratio` | Only `adaptive`; fixed ratios are rejected. |
+| `quality` | `480p`, `720p`, or `1080p`; defaults to `720p`. |
+
+Media URLs must be directly accessible. Maximum file sizes are 200 MB per
+video, 30 MB per image, and 15 MB per audio clip. Media duration, codec, and
+other file requirements are checked during model execution.
+
+```json
+{
+  "model": "seedance-2.5-video-edit",
+  "prompt": "Edit @video1: use @image1 for clothing colors, lighting and background styling. Preserve the original people and motion.",
+  "video_urls": ["https://assets.example/source.mp4"],
+  "image_urls": ["https://assets.example/style-reference.webp"],
+  "duration": -1,
+  "quality": "480p",
+  "aspect_ratio": "adaptive"
+}
+```
+
+Omitting `duration` uses the same fixed 30-second charge as specifying `-1`,
+including shorter source clips. The total charge does not change with the
+result's actual duration. At the current standard `480p` price with
+`content_filter: true`, this is 12,600 APIAny.AI credits. Check the live model
+catalog for current prices before submitting a task.
+
+For response-loss recovery, an edit request can include an optional
+`X-Client-Request-Id` header containing a fresh UUID v4. If the submission
+response is lost, query `/v1/tasks/req_edit_<uuid>` with the same account's
+API key to find the original task. The lookup returns the real `task_id`
+when the task is available and is isolated to your account and this edit
+model. A `404` can mean the task has not yet been saved; check again later.
+This header provides correlation, not POST idempotency: do not resubmit
+an uncertain generation request or reuse its UUID for another edit.

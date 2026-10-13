@@ -583,7 +583,19 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           }
-        }
+        },
+        "parameters": [
+          {
+            "name": "X-Client-Request-Id",
+            "in": "header",
+            "required": false,
+            "description": "Optional UUID v4 correlation for seedance-2.5-video-edit only. Query /v1/tasks/req_edit_<uuid> with the same account to recover a lost submission response. This does not provide POST idempotency; never resubmit an uncertain request or reuse its UUID.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ]
       }
     },
     "/v1/videos/generations/sync": {
@@ -647,7 +659,8 @@
             "schema": {
               "type": "string"
             },
-            "example": "task_123"
+            "example": "task_123",
+            "description": "For a correlated Seedance 2.5 edit, req_edit_<client-uuid> can also resolve the original task under the authenticated account."
           }
         ],
         "responses": {
