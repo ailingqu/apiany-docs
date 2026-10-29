@@ -25,11 +25,7 @@ description: 텍스트 생성 및 멀티모달 채팅 모델 동작.
 | --- | --- |
 | `gpt-5.5` | OpenAI GPT-5.5 — 고급 추론, 코딩, 복잡한 다단계 지시에 강한 플래그십 모델. |
 | `gpt-5.4` | OpenAI GPT-5.4 — 고급 추론, 코딩, 에이전트 워크플로에 강한 고성능 모델. |
-| `gpt-5.4-mini` | OpenAI GPT-5.4 mini — 속도, 품질, 비용의 균형, 대량 프로덕션 사용에 적합. |
-| `gpt-5.4-nano` | OpenAI GPT-5.4 nano — GPT-5.4 중 가장 빠르고 저비용 등급, 간단한 고처리량 작업에 적합. |
 | `gpt-4o-mini` | OpenAI GPT-4o mini — 빠르고 합리적인 멀티모달 모델, 일상 대화와 경량 작업에 적합. |
-| `claude-opus-4-8` | Anthropic Claude Opus 4.8 — 가장 까다로운 추론, 코딩, 장문 작업을 위한 프런티어 모델. |
-| `claude-sonnet-4-6` | Anthropic Claude Sonnet 4.6 — 균형 잡힌 프런티어 모델, 프로덕션 수준의 속도와 비용에서 강력한 추론 제공. |
 | `gemini-3.1-pro` | Google Gemini 3.1 Pro — 복잡한 추론, 긴 컨텍스트, 높은 요구의 프로덕션 워크로드에 적합한 최상위 멀티모달 모델. |
 | `gemini-3.5-flash` | Google Gemini 3.5 Flash — 빠르고 비용 효율적인 멀티모달 모델, 강력한 추론과 큰 컨텍스트 윈도우. |
 | `gemini-3.1-flash-lite` | Google Gemini 3.1 Flash Lite — 빠르고 경제적인 모델, 2.5 세대 대비 향상된 추론. |
@@ -40,6 +36,12 @@ description: 텍스트 생성 및 멀티모달 채팅 모델 동작.
 | `glm-5.3-flash` | GLM 5.3 Flash — 추론이 항상 켜져 있는 멀티모달 코딩·추론 모델. |
 | `glm-5.1` | Zhipu GLM-5.1 — 추론, 코딩, 에이전트 애플리케이션에 적합한 강력한 한/영(중/영) 이중 언어 모델. |
 | `minimax-m3` | MiniMax M3 — 긴 컨텍스트 추론, 도구 사용, 다국어 대화에 적합한 대규모 언어 모델. |
+
+### 제공 상태 업데이트 — 2026년 10월 29일
+
+`claude-opus-4-8`, `claude-sonnet-4-6`, `gpt-5.4-mini`, `gpt-5.4-nano`
+
+다음 모델은 더 이상 새 요청을 받지 않습니다. 기존 사용 기록은 유지됩니다. `GET /v1/models`에서 제공 상태를 확인하고 다른 모델을 사용하려면 `model` 필드를 명시적으로 변경하세요.
 
 ## 추론 강도
 
@@ -86,10 +88,9 @@ Chat Completions에서는 `reasoning_effort`를, Responses에서는 `reasoning: 
 | `gpt-5.6-sol`, `gpt-5.6-terra` | `none`, `low`, `medium`, `high`, `xhigh`, `max` | `medium` |
 | `gpt-6-astra` | `low`, `medium`, `high`, `xhigh`, `max` | — |
 | `gpt-5.5` | `none`, `low`, `medium`, `high`, `xhigh` | `medium` |
-| `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano` | `none`, `low`, `medium`, `high`, `xhigh` | `none` |
+| `gpt-5.4` | `none`, `low`, `medium`, `high`, `xhigh` | `none` |
 | `gpt-4o-mini` | 지원하지 않음 | — |
-| `claude-opus-5`, `claude-opus-4-8` | `low`, `medium`, `high`, `xhigh`, `max` | `high` |
-| `claude-sonnet-4-6` | `low`, `medium`, `high`, `max` | `high` |
+| `claude-opus-5` | `low`, `medium`, `high`, `xhigh`, `max` | `high` |
 | `grok-4.5`, `grok-4.5-latest`, `grok-4.6`, `grok-4.7` | `low`, `medium`, `high`, `xhigh` | `high` |
 | `gemini-3.1-pro` | `low`, `medium`, `high` | `high` |
 | `gemini-3.1-flash-lite` | `minimal`, `low`, `medium`, `high` | `minimal` |

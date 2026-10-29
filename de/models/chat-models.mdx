@@ -25,11 +25,7 @@ Kontextfenster und maximale Output-Grenzen sind Capability-Metadaten auf Modelle
 | --- | --- |
 | `gpt-5.5` | OpenAI GPT-5.5 — Flaggschiff-Modell für fortgeschrittenes Reasoning, Coding und komplexe mehrstufige Anweisungen. |
 | `gpt-5.4` | OpenAI GPT-5.4 — leistungsstarkes Modell für fortgeschrittenes Reasoning, Coding und agentische Workflows. |
-| `gpt-5.4-mini` | OpenAI GPT-5.4 mini — ausgewogen in Geschwindigkeit, Qualität und Kosten für den Produktionseinsatz mit hohem Volumen. |
-| `gpt-5.4-nano` | OpenAI GPT-5.4 nano — die schnellste, kostengünstigste GPT-5.4-Stufe für einfache Aufgaben mit hohem Durchsatz. |
 | `gpt-4o-mini` | OpenAI GPT-4o mini — schnelles, erschwingliches multimodales Modell für alltäglichen Chat und leichtgewichtige Aufgaben. |
-| `claude-opus-4-8` | Anthropic Claude Opus 4.8 — Frontier-Modell für die anspruchsvollsten Reasoning-, Coding- und Langform-Arbeiten. |
-| `claude-sonnet-4-6` | Anthropic Claude Sonnet 4.6 — ein ausgewogenes Frontier-Modell mit starkem Reasoning bei produktionstauglicher Geschwindigkeit und Kosten. |
 | `gemini-3.1-pro` | Google Gemini 3.1 Pro — Spitzenmodell für multimodale Aufgaben mit komplexem Reasoning, langem Kontext und anspruchsvollen Produktions-Workloads. |
 | `gemini-3.5-flash` | Google Gemini 3.5 Flash — schnelles, kosteneffizientes multimodales Modell mit starkem Reasoning und großem Kontextfenster. |
 | `gemini-3.1-flash-lite` | Google Gemini 3.1 Flash Lite — schnelles, wirtschaftliches Modell mit verbessertem Reasoning gegenüber der 2.5-Generation. |
@@ -38,6 +34,12 @@ Kontextfenster und maximale Output-Grenzen sind Capability-Metadaten auf Modelle
 | `deepseek-v4-flash` | DeepSeek V4 Flash — eine latenzoptimierte DeepSeek V4-Variante für kostengünstige Inferenz mit hohem Volumen. |
 | `glm-5.1` | Zhipu GLM-5.1 — ein leistungsfähiges zweisprachiges (Chinesisch/Englisch) Modell für Reasoning, Coding und Agent-Anwendungen. |
 | `minimax-m3` | MiniMax M3 — ein leistungsfähiges großes Sprachmodell für Reasoning mit langem Kontext, Tool-Nutzung und mehrsprachigen Chat. |
+
+### Verfügbarkeit — 29. Oktober 2026
+
+`claude-opus-4-8`, `claude-sonnet-4-6`, `gpt-5.4-mini`, `gpt-5.4-nano`
+
+Die folgenden Modelle sind für neue Anfragen nicht mehr verfügbar. Bisherige Nutzungsdaten bleiben erhalten. Prüfen Sie `GET /v1/models` und ändern Sie das Feld `model` ausdrücklich, um ein anderes Modell auszuwählen.
 
 ## Reasoning-Stärke
 
@@ -54,10 +56,9 @@ Die Syntax akzeptiert `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`
 | `gpt-5.6-sol`, `gpt-5.6-terra` | `none`, `low`, `medium`, `high`, `xhigh`, `max` | `medium` |
 | `gpt-6-astra` | `low`, `medium`, `high`, `xhigh`, `max` | — |
 | `gpt-5.5` | `none`, `low`, `medium`, `high`, `xhigh` | `medium` |
-| `gpt-5.4`, `gpt-5.4-mini`, `gpt-5.4-nano` | `none`, `low`, `medium`, `high`, `xhigh` | `none` |
+| `gpt-5.4` | `none`, `low`, `medium`, `high`, `xhigh` | `none` |
 | `gpt-4o-mini` | Nicht unterstützt | — |
-| `claude-opus-5`, `claude-opus-4-8` | `low`, `medium`, `high`, `xhigh`, `max` | `high` |
-| `claude-sonnet-4-6` | `low`, `medium`, `high`, `max` | `high` |
+| `claude-opus-5` | `low`, `medium`, `high`, `xhigh`, `max` | `high` |
 | `grok-4.5`, `grok-4.5-latest`, `grok-4.6`, `grok-4.7` | `low`, `medium`, `high`, `xhigh` | `high` |
 | `gemini-3.1-pro` | `low`, `medium`, `high` | `high` |
 | `gemini-3.1-flash-lite` | `minimal`, `low`, `medium`, `high` | `minimal` |

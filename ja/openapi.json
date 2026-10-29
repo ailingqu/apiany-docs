@@ -2748,7 +2748,7 @@
           "mask_url": {
             "type": "string",
             "format": "uri",
-            "description": "Optional edit mask. Supplying it restricts routing to mask-capable providers."
+            "description": "Optional edit mask. Requires a model that supports masked image editing."
           },
           "background": {
             "type": "string",

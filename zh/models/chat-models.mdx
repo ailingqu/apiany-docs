@@ -37,11 +37,7 @@ description: 文本生成和多模态对话模型能力。
 | --- | --- |
 | `gpt-5.5` | OpenAI GPT-5.5 —— 旗舰模型，擅长高级推理、编码与复杂多步指令。 |
 | `gpt-5.4` | OpenAI GPT-5.4 —— 高能力模型，擅长高级推理、编码与 Agent 工作流。 |
-| `gpt-5.4-mini` | OpenAI GPT-5.4 mini —— 速度、质量与成本均衡，适合高并发生产。 |
-| `gpt-5.4-nano` | OpenAI GPT-5.4 nano —— GPT-5.4 中最快、最低成本档，适合简单高吞吐任务。 |
 | `gpt-4o-mini` | OpenAI GPT-4o mini —— 快速实惠的多模态模型，适合日常对话与轻量任务。 |
-| `claude-opus-4-8` | Anthropic Claude Opus 4.8 —— 前沿模型，应对最复杂的推理、编码与长文本任务。 |
-| `claude-sonnet-4-6` | Anthropic Claude Sonnet 4.6 —— 均衡型前沿模型，在生产级速度与成本下保持强推理。 |
 | `gemini-3.1-pro` | Google Gemini 3.1 Pro —— 顶级多模态模型，适合复杂推理、长上下文与高要求生产场景。 |
 | `gemini-3.5-flash` | Google Gemini 3.5 Flash —— 快速、性价比高的多模态模型，推理强、上下文大。 |
 | `gemini-3.1-flash-lite` | Google Gemini 3.1 Flash Lite —— 快速且经济，推理较 2.5 代有提升。 |
@@ -52,6 +48,12 @@ description: 文本生成和多模态对话模型能力。
 | `glm-5.3-flash` | GLM 5.3 Flash —— 多模态编码与推理模型，始终开启思考。 |
 | `glm-5.1` | 智谱 GLM-5.1 —— 中英双语能力出色，适合推理、编码与 Agent 应用。 |
 | `minimax-m3` | MiniMax M3 —— 适合长上下文推理、工具调用与多语言对话的大语言模型。 |
+
+### 可用性更新 — 2026-10-29
+
+`claude-opus-4-8`, `claude-sonnet-4-6`, `gpt-5.4-mini`, `gpt-5.4-nano`
+
+以下模型已停止接受新请求，历史使用记录保留。选择模型前请查询 `GET /v1/models`；更换模型需要显式修改 `model` 字段。
 
 ## 思考强度
 
@@ -98,10 +100,9 @@ Chat Completions 使用 `reasoning_effort`，Responses 使用 `reasoning: { "eff
 | `gpt-5.6-sol`、`gpt-5.6-terra` | `none`、`low`、`medium`、`high`、`xhigh`、`max` | `medium` |
 | `gpt-6-astra` | `low`、`medium`、`high`、`xhigh`、`max` | — |
 | `gpt-5.5` | `none`、`low`、`medium`、`high`、`xhigh` | `medium` |
-| `gpt-5.4`、`gpt-5.4-mini`、`gpt-5.4-nano` | `none`、`low`、`medium`、`high`、`xhigh` | `none` |
+| `gpt-5.4` | `none`、`low`、`medium`、`high`、`xhigh` | `none` |
 | `gpt-4o-mini` | 不支持 | — |
-| `claude-opus-5`、`claude-opus-4-8` | `low`、`medium`、`high`、`xhigh`、`max` | `high` |
-| `claude-sonnet-4-6` | `low`、`medium`、`high`、`max` | `high` |
+| `claude-opus-5` | `low`、`medium`、`high`、`xhigh`、`max` | `high` |
 | `grok-4.5`、`grok-4.5-latest`、`grok-4.6`、`grok-4.7` | `low`、`medium`、`high`、`xhigh` | `high` |
 | `gemini-3.1-pro` | `low`、`medium`、`high` | `high` |
 | `gemini-3.1-flash-lite` | `minimal`、`low`、`medium`、`high` | `minimal` |
