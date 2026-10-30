@@ -1,0 +1,45 @@
+---
+title: Remove image metadata
+description: Remove embedded metadata from a static JPEG, PNG or WebP and download a cleaned PNG.
+---
+
+Send one image to `POST /api/free/remove-image-metadata` using your APIAny API key.
+The response is a downloadable PNG, not a metadata JSON report.
+
+```bash
+curl --fail-with-body -X POST "https://apiany.ai/api/free/remove-image-metadata" \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -F "image=@photo.jpg" \
+  --output cleaned-photo.png
+```
+
+## Input and output
+
+- Required multipart field: `image`.
+- Input: one static JPEG, PNG or WebP; up to 30 MiB and 8192 pixels per side.
+- Output: `image/png`, `Content-Disposition: attachment; filename="cleaned-photo.png"`.
+- Output files are limited to 64 MiB. Unsupported, animated, damaged or oversized files are rejected.
+- EXIF orientation is applied before metadata is discarded. Colors are normalized to sRGB, transparency is retained, and the image is not resized.
+- PNG encoding is lossless, but color normalization and orientation can change pixel representation. The file is not guaranteed to be byte-identical or pixel-identical to every source color space. PNG output can be substantially larger than the source.
+
+Source EXIF (including embedded GPS), XMP, IPTC and text metadata are not copied to the new PNG. Necessary PNG image structure remains. This is not a visible watermark remover, a forensic eraser, or a promise about AI detector results. Keep original files when you need authorship, licensing or provenance records.
+
+The `X-Input-Metadata` response header contains JSON with safe source properties only:
+`format`, `width`, `height`, `space`, `channels`, `hasAlpha`, `orientation`, and `pages`.
+Private tag values are not included. This header describes the input; it is not an exhaustive inventory of removed fields.
+
+## Browser tool and existing readers
+
+The [online metadata remover](https://apiany.ai/free-api/remove-image-metadata) uses the same operation without asking for an API key. Selecting a file previews it locally; running the tool uploads it for server processing. The original file on your device is not overwritten.
+
+The existing [image metadata reader](https://apiany.ai/free-api/image-metadata) and [batch metadata inspector](https://apiany.ai/free-api/batch-image-metadata) continue to return technical properties as JSON. They do not clean files. Batch removal is not provided by this endpoint.
+
+## Errors and access
+
+Programmatic calls require an active APIAny API key. The shared Free API account limits apply. Online requests use the website's shared online limits.
+
+- `400`: missing, unsupported, animated, damaged or oversized input, or output above the size limit.
+- `401`: missing or invalid API key.
+- `429`: shared request limit exceeded; respect `Retry-After` when present.
+
+Check the HTTP status and `Content-Type` before saving a response as an image. Failed requests return an API error rather than a cleaned PNG.

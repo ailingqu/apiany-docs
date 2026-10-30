@@ -78,6 +78,7 @@
                   "reference/video-generation",
                   "reference/moderations",
                   "reference/free-ip-geo",
+                  "reference/remove-image-metadata",
                   "reference/batch-image-apis",
                   "reference/tasks"
                 ]

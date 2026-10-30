@@ -778,6 +778,45 @@
         }
       }
     },
+    "/api/free/remove-image-metadata": {
+      "post": {
+        "operationId": "removeImageMetadata",
+        "summary": "Remove embedded image metadata",
+        "description": "Upload one static JPEG, PNG or WebP image (up to 30 MiB and 8192 pixels per side). Returns a newly encoded lossless PNG without copying source EXIF, GPS, XMP, IPTC or text metadata. EXIF orientation is applied and colors are normalized to sRGB. Output can be larger; byte-for-byte and all-color-space pixel identity are not promised. Animated, unsupported and damaged files are rejected. The existing image-metadata and batch-image-metadata endpoints remain read-only. API key authentication and shared Free API limits apply.",
+        "tags": ["Free APIs"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["image"],
+                "properties": {
+                  "image": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "One static JPEG, PNG or WebP image, maximum 30 MiB and 8192 pixels per side."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cleaned PNG attachment, maximum 64 MiB. Essential PNG image structure remains; this does not remove visible watermarks or promise any AI detector result.",
+            "headers": {
+              "Content-Disposition": {"schema": {"type": "string"}, "description": "Attachment filename: cleaned-photo.png."},
+              "X-Input-Metadata": {"schema": {"type": "string"}, "description": "JSON-encoded safe source properties: format, width, height, space, channels, hasAlpha, orientation and pages. Private EXIF/GPS values are not exposed."}
+            },
+            "content": {"image/png": {"schema": {"type": "string", "format": "binary"}}}
+          },
+          "400": {"$ref": "#/components/responses/BadRequest"},
+          "401": {"$ref": "#/components/responses/Unauthorized"},
+          "429": {"description": "Shared Free API request limit exceeded."}
+        }
+      }
+    },
     "/api/free/batch-convert-images": {
       "post": {
         "operationId": "batchConvertImages",
