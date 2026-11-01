@@ -1,0 +1,82 @@
+---
+title: "Grok 图片与视频"
+description: "使用 APIAny 任务接口创建 Grok 图片、编辑图片和生成短视频。"
+---
+
+<Note>目前仅供 dev 预览，生产目录尚未启用这两个模型。验收时请使用下方测试环境地址。</Note>
+
+`https://devnextapiany.mexxxxai.win`
+
+## 图片
+
+`grok-imagine-image` 每次生成一张图片（`n: 1`）。仅传提示词为文生图；在 `image_urls` 中传入一个可公开访问的 HTTPS 图片地址为图片编辑。原有图片编辑端点仍可使用。首批暂不支持蒙版、多张参考图、自定义像素尺寸和质量档位。
+
+图片 `size` / `aspect_ratio`：`1:1`（默认）、`16:9`、`9:16`、`4:3`、`3:4`、`3:2`、`2:3`。
+
+`POST /v1/images/generations` · `POST /v1/images/generations/sync` · `POST /v1/images/edits`
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "浅灰色影棚背景中的红色陶瓷杯，无文字。",
+  "size": "1:1",
+  "n": 1
+}
+```
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "浅灰色影棚背景中的红色陶瓷杯，无文字。",
+  "size": "1:1",
+  "n": 1,
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## 视频
+
+`grok-imagine-video-1.5` 支持整数 `duration` 1–15 秒（默认 8 秒），`resolution` 为 `480p`（默认）、`720p` 或 `1080p`，最多一张参考图。不传 `image_urls` 即文生视频；图生视频沿用参考图比例，`aspect_ratio` 不会改变参考图比例。
+
+文生视频比例：`16:9`（默认）、`1:1`、`9:16`、`4:3`、`3:4`、`3:2`、`2:3`、`21:9`、`5:2`。首批不提供视频编辑、多参考图、首尾帧或自定义音频输入。
+
+`POST /v1/videos/generations` · `POST /v1/videos/generations/sync`
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "镜头缓慢环绕灰色桌面上的陶瓷杯，无文字。",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9"
+}
+```
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "镜头缓慢环绕灰色桌面上的陶瓷杯，无文字。",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9",
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## 积分价格
+
+文生图 60 积分，图片编辑 66 积分。视频按“时长 × 分辨率单价”计费；图生视频每次另加 30 积分。原有充值套餐折扣保持不变。
+
+| 分辨率 | 每秒积分 |
+| --- | ---: |
+| 480p | 240 |
+| 720p | 420 |
+| 1080p | 750 |
+
+## 结果与错误
+
+异步创建返回 HTTP 202、`task_id` 和 `poll_url`。同步接口和图片编辑在完成时返回 HTTP 200，等待未结束时返回 HTTP 202。轮询 `/v1/tasks/{task_id}`，直到 `completed` 或 `failed`，完成后读取结果链接。等待中不代表生成失败。参数校验在预扣积分前执行；安全拒绝仍视为失败，请不要反复重提交同一请求。同步等待端点到达等待上限时可能返回未完成的任务。

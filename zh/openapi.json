@@ -2700,6 +2700,9 @@
           },
           {
             "$ref": "#/components/schemas/GenericImageGenerationRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GrokImageGenerationRequest"
           }
         ]
       },
@@ -2846,6 +2849,60 @@
         },
         "required": ["model", "prompt"]
       },
+      "GrokImageGenerationRequest": {
+        "type": "object",
+        "description": "目前仅供 dev 预览，生产目录尚未启用这两个模型。验收时请使用下方测试环境地址。 `grok-imagine-image` 每次生成一张图片（`n: 1`）。仅传提示词为文生图；在 `image_urls` 中传入一个可公开访问的 HTTPS 图片地址为图片编辑。原有图片编辑端点仍可使用。首批暂不支持蒙版、多张参考图、自定义像素尺寸和质量档位。",
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "grok-imagine-image"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "n": {
+            "type": "integer",
+            "const": 1,
+            "default": 1
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3"
+            ],
+            "default": "1:1"
+          },
+          "response_format": {
+            "type": "string",
+            "const": "url",
+            "default": "url"
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
       "GenericImageGenerationRequest": {
         "type": "object",
         "properties": {
@@ -2856,7 +2913,8 @@
                 "gpt-image-2",
                 "gpt-image-2.5",
                 "gpt-image-2.5-flare",
-                "gpt-image-2.5-sunburst"
+                "gpt-image-2.5-sunburst",
+                "grok-imagine-image"
               ]
             },
             "example": "nano-banana"
@@ -2916,6 +2974,77 @@
         ]
       },
       "VideoGenerationRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GeneralVideoGenerationRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GrokVideoGenerationRequest"
+          }
+        ]
+      },
+      "GrokVideoGenerationRequest": {
+        "type": "object",
+        "description": "目前仅供 dev 预览，生产目录尚未启用这两个模型。验收时请使用下方测试环境地址。 `grok-imagine-video-1.5` 支持整数 `duration` 1–15 秒（默认 8 秒），`resolution` 为 `480p`（默认）、`720p` 或 `1080p`，最多一张参考图。不传 `image_urls` 即文生视频；图生视频沿用参考图比例，`aspect_ratio` 不会改变参考图比例。",
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "grok-imagine-video-1.5"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15,
+            "default": 8
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "480p"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "1:1",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "21:9",
+              "5:2"
+            ],
+            "default": "16:9"
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "GeneralVideoGenerationRequest": {
         "type": "object",
         "properties": {
           "model": {
@@ -2925,7 +3054,10 @@
               "wan3.0-prime-text-to-video",
               "wan3.0-prime-image-to-video",
               "wan3.0-prime-reference-video"
-            ]
+            ],
+            "not": {
+              "const": "grok-imagine-video-1.5"
+            }
           },
           "prompt": {
             "type": "string"

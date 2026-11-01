@@ -1,0 +1,82 @@
+---
+title: "Grok-Bilder und -Videos"
+description: "Grok-Bilder erstellen und bearbeiten sowie kurze Videos mit APIAny generieren."
+---
+
+<Note>Nur als Dev-Vorschau verfügbar. Die Modelle sind noch nicht in der Produktion freigeschaltet. Für Tests die unten angegebene Dev-Adresse verwenden.</Note>
+
+`https://devnextapiany.mexxxxai.win`
+
+## Bilder
+
+`grok-imagine-image` erzeugt ein Bild pro Anfrage (`n: 1`). Nur Text erzeugt ein neues Bild; eine öffentlich erreichbare HTTPS-URL in `image_urls` dient zur Bildbearbeitung. Der bestehende Bearbeitungsendpunkt bleibt verfügbar. Masken, mehrere Referenzbilder, eigene Pixelmaße und Qualitätsstufen werden zunächst nicht unterstützt.
+
+Bildformat `size` / `aspect_ratio`: `1:1` (Standard), `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`.
+
+`POST /v1/images/generations` · `POST /v1/images/generations/sync` · `POST /v1/images/edits`
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "Eine rote Keramiktasse vor hellgrauem Studiohintergrund, ohne Text.",
+  "size": "1:1",
+  "n": 1
+}
+```
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "Eine rote Keramiktasse vor hellgrauem Studiohintergrund, ohne Text.",
+  "size": "1:1",
+  "n": 1,
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## Videos
+
+`grok-imagine-video-1.5` unterstützt eine ganzzahlige `duration` von 1 bis 15 Sekunden (Standard 8), `resolution` mit `480p` (Standard), `720p` oder `1080p` und höchstens ein Referenzbild. Ohne `image_urls` wird Text in Video umgewandelt. Bei Bild-zu-Video bleibt das Seitenverhältnis des Bildes erhalten; `aspect_ratio` ändert es nicht.
+
+Text-zu-Video-Formate: `16:9` (Standard), `1:1`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `5:2`. Videobearbeitung, mehrere Referenzen, Anfangs-/Endbilder und eigene Audioeingaben sind nicht enthalten.
+
+`POST /v1/videos/generations` · `POST /v1/videos/generations/sync`
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "Langsame Kamerabewegung um eine Keramiktasse auf einem grauen Tisch, ohne Text.",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9"
+}
+```
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "Langsame Kamerabewegung um eine Keramiktasse auf einem grauen Tisch, ohne Text.",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9",
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## Credits
+
+Bilderstellung kostet 60 Credits, Bildbearbeitung 66 Credits. Der Videopreis ist die Dauer mal dem untenstehenden Satz; Bild-zu-Video kostet zusätzlich 30 Credits pro Anfrage. Bestehende Rabatte auf Guthabenpakete bleiben unverändert.
+
+| Auflösung | Credits pro Sekunde |
+| --- | ---: |
+| 480p | 240 |
+| 720p | 420 |
+| 1080p | 750 |
+
+## Ergebnisse und Fehler
+
+Die asynchrone Erstellung liefert HTTP 202 mit `task_id` und `poll_url`. Synchrone Varianten und Bildbearbeitungen liefern HTTP 200 nach Abschluss oder HTTP 202 bei noch laufender Aufgabe. `/v1/tasks/{task_id}` bis `completed` oder `failed` abfragen und anschließend die Ergebnis-URL verwenden. Warten ist kein Fehler. Parameter werden vor der Credit-Reservierung geprüft. Eine Sicherheitsablehnung bleibt ein Fehler; dieselbe Anfrage nicht wiederholt senden. Synchrone Varianten können nach Ablauf der Wartezeit eine noch offene Aufgabe zurückgeben.

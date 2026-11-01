@@ -1,0 +1,82 @@
+---
+title: "Images et vidéos Grok"
+description: "Créez et modifiez des images Grok, puis générez des vidéos courtes avec APIAny."
+---
+
+<Note>Aperçu dev uniquement. Ces modèles ne sont pas encore activés en production. Utilisez l’adresse dev ci-dessous pour les tests.</Note>
+
+`https://devnextapiany.mexxxxai.win`
+
+## Images
+
+`grok-imagine-image` produit une image par requête (`n: 1`). Un texte seul génère une image ; une URL HTTPS publique dans `image_urls` permet de la modifier. Le point de terminaison de modification reste disponible. Cette version ne prend pas en charge les masques, plusieurs références, les dimensions personnalisées en pixels ni les niveaux de qualité.
+
+`size` / `aspect_ratio` pour les images : `1:1` par défaut, `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`.
+
+`POST /v1/images/generations` · `POST /v1/images/generations/sync` · `POST /v1/images/edits`
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "Une tasse en céramique rouge sur fond gris clair, sans texte.",
+  "size": "1:1",
+  "n": 1
+}
+```
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "Une tasse en céramique rouge sur fond gris clair, sans texte.",
+  "size": "1:1",
+  "n": 1,
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## Vidéos
+
+`grok-imagine-video-1.5` accepte une durée entière `duration` de 1 à 15 secondes (8 par défaut), une `resolution` de `480p` par défaut, `720p` ou `1080p`, et au maximum une image. Sans `image_urls`, la vidéo est créée à partir du texte. Avec une image, son format est conservé ; `aspect_ratio` ne le modifie pas.
+
+Formats texte-vers-vidéo : `16:9` par défaut, `1:1`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `5:2`. Le montage vidéo, plusieurs références, les images de début/fin et l’audio personnalisé ne sont pas inclus.
+
+`POST /v1/videos/generations` · `POST /v1/videos/generations/sync`
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "Mouvement lent de caméra autour d’une tasse sur une table grise, sans texte.",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9"
+}
+```
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "Mouvement lent de caméra autour d’une tasse sur une table grise, sans texte.",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9",
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## Crédits
+
+La génération d’image coûte 60 crédits et la modification 66 crédits. Le prix vidéo est la durée multipliée par le tarif ci-dessous ; une image de départ ajoute 30 crédits par requête. Les remises des recharges existantes restent applicables.
+
+| Résolution | Crédits par seconde |
+| --- | ---: |
+| 480p | 240 |
+| 720p | 420 |
+| 1080p | 750 |
+
+## Résultats et erreurs
+
+La création asynchrone renvoie HTTP 202 avec `task_id` et `poll_url`. Les variantes synchrones et les modifications d’image renvoient HTTP 200 après achèvement, ou HTTP 202 si la tâche reste en cours. Interrogez `/v1/tasks/{task_id}` jusqu’à `completed` ou `failed`, puis utilisez le lien du résultat. Une tâche en attente n’est pas un échec. Les paramètres sont validés avant la réservation de crédits. Un refus de sécurité reste un échec : ne renvoyez pas la même requête en boucle. Les variantes synchrones peuvent renvoyer une tâche en attente après leur délai maximal.

@@ -1,0 +1,82 @@
+---
+title: "Grok 画像・動画"
+description: "APIAny のタスク API で Grok の画像生成・編集と短い動画生成を利用します。"
+---
+
+<Note>現在は dev プレビューのみです。本番環境ではまだ有効になっていません。確認には以下の dev URL を使用してください。</Note>
+
+`https://devnextapiany.mexxxxai.win`
+
+## 画像
+
+`grok-imagine-image` は 1 リクエストにつき 1 枚を生成します（`n: 1`）。テキストのみで画像生成、`image_urls` に公開 HTTPS 画像 URL を 1 件指定すると画像編集になります。既存の画像編集エンドポイントも利用できます。初期版ではマスク、複数参照画像、任意のピクセル寸法、品質レベルには対応しません。
+
+画像の `size` / `aspect_ratio`：`1:1`（既定）、`16:9`、`9:16`、`4:3`、`3:4`、`3:2`、`2:3`。
+
+`POST /v1/images/generations` · `POST /v1/images/generations/sync` · `POST /v1/images/edits`
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "薄いグレーの背景に赤い陶器のマグカップ。文字なし。",
+  "size": "1:1",
+  "n": 1
+}
+```
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "薄いグレーの背景に赤い陶器のマグカップ。文字なし。",
+  "size": "1:1",
+  "n": 1,
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## 動画
+
+`grok-imagine-video-1.5` の `duration` は整数 1～15 秒（既定 8 秒）、`resolution` は `480p`（既定）・`720p`・`1080p` です。参照画像は最大 1 枚です。`image_urls` を省略するとテキストから動画を生成します。画像からの動画は入力画像の比率を維持し、`aspect_ratio` では変更できません。
+
+テキストから動画の比率：`16:9`（既定）、`1:1`、`9:16`、`4:3`、`3:4`、`3:2`、`2:3`、`21:9`、`5:2`。動画編集、複数参照、開始・終了フレーム、独自音声入力は初期版の対象外です。
+
+`POST /v1/videos/generations` · `POST /v1/videos/generations/sync`
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "グレーの机の上のマグカップをゆっくり回り込むカメラ。文字なし。",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9"
+}
+```
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "グレーの机の上のマグカップをゆっくり回り込むカメラ。文字なし。",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9",
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## クレジット
+
+画像生成は 60 クレジット、画像編集は 66 クレジットです。動画は秒数 × 以下の解像度別単価で計算し、画像からの動画はリクエストごとに 30 クレジット追加されます。既存のチャージ割引は変わりません。
+
+| 解像度 | 1 秒あたりのクレジット |
+| --- | ---: |
+| 480p | 240 |
+| 720p | 420 |
+| 1080p | 750 |
+
+## 結果とエラー
+
+非同期作成では HTTP 202 と `task_id`、`poll_url` が返ります。同期版と画像編集は完了時に HTTP 200、処理中の場合は HTTP 202 を返します。`/v1/tasks/{task_id}` を `completed` または `failed` まで確認し、完了後に結果 URL を使用します。待機中は失敗ではありません。パラメータはクレジット予約前に検証します。安全上の拒否は失敗として扱うため、同じリクエストを繰り返さないでください。同期待機の上限を超えた場合は未完了タスクが返ることがあります。

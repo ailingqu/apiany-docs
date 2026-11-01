@@ -2627,6 +2627,9 @@
           },
           {
             "$ref": "#/components/schemas/GenericImageGenerationRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GrokImageGenerationRequest"
           }
         ]
       },
@@ -2773,6 +2776,60 @@
         },
         "required": ["model", "prompt"]
       },
+      "GrokImageGenerationRequest": {
+        "type": "object",
+        "description": "現在は dev プレビューのみです。本番環境ではまだ有効になっていません。確認には以下の dev URL を使用してください。 `grok-imagine-image` は 1 リクエストにつき 1 枚を生成します（`n: 1`）。テキストのみで画像生成、`image_urls` に公開 HTTPS 画像 URL を 1 件指定すると画像編集になります。既存の画像編集エンドポイントも利用できます。初期版ではマスク、複数参照画像、任意のピクセル寸法、品質レベルには対応しません。",
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "grok-imagine-image"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "n": {
+            "type": "integer",
+            "const": 1,
+            "default": 1
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3"
+            ],
+            "default": "1:1"
+          },
+          "response_format": {
+            "type": "string",
+            "const": "url",
+            "default": "url"
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
       "GenericImageGenerationRequest": {
         "type": "object",
         "properties": {
@@ -2783,7 +2840,8 @@
                 "gpt-image-2",
                 "gpt-image-2.5",
                 "gpt-image-2.5-flare",
-                "gpt-image-2.5-sunburst"
+                "gpt-image-2.5-sunburst",
+                "grok-imagine-image"
               ]
             },
             "example": "nano-banana"
@@ -2843,6 +2901,77 @@
         ]
       },
       "VideoGenerationRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GeneralVideoGenerationRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GrokVideoGenerationRequest"
+          }
+        ]
+      },
+      "GrokVideoGenerationRequest": {
+        "type": "object",
+        "description": "現在は dev プレビューのみです。本番環境ではまだ有効になっていません。確認には以下の dev URL を使用してください。 `grok-imagine-video-1.5` の `duration` は整数 1～15 秒（既定 8 秒）、`resolution` は `480p`（既定）・`720p`・`1080p` です。参照画像は最大 1 枚です。`image_urls` を省略するとテキストから動画を生成します。画像からの動画は入力画像の比率を維持し、`aspect_ratio` では変更できません。",
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "grok-imagine-video-1.5"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15,
+            "default": 8
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "480p"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "1:1",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "21:9",
+              "5:2"
+            ],
+            "default": "16:9"
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "GeneralVideoGenerationRequest": {
         "type": "object",
         "properties": {
           "model": {
@@ -2852,7 +2981,10 @@
               "wan3.0-prime-text-to-video",
               "wan3.0-prime-image-to-video",
               "wan3.0-prime-reference-video"
-            ]
+            ],
+            "not": {
+              "const": "grok-imagine-video-1.5"
+            }
           },
           "prompt": {
             "type": "string"

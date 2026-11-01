@@ -2627,6 +2627,9 @@
           },
           {
             "$ref": "#/components/schemas/GenericImageGenerationRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GrokImageGenerationRequest"
           }
         ]
       },
@@ -2773,6 +2776,60 @@
         },
         "required": ["model", "prompt"]
       },
+      "GrokImageGenerationRequest": {
+        "type": "object",
+        "description": "Aperçu dev uniquement. Ces modèles ne sont pas encore activés en production. Utilisez l’adresse dev ci-dessous pour les tests. `grok-imagine-image` produit une image par requête (`n: 1`). Un texte seul génère une image ; une URL HTTPS publique dans `image_urls` permet de la modifier. Le point de terminaison de modification reste disponible. Cette version ne prend pas en charge les masques, plusieurs références, les dimensions personnalisées en pixels ni les niveaux de qualité.",
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "grok-imagine-image"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "n": {
+            "type": "integer",
+            "const": 1,
+            "default": 1
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3"
+            ],
+            "default": "1:1"
+          },
+          "response_format": {
+            "type": "string",
+            "const": "url",
+            "default": "url"
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
       "GenericImageGenerationRequest": {
         "type": "object",
         "properties": {
@@ -2783,7 +2840,8 @@
                 "gpt-image-2",
                 "gpt-image-2.5",
                 "gpt-image-2.5-flare",
-                "gpt-image-2.5-sunburst"
+                "gpt-image-2.5-sunburst",
+                "grok-imagine-image"
               ]
             },
             "example": "nano-banana"
@@ -2843,6 +2901,77 @@
         ]
       },
       "VideoGenerationRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GeneralVideoGenerationRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GrokVideoGenerationRequest"
+          }
+        ]
+      },
+      "GrokVideoGenerationRequest": {
+        "type": "object",
+        "description": "Aperçu dev uniquement. Ces modèles ne sont pas encore activés en production. Utilisez l’adresse dev ci-dessous pour les tests. `grok-imagine-video-1.5` accepte une durée entière `duration` de 1 à 15 secondes (8 par défaut), une `resolution` de `480p` par défaut, `720p` ou `1080p`, et au maximum une image. Sans `image_urls`, la vidéo est créée à partir du texte. Avec une image, son format est conservé ; `aspect_ratio` ne le modifie pas.",
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "grok-imagine-video-1.5"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15,
+            "default": 8
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "480p",
+              "720p",
+              "1080p"
+            ],
+            "default": "480p"
+          },
+          "aspect_ratio": {
+            "type": "string",
+            "enum": [
+              "16:9",
+              "1:1",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "21:9",
+              "5:2"
+            ],
+            "default": "16:9"
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            }
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "GeneralVideoGenerationRequest": {
         "type": "object",
         "properties": {
           "model": {
@@ -2852,7 +2981,10 @@
               "wan3.0-prime-text-to-video",
               "wan3.0-prime-image-to-video",
               "wan3.0-prime-reference-video"
-            ]
+            ],
+            "not": {
+              "const": "grok-imagine-video-1.5"
+            }
           },
           "prompt": {
             "type": "string"

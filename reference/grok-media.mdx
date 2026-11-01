@@ -1,0 +1,82 @@
+---
+title: "Grok image and video"
+description: "Create Grok images, image edits and short videos with the APIAny task API."
+---
+
+<Note>Dev preview only. These models are not yet enabled in the production catalog. Use the dev base URL below for acceptance testing.</Note>
+
+`https://devnextapiany.mexxxxai.win`
+
+## Images
+
+`grok-imagine-image` creates one image per request (`n: 1`). Send a prompt alone for generation, or one publicly accessible HTTPS URL in `image_urls` for editing. The image-edit endpoint remains available. Masks, multiple reference images, custom pixel sizes and quality tiers are not supported in this initial release.
+
+Image `size` / `aspect_ratio`: `1:1` (default), `16:9`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`.
+
+`POST /v1/images/generations` · `POST /v1/images/generations/sync` · `POST /v1/images/edits`
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "A red ceramic mug on a light gray studio background, no text.",
+  "size": "1:1",
+  "n": 1
+}
+```
+
+```json
+{
+  "model": "grok-imagine-image",
+  "prompt": "A red ceramic mug on a light gray studio background, no text.",
+  "size": "1:1",
+  "n": 1,
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## Videos
+
+`grok-imagine-video-1.5` accepts an integer `duration` from 1 to 15 seconds (default 8), `resolution` of `480p` (default), `720p` or `1080p`, and at most one image URL. Omit `image_urls` for text-to-video. Image-to-video follows the source image ratio; `aspect_ratio` does not resize that source.
+
+Text-to-video ratios: `16:9` (default), `1:1`, `9:16`, `4:3`, `3:4`, `3:2`, `2:3`, `21:9`, `5:2`. Video editing, multiple references, start/end frames and custom audio inputs are not part of this release.
+
+`POST /v1/videos/generations` · `POST /v1/videos/generations/sync`
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "A slow camera movement around a ceramic mug on a gray table, no text.",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9"
+}
+```
+
+```json
+{
+  "model": "grok-imagine-video-1.5",
+  "prompt": "A slow camera movement around a ceramic mug on a gray table, no text.",
+  "duration": 1,
+  "resolution": "480p",
+  "aspect_ratio": "16:9",
+  "image_urls": [
+    "https://assets.example/reference.jpg"
+  ]
+}
+```
+
+## Credits
+
+Image generation costs 60 credits and image editing costs 66 credits. Video pricing is duration × the resolution rate below; image-to-video adds 30 credits per request. Existing recharge-package discounts still apply.
+
+| Resolution | Credits per second |
+| --- | ---: |
+| 480p | 240 |
+| 720p | 420 |
+| 1080p | 750 |
+
+## Results and errors
+
+Asynchronous creation returns HTTP 202 with `task_id` and `poll_url`. Sync variants and image edits return HTTP 200 when complete, or HTTP 202 if still pending. Poll `/v1/tasks/{task_id}` until `completed` or `failed`; use the result URL after completion. A pending task is not a failed generation. Parameter validation happens before credit reservation. Safety rejection remains a failure; do not resubmit the same request repeatedly. Sync variants may return a pending task when the wait limit is reached.
