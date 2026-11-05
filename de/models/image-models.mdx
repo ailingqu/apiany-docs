@@ -24,12 +24,79 @@ Produktionsintegrationen sollten `/v1/images/generations` bevorzugen und `/v1/ta
 | `gpt-image-2.5` | Standardalias mit fester Flare-Semantik, sechs Qualitätsstufen, 1K/2K/4K, Referenzen, Masken und transparentem Hintergrund. |
 | `gpt-image-2.5-flare` | Explizite, latenzarme Flare-Route für alltägliche Generierung und Bearbeitung. |
 | `gpt-image-2.5-sunburst` | Präzise Sunburst-Route für komplexe Generierung, lokale Änderungen, Text und mehrere Referenzen. |
+| `gpt-image-2.6` | PNG-Standbilder oder herunterladbare animierte GIFs, 1K, ein Referenzbild und 30 Credits pro erfolgreicher Anfrage. |
 | `nano-banana-pro` | Nano Banana Pro High-Fidelity-Bildgenerierung. |
 | `nano-banana-2` | Nano Banana 2 hochwertige Bildgenerierung. |
 | `nano-banana-2.1` | Text-zu-Bild und referenzbasierte Bearbeitung mit 1K, 2K und 4K sowie flexiblen Seitenverhältnissen. |
 | `nano-banana` | Nano Banana Bildgenerierung für zuverlässigen Produktionseinsatz. |
 | `z-image` | Schnelle Z-Image-Generierung für latenzarme Bildaufgaben. |
 | `seedance-5.0` | Seedance 5.0 Bildgenerierung über Volcengine Ark. |
+
+## GPT Image 2.6 — PNG und animierte GIFs
+
+Mit der öffentlichen Modell-ID `gpt-image-2.6` fordern Sie ein PNG-Standbild oder eine herunterladbare animierte GIF-Datei an. Jede erfolgreiche Anfrage liefert ein Ergebnis und kostet in beiden Formaten **30 Credits**. Prüfen Sie vor der Nutzung die Verfügbarkeit in `GET /v1/models`; Beispiele garantieren keine aktuelle Freischaltung.
+
+### Unterstützte Anfrageparameter
+
+- `output_format`: `png` (Standard) oder `gif`.
+- `quality`: nur `auto`. `resolution`: nur `1K`. `n`: nur `1`.
+- `size`: `auto`, `1:1`, `3:2`, `2:3`, `1024x1024`, `1536x1024` oder `1024x1536`.
+- `image_urls`: höchstens ein Referenzbild. Dies ist die aktuelle APIAny.AI-Grenze für dieses Modell. Für reine Textgenerierung lassen Sie das Feld weg.
+
+Die tatsächlichen GIF-Pixelmaße, die Bildanzahl und die Bildintervalle können variieren und sind nicht konfigurierbar. Senden Sie weder `frame_count` noch `frame_duration_ms`. SVG, JPEG, WebP, 2K/4K, Masken und Ausgabekompression werden nicht unterstützt. `background` akzeptiert aus Kompatibilitätsgründen nur `auto` und kann entfallen. Nicht unterstützte Werte, einschließlich SVG, führen zu HTTP `400`; SVG wird nicht stillschweigend durch PNG ersetzt.
+
+Diese Grenzen gelten auch für Kompatibilitätsaliase auf oberster Ebene und in `model_params`. Widersprüchliche Werte führen zu HTTP `400`. Verwenden Sie bevorzugt die unten gezeigten Standardfelder; beliebige Modellparameter werden nicht garantiert unterstützt.
+
+### PNG-Aufgabe erstellen
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A polished studio photograph of an orange ceramic robot","output_format":"png","size":"1:1","n":1}'
+```
+
+### GIF-Aufgabe erstellen
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A friendly orange robot waving in a smooth loop","output_format":"gif","size":"1:1","n":1}'
+```
+
+### Abfragen und herunterladen
+
+Der Generierungs-Endpunkt liefert HTTP `202` mit `task_id` und `poll_url`. Fragen Sie bei `pending` oder `processing` weiter ab und beenden Sie die Abfrage bei `completed` oder `failed`. Senden Sie laufende Aufgaben nicht erneut.
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+Nach `completed` laden Sie die Datei über `result.data[0].url` herunter. Ein erfolgreiches GIF-Ergebnis ist eine echte animierte Datei, keine Video-URL oder Sammlung einzelner Bilder. Liefert eine GIF-Anfrage ein Standbild oder ein falsches Format, schlägt die Aufgabe fehl; es gilt die normale Richtlinie zur Credit-Erstattung für fehlgeschlagene Aufgaben.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "gpt-image-2.6",
+  "type": "image",
+  "result": {
+    "created": 1793836800,
+    "data": [
+      {
+        "url": "https://example.com/result.gif"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+`/v1/images/generations/sync` akzeptiert dieselben Parameter. HTTP `200` liefert die Datei-URL in `data[0].url`; bei HTTP `202` wird die Aufgabe weiter abgefragt. `/v1/images/edits` akzeptiert ein Referenzbild per JSON oder Multipart-Upload, mit denselben PNG/GIF-Optionen und 30 Credits pro erfolgreicher Anfrage. Beispiele finden Sie im Leitfaden zur Bildgenerierung.
+
+[Beispiele für synchrones Warten und Bildbearbeitung](/de/reference/image-generation#gpt-image-26)
 
 ## Nano Banana 2.1
 

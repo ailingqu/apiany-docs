@@ -14,6 +14,8 @@ Important pages:
 - Anthropic messages: /reference/messages
 - Gemini generateContent: /reference/gemini-generate-content
 - Image generation: /reference/image-generation
+- Image models, including GPT Image 2.6 PNG and GIF requests: /models/image-models
+- Chinese image models: /zh/models/image-models
 - Video generation: /reference/video-generation
 - Tasks: /reference/tasks
 - Batch image APIs: /reference/batch-image-apis

@@ -334,7 +334,7 @@
       "post": {
         "operationId": "createImageGeneration",
         "summary": "创建图片生成任务",
-        "description": "创建异步图片生成任务，并返回 task_id。",
+        "description": "创建异步图片任务并返回任务 ID。GPT Image 2.6 使用 output_format=png 或 gif；通过 /v1/tasks/{task_id} 轮询，完成后读取 result.data[0].url。",
         "tags": [
           "Images"
         ],
@@ -372,6 +372,24 @@
                       "https://example.com/reference-2.png"
                     ]
                   }
+                },
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1
+                  }
                 }
               }
             }
@@ -401,7 +419,7 @@
       "post": {
         "operationId": "createImageGenerationSync",
         "summary": "创建图片生成并等待结果",
-        "description": "创建图片任务，并在配置的最大等待时间内等待任务完成。",
+        "description": "创建图片任务并等待至最大等待时长。GPT Image 2.6 完成后在 data[0].url 返回一个 PNG 或 GIF 动图地址；HTTP 202 表示需要继续轮询返回的任务。",
         "tags": [
           "Images"
         ],
@@ -411,6 +429,26 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                }
               }
             }
           }
@@ -446,7 +484,7 @@
       "post": {
         "operationId": "createImageEdit",
         "summary": "创建图片编辑",
-        "description": "OpenAI 风格图片编辑接口，适用于支持参考图的模型。",
+        "description": "图片编辑支持 JSON 参考图地址或 multipart/form-data 文件上传。GPT Image 2.6 最多接受一张参考图，可选 output_format=png 或 gif，不支持蒙版。HTTP 200 返回 data[0].url；HTTP 202 返回待轮询任务。",
         "tags": [
           "Images"
         ],
@@ -456,6 +494,37 @@
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/ImageEditRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1,
+                    "image_urls": [
+                      "https://example.com/reference.png"
+                    ]
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1,
+                    "image_urls": [
+                      "https://example.com/reference.png"
+                    ]
+                  }
+                }
               }
             }
           }
@@ -467,6 +536,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "任务仍在等待或处理中，请继续轮询 /v1/tasks/{task_id}。",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
                 }
               }
             }
@@ -2699,6 +2778,9 @@
             "$ref": "#/components/schemas/GPTImage25GenerationRequest"
           },
           {
+            "$ref": "#/components/schemas/GPTImage26GenerationRequest"
+          },
+          {
             "$ref": "#/components/schemas/GenericImageGenerationRequest"
           },
           {
@@ -2849,6 +2931,238 @@
         },
         "required": ["model", "prompt"]
       },
+      "GPTImage26Parameters": {
+        "type": "object",
+        "description": "参数可置于顶层或 model_params，不得传入冲突值。不支持的控制参数返回 HTTP 400。",
+        "properties": {
+          "size": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "1:1",
+              "3:2",
+              "2:3",
+              "1024x1024",
+              "1536x1024",
+              "1024x1536"
+            ],
+            "default": "auto",
+            "description": "支持的 1K 尺寸选项。GIF 实际像素尺寸、帧数与帧间隔可能变化，不能配置。"
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "1K"
+            ],
+            "default": "1K"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": [
+              "png",
+              "gif"
+            ],
+            "default": "png"
+          },
+          "n": {
+            "type": "integer",
+            "const": 1,
+            "default": 1
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "所有参考图字段合计最多一张参考图，这是 APIAny.AI 当前对本模型的限制。"
+          },
+          "image": {
+            "type": "string",
+            "minLength": 1,
+            "description": "所有参考图字段合计最多一张参考图，这是 APIAny.AI 当前对本模型的限制。"
+          },
+          "background": {
+            "type": "string",
+            "const": "auto"
+          },
+          "aspect_ratio": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/size"
+          },
+          "aspectRatio": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/size"
+          },
+          "img_size": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "imageSize": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "image_size": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "outputFormat": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/output_format"
+          },
+          "format": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/output_format"
+          },
+          "count": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "num_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "numImages": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_image_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "reference_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "reference_image_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_image": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "reference_image": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "reference_image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "frame_count"
+              ]
+            },
+            {
+              "required": [
+                "frameCount"
+              ]
+            },
+            {
+              "required": [
+                "frame_duration_ms"
+              ]
+            },
+            {
+              "required": [
+                "frameDurationMs"
+              ]
+            },
+            {
+              "required": [
+                "mask"
+              ]
+            },
+            {
+              "required": [
+                "mask_url"
+              ]
+            },
+            {
+              "required": [
+                "maskUrl"
+              ]
+            },
+            {
+              "required": [
+                "masks"
+              ]
+            },
+            {
+              "required": [
+                "output_compression"
+              ]
+            },
+            {
+              "required": [
+                "outputCompression"
+              ]
+            }
+          ]
+        }
+      },
+      "GPTImage26GenerationRequest": {
+        "type": "object",
+        "description": "GPT Image 2.6 公开请求约定。使用前请通过 GET /v1/models 确认是否可用。每次成功请求返回一张 PNG 静态图或一个可下载的 GIF 动图，两种格式均为 30 积分，默认 PNG。仅支持 1K、quality=auto 和 n=1。不支持 SVG、JPEG、WebP、蒙版、输出压缩、frame_count 和 frame_duration_ms。兼容别名及 model_params 也受相同限制，冲突值返回 HTTP 400。",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26Parameters"
+          }
+        ],
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "gpt-image-2.6"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model_params": {
+            "$ref": "#/components/schemas/GPTImage26Parameters"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "GPTImage26EditRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26GenerationRequest"
+          }
+        ],
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
       "GrokImageGenerationRequest": {
         "type": "object",
         "description": "目前仅供 dev 预览，生产目录尚未启用这两个模型。验收时请使用下方测试环境地址。 `grok-imagine-image` 每次生成一张图片（`n: 1`）。仅传提示词为文生图；在 `image_urls` 中传入一个可公开访问的 HTTPS 图片地址为图片编辑。原有图片编辑端点仍可使用。首批暂不支持蒙版、多张参考图、自定义像素尺寸和质量档位。",
@@ -2914,6 +3228,7 @@
                 "gpt-image-2.5",
                 "gpt-image-2.5-flare",
                 "gpt-image-2.5-sunburst",
+                "gpt-image-2.6",
                 "grok-imagine-image"
               ]
             },
@@ -2945,11 +3260,24 @@
         ]
       },
       "ImageEditRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26EditRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GenericImageEditRequest"
+          }
+        ]
+      },
+      "GenericImageEditRequest": {
         "type": "object",
         "properties": {
           "model": {
             "type": "string",
-            "example": "nano-banana"
+            "example": "nano-banana",
+            "not": {
+              "const": "gpt-image-2.6"
+            }
           },
           "prompt": {
             "type": "string"

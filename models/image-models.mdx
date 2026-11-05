@@ -24,12 +24,79 @@ Production integrations should prefer `/v1/images/generations` and poll `/v1/tas
 | `gpt-image-2.5` | Flare-compatible default alias for fast generation and editing with six quality tiers, 1K/2K/4K, references, masks, and transparent backgrounds. |
 | `gpt-image-2.5-flare` | Explicit low-latency Flare route for everyday generation and editing. |
 | `gpt-image-2.5-sunburst` | Precision-focused Sunburst route for complex generation, local edits, text, and multi-reference work. |
+| `gpt-image-2.6` | PNG still images or downloadable animated GIFs, 1K, one reference image, and 30 credits per successful request. |
 | `nano-banana-pro` | Nano Banana Pro high-fidelity image generation. |
 | `nano-banana-2` | Nano Banana 2 high-quality image generation. |
 | `nano-banana-2.1` | Text-to-image and reference-guided editing with 1K, 2K and 4K output and flexible aspect ratios. |
 | `nano-banana` | Nano Banana image generation for reliable production usage. |
 | `z-image` | Fast Z-Image generation for low-latency image tasks. |
 | `seedance-5.0` | Seedance 5.0 image generation through Volcengine Ark. |
+
+## GPT Image 2.6 — PNG and animated GIF
+
+Use the public model ID `gpt-image-2.6` to request a PNG still image or a downloadable animated GIF. Each successful request returns one result and costs **30 credits**, for either format. Confirm the model is listed in `GET /v1/models` before use; examples do not guarantee current availability.
+
+### Supported request parameters
+
+- `output_format`: `png` (default) or `gif`.
+- `quality`: `auto` only. `resolution`: `1K` only. `n`: `1` only.
+- `size`: `auto`, `1:1`, `3:2`, `2:3`, `1024x1024`, `1536x1024`, or `1024x1536`.
+- `image_urls`: at most one reference image. This is the current APIAny.AI limit for this model; omit it for text-only generation.
+
+GIF pixel dimensions, frame count and frame timing may vary and are not configurable. Do not send `frame_count` or `frame_duration_ms`. SVG, JPEG, WebP, 2K/4K, masks and output compression are not supported. `background` only accepts `auto` for compatibility and can be omitted. Unsupported values, including SVG, return HTTP `400`; SVG is not silently replaced with PNG.
+
+These restrictions also apply to compatibility aliases at the top level and inside `model_params`. Conflicting values return HTTP `400`. Prefer the canonical fields shown below; arbitrary model parameters are not guaranteed to be supported.
+
+### Create a PNG task
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A polished studio photograph of an orange ceramic robot","output_format":"png","size":"1:1","n":1}'
+```
+
+### Create a GIF task
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A friendly orange robot waving in a smooth loop","output_format":"gif","size":"1:1","n":1}'
+```
+
+### Poll and download
+
+The generation endpoint returns HTTP `202` with `task_id` and `poll_url`. Continue polling while status is `pending` or `processing`; stop on `completed` or `failed`. Do not submit the same task again while it is processing.
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+On `completed`, download the file from `result.data[0].url`. A successful GIF result is an actual animated file, not a video URL or a set of frames. A static or wrong-format result for a GIF request is a failed task and follows the normal failed-task credit refund policy.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "gpt-image-2.6",
+  "type": "image",
+  "result": {
+    "created": 1793836800,
+    "data": [
+      {
+        "url": "https://example.com/result.gif"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+`/v1/images/generations/sync` accepts the same parameters. HTTP `200` returns the file URL at `data[0].url`; HTTP `202` means the task is still running and must be polled. `/v1/images/edits` accepts one reference as JSON or multipart upload, with the same PNG/GIF choices and 30-credit price. See the image-generation guide for examples.
+
+[Synchronous waiting and editing examples](/reference/image-generation#gpt-image-26)
 
 ## Nano Banana 2.1
 

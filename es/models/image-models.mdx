@@ -24,12 +24,79 @@ Las integraciones de producción deberían preferir `/v1/images/generations` y c
 | `gpt-image-2.5` | Alias predeterminado fijado a Flare, con seis calidades, 1K/2K/4K, referencias, máscaras y fondos transparentes. |
 | `gpt-image-2.5-flare` | Ruta Flare explícita de baja latencia para generación y edición cotidianas. |
 | `gpt-image-2.5-sunburst` | Ruta Sunburst precisa para generación compleja, edición local, texto y múltiples referencias. |
+| `gpt-image-2.6` | Imágenes PNG estáticas o GIF animados descargables, 1K, una referencia y 30 créditos por solicitud correcta. |
 | `nano-banana-pro` | Generación de imágenes de alta fidelidad con Nano Banana Pro. |
 | `nano-banana-2` | Generación de imágenes de alta calidad con Nano Banana 2. |
 | `nano-banana-2.1` | Generación desde texto y edición con referencias en 1K, 2K y 4K, con varias relaciones de aspecto. |
 | `nano-banana` | Generación de imágenes Nano Banana para un uso de producción fiable. |
 | `z-image` | Generación rápida con Z-Image para tareas de imagen de baja latencia. |
 | `seedance-5.0` | Generación de imágenes Seedance 5.0 a través de Volcengine Ark. |
+
+## GPT Image 2.6 — PNG y GIF animados
+
+Use el ID público `gpt-image-2.6` para solicitar una imagen PNG estática o un GIF animado descargable. Cada solicitud correcta devuelve un resultado y cuesta **30 créditos** en ambos formatos. Compruebe su disponibilidad en `GET /v1/models` antes de usarlo; los ejemplos no garantizan que esté activado actualmente.
+
+### Parámetros admitidos
+
+- `output_format`: `png` (predeterminado) o `gif`.
+- `quality`: solo `auto`. `resolution`: solo `1K`. `n`: solo `1`.
+- `size`: `auto`, `1:1`, `3:2`, `2:3`, `1024x1024`, `1536x1024` o `1024x1536`.
+- `image_urls`: como máximo una imagen de referencia. Es el límite actual de APIAny.AI para este modelo. Omita el campo para generar solo desde texto.
+
+Las dimensiones reales del GIF, el número de fotogramas y sus intervalos pueden variar y no se pueden configurar. No envíe `frame_count` ni `frame_duration_ms`. No se admiten SVG, JPEG, WebP, 2K/4K, máscaras ni compresión. `background` solo acepta `auto` por compatibilidad y puede omitirse. Los valores no admitidos, incluido SVG, devuelven HTTP `400`; SVG no se sustituye silenciosamente por PNG.
+
+Estos límites también se aplican a los alias de compatibilidad del nivel superior y de `model_params`. Los valores contradictorios devuelven HTTP `400`. Prefiera los campos canónicos mostrados; no se garantiza la admisión de parámetros arbitrarios.
+
+### Crear una tarea PNG
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A polished studio photograph of an orange ceramic robot","output_format":"png","size":"1:1","n":1}'
+```
+
+### Crear una tarea GIF
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A friendly orange robot waving in a smooth loop","output_format":"gif","size":"1:1","n":1}'
+```
+
+### Consultar y descargar
+
+El endpoint de generación devuelve HTTP `202` con `task_id` y `poll_url`. Siga consultando mientras el estado sea `pending` o `processing`; deténgase en `completed` o `failed`. No vuelva a enviar la misma tarea mientras se procesa.
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+Tras `completed`, descargue el archivo de `result.data[0].url`. Un GIF correcto es un archivo animado real, no una URL de vídeo ni un conjunto de fotogramas. Un resultado estático o de formato incorrecto para una solicitud GIF hace fallar la tarea y sigue la política normal de reembolso de créditos para tareas fallidas.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "gpt-image-2.6",
+  "type": "image",
+  "result": {
+    "created": 1793836800,
+    "data": [
+      {
+        "url": "https://example.com/result.gif"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+`/v1/images/generations/sync` admite los mismos parámetros. HTTP `200` devuelve la URL del archivo en `data[0].url`; HTTP `202` indica que debe seguir consultando la tarea. `/v1/images/edits` admite una referencia en JSON o multipart, con las mismas opciones PNG/GIF y 30 créditos por solicitud correcta. Consulte los ejemplos de la guía de generación de imágenes.
+
+[Ejemplos de espera síncrona y edición de imágenes](/es/reference/image-generation#gpt-image-26)
 
 ## Nano Banana 2.1
 

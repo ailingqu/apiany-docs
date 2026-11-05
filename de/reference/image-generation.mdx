@@ -49,3 +49,48 @@ Die Bearbeitung unterstützt bis zu 16 Referenzbilder und eine optionale Maske.
 ```json
 {"model":"gpt-image-2.5-sunburst","prompt":"Nur den Hintergrund ersetzen","image_urls":["https://example.com/product.png"],"mask_url":"https://example.com/mask.png","resolution":"2K","quality":"xhigh"}
 ```
+
+## GPT Image 2.6
+
+`gpt-image-2.6` nutzt für PNG und animierte GIFs die bestehenden Bild-Endpunkte; eine eigene GIF-API ist nicht nötig. Jede erfolgreiche Anfrage kostet **30 Credits** und liefert ein Ergebnis. Prüfen Sie vor dem Aufruf die Verfügbarkeit in `GET /v1/models`.
+
+Verwenden Sie `output_format: "png"` (Standard) oder `"gif"`, `quality: "auto"`, `resolution: "1K"` und `n: 1`. `size` akzeptiert `auto`, `1:1`, `3:2`, `2:3`, `1024x1024`, `1536x1024` oder `1024x1536`. Es ist höchstens ein Referenzbild erlaubt. Die Grenzen gelten auch für Aliase und `model_params`; widersprüchliche Werte führen zu HTTP `400`.
+
+SVG, JPEG, WebP, 2K/4K, Masken, Kompression, `frame_count` und `frame_duration_ms` werden nicht unterstützt. GIF-Maße, Bildanzahl und Bildintervalle sind nicht konfigurierbar. `background` kann entfallen und akzeptiert nur `auto`. SVG-Anfragen führen zu HTTP `400`, nicht zu einem PNG-Ergebnis.
+
+### PNG mit synchronem Warten
+
+```bash
+curl https://apiany.ai/v1/images/generations/sync \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A polished studio photograph of an orange ceramic robot","output_format":"png","size":"1:1","n":1}'
+```
+
+### GIF mit einem Referenzbild
+
+Der Bearbeitungs-Endpunkt akzeptiert JSON mit einem Eintrag in `image_urls` oder eine Multipart-Datei in `image`. Fügen Sie keine Maske hinzu. `output_format` wählt das Ergebnisformat; auch GIF-Bearbeitung liefert eine einzelne animierte Datei.
+
+```bash
+curl https://apiany.ai/v1/images/edits \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A friendly orange robot waving in a smooth loop","output_format":"gif","size":"1:1","n":1,"image_urls":["https://example.com/reference.png"]}'
+```
+
+Alternativ können Sie eine Referenzdatei mit multipart/form-data hochladen:
+
+```bash
+curl https://apiany.ai/v1/images/edits \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -F "model=gpt-image-2.6" \
+  -F "prompt=Animate the character waving in a smooth loop" \
+  -F "image=@reference.png" \
+  -F "output_format=gif" \
+  -F "size=1:1" \
+  -F "n=1"
+```
+
+Sync- und Bearbeitungs-Endpunkte liefern nach Abschluss HTTP `200` mit `data[0].url` oder während der Verarbeitung HTTP `202` mit `task_id` und `poll_url`. Fragen Sie `/v1/tasks/{task_id}` bis `completed` oder `failed` ab und behalten Sie bei `pending` oder `processing` dieselbe Aufgaben-ID. Die asynchrone Generierung nutzt `/v1/images/generations`; die fertige Datei steht unter `result.data[0].url`. Ungültige oder statische GIF-Ergebnisse schlagen fehl und folgen der normalen Credit-Erstattungsrichtlinie für fehlgeschlagene Aufgaben.
+
+[Alle Parameter, asynchrone PNG/GIF-Beispiele und Abfrageantworten](/de/models/image-models)

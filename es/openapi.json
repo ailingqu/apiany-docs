@@ -334,7 +334,7 @@
       "post": {
         "operationId": "createImageGeneration",
         "summary": "Crear una tarea de generación de imágenes",
-        "description": "Crea una tarea asíncrona de generación de imágenes y devuelve el task_id.",
+        "description": "Crea una tarea de imagen asíncrona y devuelve su ID. GPT Image 2.6 usa output_format=png o gif. Consulte /v1/tasks/{task_id} y lea result.data[0].url al completarse.",
         "tags": [
           "Images"
         ],
@@ -372,6 +372,24 @@
                       "https://example.com/reference-2.png"
                     ]
                   }
+                },
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1
+                  }
                 }
               }
             }
@@ -401,7 +419,7 @@
       "post": {
         "operationId": "createImageGenerationSync",
         "summary": "Crear una generación de imágenes y esperar el resultado",
-        "description": "Crea una tarea de imágenes y espera a que se complete dentro del tiempo máximo de espera configurado.",
+        "description": "Crea una tarea de imagen y espera hasta el tiempo máximo. Una solicitud de GPT Image 2.6 completada devuelve una URL PNG o GIF animado en data[0].url. HTTP 202 indica que debe seguir consultando la tarea devuelta.",
         "tags": [
           "Images"
         ],
@@ -411,6 +429,26 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                }
               }
             }
           }
@@ -446,7 +484,7 @@
       "post": {
         "operationId": "createImageEdit",
         "summary": "Crear una edición de imágenes",
-        "description": "Endpoint de edición de imágenes al estilo de OpenAI, para modelos que admiten imágenes de referencia.",
+        "description": "La edición acepta URL de referencia en JSON o archivos en multipart/form-data. GPT Image 2.6 acepta una imagen de referencia y output_format=png o gif, sin máscara. HTTP 200 devuelve data[0].url; HTTP 202 devuelve una tarea para consultar.",
         "tags": [
           "Images"
         ],
@@ -456,6 +494,37 @@
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/ImageEditRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1,
+                    "image_urls": [
+                      "https://example.com/reference.png"
+                    ]
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1,
+                    "image_urls": [
+                      "https://example.com/reference.png"
+                    ]
+                  }
+                }
               }
             }
           }
@@ -467,6 +536,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "La tarea sigue pendiente o en proceso. Continúe consultando /v1/tasks/{task_id}.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
                 }
               }
             }
@@ -2625,6 +2704,9 @@
             "$ref": "#/components/schemas/GPTImage25GenerationRequest"
           },
           {
+            "$ref": "#/components/schemas/GPTImage26GenerationRequest"
+          },
+          {
             "$ref": "#/components/schemas/GenericImageGenerationRequest"
           },
           {
@@ -2775,6 +2857,238 @@
         },
         "required": ["model", "prompt"]
       },
+      "GPTImage26Parameters": {
+        "type": "object",
+        "description": "Use estos parámetros en el nivel superior o en model_params, sin valores contradictorios. Los controles no admitidos devuelven HTTP 400.",
+        "properties": {
+          "size": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "1:1",
+              "3:2",
+              "2:3",
+              "1024x1024",
+              "1536x1024",
+              "1024x1536"
+            ],
+            "default": "auto",
+            "description": "Tamaños 1K admitidos. Las dimensiones reales del GIF, el número de fotogramas y sus intervalos pueden variar y no se pueden configurar."
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "1K"
+            ],
+            "default": "1K"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": [
+              "png",
+              "gif"
+            ],
+            "default": "png"
+          },
+          "n": {
+            "type": "integer",
+            "const": 1,
+            "default": 1
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "Como máximo una imagen de referencia entre todos los campos de referencia. Es el límite actual de APIAny.AI para este modelo."
+          },
+          "image": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Como máximo una imagen de referencia entre todos los campos de referencia. Es el límite actual de APIAny.AI para este modelo."
+          },
+          "background": {
+            "type": "string",
+            "const": "auto"
+          },
+          "aspect_ratio": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/size"
+          },
+          "aspectRatio": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/size"
+          },
+          "img_size": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "imageSize": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "image_size": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "outputFormat": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/output_format"
+          },
+          "format": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/output_format"
+          },
+          "count": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "num_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "numImages": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_image_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "reference_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "reference_image_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_image": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "reference_image": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "reference_image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "frame_count"
+              ]
+            },
+            {
+              "required": [
+                "frameCount"
+              ]
+            },
+            {
+              "required": [
+                "frame_duration_ms"
+              ]
+            },
+            {
+              "required": [
+                "frameDurationMs"
+              ]
+            },
+            {
+              "required": [
+                "mask"
+              ]
+            },
+            {
+              "required": [
+                "mask_url"
+              ]
+            },
+            {
+              "required": [
+                "maskUrl"
+              ]
+            },
+            {
+              "required": [
+                "masks"
+              ]
+            },
+            {
+              "required": [
+                "output_compression"
+              ]
+            },
+            {
+              "required": [
+                "outputCompression"
+              ]
+            }
+          ]
+        }
+      },
+      "GPTImage26GenerationRequest": {
+        "type": "object",
+        "description": "Contrato público de solicitudes de GPT Image 2.6. Compruebe la disponibilidad con GET /v1/models antes de usarlo. Cada solicitud correcta devuelve una imagen PNG estática o un GIF animado descargable y cuesta 30 créditos en ambos formatos. PNG es el valor predeterminado. Solo se admiten 1K, quality=auto y n=1. No se admiten SVG, JPEG, WebP, máscaras, compresión de salida, frame_count ni frame_duration_ms. Los mismos límites se aplican a los alias de compatibilidad y a model_params; los valores contradictorios devuelven HTTP 400.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26Parameters"
+          }
+        ],
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "gpt-image-2.6"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model_params": {
+            "$ref": "#/components/schemas/GPTImage26Parameters"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "GPTImage26EditRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26GenerationRequest"
+          }
+        ],
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
       "GrokImageGenerationRequest": {
         "type": "object",
         "description": "Vista previa solo en dev. Estos modelos aún no están habilitados en producción. Usa la dirección de dev indicada abajo para las pruebas. `grok-imagine-image` genera una imagen por solicitud (`n: 1`). Envía solo texto para generar o una URL HTTPS pública en `image_urls` para editar. El endpoint de edición existente sigue disponible. Esta versión no admite máscaras, varias referencias, dimensiones personalizadas en píxeles ni niveles de calidad.",
@@ -2840,6 +3154,7 @@
                 "gpt-image-2.5",
                 "gpt-image-2.5-flare",
                 "gpt-image-2.5-sunburst",
+                "gpt-image-2.6",
                 "grok-imagine-image"
               ]
             },
@@ -2871,11 +3186,24 @@
         ]
       },
       "ImageEditRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26EditRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GenericImageEditRequest"
+          }
+        ]
+      },
+      "GenericImageEditRequest": {
         "type": "object",
         "properties": {
           "model": {
             "type": "string",
-            "example": "nano-banana"
+            "example": "nano-banana",
+            "not": {
+              "const": "gpt-image-2.6"
+            }
           },
           "prompt": {
             "type": "string"

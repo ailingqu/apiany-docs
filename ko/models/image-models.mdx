@@ -24,12 +24,79 @@ description: 이미지 생성 및 이미지 편집 모델 동작.
 | `gpt-image-2.5` | Flare로 고정된 기본 별칭으로 6단계 품질, 1K/2K/4K, 참조 이미지, 마스크와 투명 배경을 지원합니다. |
 | `gpt-image-2.5-flare` | 일상 생성과 편집을 위한 명시적 저지연 Flare 경로입니다. |
 | `gpt-image-2.5-sunburst` | 복잡한 생성, 국소 편집, 텍스트와 다중 참조 작업을 위한 정밀 Sunburst 경로입니다. |
+| `gpt-image-2.6` | PNG 정지 이미지 또는 다운로드 가능한 애니메이션 GIF. 1K, 참조 이미지 최대 한 장, 성공한 요청당 30크레딧. |
 | `nano-banana-pro` | Nano Banana Pro 고충실도 이미지 생성. |
 | `nano-banana-2` | Nano Banana 2 고품질 이미지 생성. |
 | `nano-banana-2.1` | 1K, 2K, 4K 출력과 다양한 화면비를 지원하는 텍스트 기반 생성 및 참조 이미지 편집. |
 | `nano-banana` | Nano Banana 이미지 생성, 안정적인 프로덕션 사용에 적합. |
 | `z-image` | 빠른 Z-Image 생성, 저지연 이미지 작업에 적합. |
 | `seedance-5.0` | Volcengine Ark를 통한 Seedance 5.0 이미지 생성. |
+
+## GPT Image 2.6 — PNG 및 애니메이션 GIF
+
+공개 모델 ID `gpt-image-2.6`으로 PNG 정지 이미지 또는 다운로드 가능한 애니메이션 GIF를 요청하세요. 성공한 요청은 결과 하나를 반환하며 두 형식 모두 **30크레딧**입니다. 사용 전에 `GET /v1/models`에서 사용 가능 여부를 확인하세요. 예제는 현재 활성화를 보장하지 않습니다.
+
+### 지원 요청 매개변수
+
+- `output_format`: `png`(기본값) 또는 `gif`.
+- `quality`: `auto`만 지원. `resolution`: `1K`만 지원. `n`: `1`만 지원.
+- `size`: `auto`, `1:1`, `3:2`, `2:3`, `1024x1024`, `1536x1024`, `1024x1536`.
+- `image_urls`: 참조 이미지 최대 한 장. APIAny.AI에서 이 모델에 적용하는 현재 제한입니다. 텍스트만으로 생성할 때는 생략하세요.
+
+GIF의 실제 픽셀 크기, 프레임 수와 간격은 달라질 수 있으며 설정할 수 없습니다. `frame_count` 또는 `frame_duration_ms`를 보내지 마세요. SVG, JPEG, WebP, 2K/4K, 마스크 및 출력 압축은 지원하지 않습니다. `background`는 호환용 `auto`만 허용하며 생략할 수 있습니다. SVG를 포함한 미지원 값은 HTTP `400`을 반환하며 SVG를 PNG로 자동 대체하지 않습니다.
+
+최상위와 `model_params` 안의 호환 별칭에도 같은 제한이 적용됩니다. 충돌하는 값은 HTTP `400`을 반환합니다. 아래의 표준 필드를 사용하세요. 임의의 모델 매개변수 지원은 보장하지 않습니다.
+
+### PNG 작업 만들기
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A polished studio photograph of an orange ceramic robot","output_format":"png","size":"1:1","n":1}'
+```
+
+### GIF 작업 만들기
+
+```bash
+curl https://apiany.ai/v1/images/generations \
+  -H "Authorization: Bearer $APIANY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-image-2.6","prompt":"A friendly orange robot waving in a smooth loop","output_format":"gif","size":"1:1","n":1}'
+```
+
+### 폴링 및 다운로드
+
+생성 엔드포인트는 HTTP `202`, `task_id`, `poll_url`을 반환합니다. 상태가 `pending` 또는 `processing`이면 계속 폴링하고, `completed` 또는 `failed`이면 중단하세요. 처리 중인 작업을 중복 제출하지 마세요.
+
+```bash
+curl https://apiany.ai/v1/tasks/task_123 \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+`completed` 후 `result.data[0].url`에서 파일을 다운로드하세요. 성공한 GIF는 실제 애니메이션 파일이며 동영상 URL이나 프레임 모음이 아닙니다. GIF 요청에 정지 이미지 또는 잘못된 형식이 반환되면 작업이 실패하고 일반 실패 작업 크레딧 환불 정책을 따릅니다.
+
+```json
+{
+  "task_id": "task_123",
+  "status": "completed",
+  "model": "gpt-image-2.6",
+  "type": "image",
+  "result": {
+    "created": 1793836800,
+    "data": [
+      {
+        "url": "https://example.com/result.gif"
+      }
+    ]
+  },
+  "error": null
+}
+```
+
+`/v1/images/generations/sync`는 같은 매개변수를 받습니다. HTTP `200`은 `data[0].url`에 파일 URL을 반환하고, HTTP `202`이면 계속 폴링해야 합니다. `/v1/images/edits`는 JSON 또는 multipart로 참조 이미지 한 장을 받으며 PNG/GIF 선택과 성공 요청당 30크레딧 요금이 동일합니다. 이미지 생성 가이드에서 예제를 확인하세요.
+
+[동기 대기 및 이미지 편집 예제](/ko/reference/image-generation#gpt-image-26)
 
 ## Nano Banana 2.1
 

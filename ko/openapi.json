@@ -334,7 +334,7 @@
       "post": {
         "operationId": "createImageGeneration",
         "summary": "이미지 생성 작업 생성",
-        "description": "비동기 이미지 생성 작업을 생성하고 task_id를 반환합니다.",
+        "description": "비동기 이미지 작업을 생성하고 작업 ID를 반환합니다. GPT Image 2.6은 output_format=png 또는 gif를 사용합니다. /v1/tasks/{task_id}를 폴링하고 완료 후 result.data[0].url을 읽으세요.",
         "tags": [
           "Images"
         ],
@@ -372,6 +372,24 @@
                       "https://example.com/reference-2.png"
                     ]
                   }
+                },
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1
+                  }
                 }
               }
             }
@@ -401,7 +419,7 @@
       "post": {
         "operationId": "createImageGenerationSync",
         "summary": "이미지 생성 후 결과 대기",
-        "description": "이미지 작업을 생성하고 설정된 최대 대기 시간 내에서 작업 완료를 기다립니다.",
+        "description": "이미지 작업을 만들고 최대 대기 시간까지 기다립니다. GPT Image 2.6 완료 시 data[0].url에서 PNG 또는 애니메이션 GIF URL 하나를 반환합니다. HTTP 202이면 반환된 작업을 계속 폴링하세요.",
         "tags": [
           "Images"
         ],
@@ -411,6 +429,26 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1
+                  }
+                }
               }
             }
           }
@@ -446,7 +484,7 @@
       "post": {
         "operationId": "createImageEdit",
         "summary": "이미지 편집 생성",
-        "description": "참조 이미지를 지원하는 모델을 위한 OpenAI 스타일 이미지 편집 엔드포인트입니다.",
+        "description": "이미지 편집은 JSON 참조 URL 또는 multipart/form-data 파일 업로드를 받습니다. GPT Image 2.6은 참조 이미지 한 장과 output_format=png 또는 gif를 지원하며 마스크는 지원하지 않습니다. HTTP 200은 data[0].url을, HTTP 202는 폴링할 작업을 반환합니다.",
         "tags": [
           "Images"
         ],
@@ -456,6 +494,37 @@
             "multipart/form-data": {
               "schema": {
                 "$ref": "#/components/schemas/ImageEditRequest"
+              }
+            },
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImageGenerationRequest"
+              },
+              "examples": {
+                "gptImage26Png": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A polished studio photograph of an orange ceramic robot",
+                    "output_format": "png",
+                    "size": "1:1",
+                    "n": 1,
+                    "image_urls": [
+                      "https://example.com/reference.png"
+                    ]
+                  }
+                },
+                "gptImage26Gif": {
+                  "value": {
+                    "model": "gpt-image-2.6",
+                    "prompt": "A friendly orange robot waving in a smooth loop",
+                    "output_format": "gif",
+                    "size": "1:1",
+                    "n": 1,
+                    "image_urls": [
+                      "https://example.com/reference.png"
+                    ]
+                  }
+                }
               }
             }
           }
@@ -467,6 +536,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OpenAIImageResponse"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "작업이 대기 중이거나 처리 중입니다. /v1/tasks/{task_id}를 계속 폴링하세요.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncTaskCreateResponse"
                 }
               }
             }
@@ -2626,6 +2705,9 @@
             "$ref": "#/components/schemas/GPTImage25GenerationRequest"
           },
           {
+            "$ref": "#/components/schemas/GPTImage26GenerationRequest"
+          },
+          {
             "$ref": "#/components/schemas/GenericImageGenerationRequest"
           },
           {
@@ -2776,6 +2858,238 @@
         },
         "required": ["model", "prompt"]
       },
+      "GPTImage26Parameters": {
+        "type": "object",
+        "description": "최상위 또는 model_params에 충돌하지 않는 값으로 지정하세요. 지원하지 않는 제어 매개변수는 HTTP 400을 반환합니다.",
+        "properties": {
+          "size": {
+            "type": "string",
+            "enum": [
+              "auto",
+              "1:1",
+              "3:2",
+              "2:3",
+              "1024x1024",
+              "1536x1024",
+              "1024x1536"
+            ],
+            "default": "auto",
+            "description": "지원되는 1K 크기 옵션입니다. GIF의 실제 픽셀 크기, 프레임 수, 간격은 달라질 수 있으며 설정할 수 없습니다."
+          },
+          "resolution": {
+            "type": "string",
+            "enum": [
+              "1K"
+            ],
+            "default": "1K"
+          },
+          "quality": {
+            "type": "string",
+            "enum": [
+              "auto"
+            ],
+            "default": "auto"
+          },
+          "output_format": {
+            "type": "string",
+            "enum": [
+              "png",
+              "gif"
+            ],
+            "default": "png"
+          },
+          "n": {
+            "type": "integer",
+            "const": 1,
+            "default": 1
+          },
+          "image_urls": {
+            "type": "array",
+            "maxItems": 1,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "description": "모든 참조 필드를 합쳐 최대 한 장입니다. 이는 APIAny.AI에서 이 모델에 적용하는 현재 제한입니다."
+          },
+          "image": {
+            "type": "string",
+            "minLength": 1,
+            "description": "모든 참조 필드를 합쳐 최대 한 장입니다. 이는 APIAny.AI에서 이 모델에 적용하는 현재 제한입니다."
+          },
+          "background": {
+            "type": "string",
+            "const": "auto"
+          },
+          "aspect_ratio": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/size"
+          },
+          "aspectRatio": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/size"
+          },
+          "img_size": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "imageSize": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "image_size": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/resolution"
+          },
+          "outputFormat": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/output_format"
+          },
+          "format": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/output_format"
+          },
+          "count": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "num_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "numImages": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/n"
+          },
+          "images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "input_image_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "reference_images": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "reference_image_urls": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image_urls"
+          },
+          "image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_image": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "input_image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "reference_image": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          },
+          "reference_image_url": {
+            "$ref": "#/components/schemas/GPTImage26Parameters/properties/image"
+          }
+        },
+        "not": {
+          "anyOf": [
+            {
+              "required": [
+                "frame_count"
+              ]
+            },
+            {
+              "required": [
+                "frameCount"
+              ]
+            },
+            {
+              "required": [
+                "frame_duration_ms"
+              ]
+            },
+            {
+              "required": [
+                "frameDurationMs"
+              ]
+            },
+            {
+              "required": [
+                "mask"
+              ]
+            },
+            {
+              "required": [
+                "mask_url"
+              ]
+            },
+            {
+              "required": [
+                "maskUrl"
+              ]
+            },
+            {
+              "required": [
+                "masks"
+              ]
+            },
+            {
+              "required": [
+                "output_compression"
+              ]
+            },
+            {
+              "required": [
+                "outputCompression"
+              ]
+            }
+          ]
+        }
+      },
+      "GPTImage26GenerationRequest": {
+        "type": "object",
+        "description": "GPT Image 2.6 공개 요청 규격입니다. 사용 전에 GET /v1/models에서 사용 가능 여부를 확인하세요. 성공한 요청마다 PNG 정지 이미지 또는 다운로드 가능한 애니메이션 GIF 하나를 반환하며, 두 형식 모두 30크레딧입니다. 기본값은 PNG입니다. 1K, quality=auto, n=1만 지원합니다. SVG, JPEG, WebP, 마스크, 출력 압축, frame_count, frame_duration_ms는 지원하지 않습니다. 호환 별칭과 model_params에도 같은 제한이 적용되며 충돌하는 값은 HTTP 400을 반환합니다.",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26Parameters"
+          }
+        ],
+        "properties": {
+          "model": {
+            "type": "string",
+            "const": "gpt-image-2.6"
+          },
+          "prompt": {
+            "type": "string",
+            "minLength": 1
+          },
+          "model_params": {
+            "$ref": "#/components/schemas/GPTImage26Parameters"
+          },
+          "callback_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "model",
+          "prompt"
+        ]
+      },
+      "GPTImage26EditRequest": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26GenerationRequest"
+          }
+        ],
+        "type": "object",
+        "properties": {
+          "image": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "image"
+        ]
+      },
       "GrokImageGenerationRequest": {
         "type": "object",
         "description": "현재 dev 미리보기에서만 사용할 수 있습니다. 운영 환경에는 아직 활성화되지 않았습니다. 검수 시 아래 dev 주소를 사용하세요. `grok-imagine-image`는 요청당 이미지 한 장을 생성합니다(`n: 1`). 텍스트만 보내면 이미지 생성, `image_urls`에 공개 HTTPS 이미지 URL 한 개를 보내면 이미지 편집입니다. 기존 이미지 편집 엔드포인트도 유지됩니다. 초기 버전에서는 마스크, 여러 참조 이미지, 사용자 지정 픽셀 크기 및 품질 단계를 지원하지 않습니다.",
@@ -2841,6 +3155,7 @@
                 "gpt-image-2.5",
                 "gpt-image-2.5-flare",
                 "gpt-image-2.5-sunburst",
+                "gpt-image-2.6",
                 "grok-imagine-image"
               ]
             },
@@ -2872,11 +3187,24 @@
         ]
       },
       "ImageEditRequest": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/GPTImage26EditRequest"
+          },
+          {
+            "$ref": "#/components/schemas/GenericImageEditRequest"
+          }
+        ]
+      },
+      "GenericImageEditRequest": {
         "type": "object",
         "properties": {
           "model": {
             "type": "string",
-            "example": "nano-banana"
+            "example": "nano-banana",
+            "not": {
+              "const": "gpt-image-2.6"
+            }
           },
           "prompt": {
             "type": "string"
