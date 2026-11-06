@@ -85,3 +85,7 @@ description: APIAny.AI가 반환하는 표준 오류 분류.
 메시지에 `safety`가 언급되거나 HTTP `502`가 반환되었다는 이유만으로 정책 위반이라고
 판단하면 안 됩니다. 비동기 작업이 `pending` 또는 `processing`이면 동일한 `task_id`로
 `/v1/tasks/{task_id}`를 계속 조회하고, 생성 요청을 중복 제출하지 마세요.
+
+## 개인 MCP
+
+개인 MCP 오류는 `isError`와 `structuredContent`로 반환됩니다. 쓰기 결과가 불확실하면 기존 실행부터 확인하세요. [오류 처리](/ko/mcp-guide) 및 [도구 참조](/ko/reference/mcp-tools)를 확인하세요.

@@ -82,3 +82,7 @@ Ablehnung aufgrund von Inhaltsrichtlinien. Die bloße Erwähnung von `safety` in
 Meldung oder HTTP `502` allein belegt keinen Verstoß. Solange eine asynchrone Aufgabe
 `pending` oder `processing` ist, frage `/v1/tasks/{task_id}` mit derselben `task_id`
 weiter ab; reiche keine doppelte Generierungsanfrage ein.
+
+## Persönliches MCP
+
+Persönliche MCP-Fehler verwenden `isError` und `structuredContent`. Bei ungewissem Schreiben zuerst die bestehende Ausführung prüfen. Siehe [Fehlerbehandlung](/de/mcp-guide) und [Werkzeugreferenz](/de/reference/mcp-tools).

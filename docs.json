@@ -48,7 +48,14 @@
                 "pages": [
                   "introduction",
                   "quickstart",
-                  "authentication"
+                  "authentication",
+                  "mcp-guide"
+                ]
+              },
+              {
+                "group": "Personal MCP",
+                "pages": [
+                  "reference/mcp-tools"
                 ]
               },
               {
@@ -143,7 +150,14 @@
                 "pages": [
                   "fr/introduction",
                   "fr/quickstart",
-                  "fr/authentication"
+                  "fr/authentication",
+                  "fr/mcp-guide"
+                ]
+              },
+              {
+                "group": "MCP personnel",
+                "pages": [
+                  "fr/reference/mcp-tools"
                 ]
               },
               {
@@ -237,7 +251,14 @@
                 "pages": [
                   "de/introduction",
                   "de/quickstart",
-                  "de/authentication"
+                  "de/authentication",
+                  "de/mcp-guide"
+                ]
+              },
+              {
+                "group": "Persönliches MCP",
+                "pages": [
+                  "de/reference/mcp-tools"
                 ]
               },
               {
@@ -331,7 +352,14 @@
                 "pages": [
                   "zh/introduction",
                   "zh/quickstart",
-                  "zh/authentication"
+                  "zh/authentication",
+                  "zh/mcp-guide"
+                ]
+              },
+              {
+                "group": "个人 MCP",
+                "pages": [
+                  "zh/reference/mcp-tools"
                 ]
               },
               {
@@ -425,7 +453,14 @@
                 "pages": [
                   "ja/introduction",
                   "ja/quickstart",
-                  "ja/authentication"
+                  "ja/authentication",
+                  "ja/mcp-guide"
+                ]
+              },
+              {
+                "group": "パーソナル MCP",
+                "pages": [
+                  "ja/reference/mcp-tools"
                 ]
               },
               {
@@ -519,7 +554,14 @@
                 "pages": [
                   "ko/introduction",
                   "ko/quickstart",
-                  "ko/authentication"
+                  "ko/authentication",
+                  "ko/mcp-guide"
+                ]
+              },
+              {
+                "group": "개인 MCP",
+                "pages": [
+                  "ko/reference/mcp-tools"
                 ]
               },
               {
@@ -613,7 +655,14 @@
                 "pages": [
                   "es/introduction",
                   "es/quickstart",
-                  "es/authentication"
+                  "es/authentication",
+                  "es/mcp-guide"
+                ]
+              },
+              {
+                "group": "MCP personal",
+                "pages": [
+                  "es/reference/mcp-tools"
                 ]
               },
               {

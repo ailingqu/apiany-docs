@@ -1,0 +1,268 @@
+---
+title: "Persönliches MCP"
+description: "Verbinden Sie einen Assistenten über befristete Zugangsdaten mit festgelegten Rechten mit Ihrem APIAny.AI-Konto."
+---
+
+Neu bei MCP? Die [Client-Einrichtungsanleitung](https://apiany.ai/de/mcp-guide) führt Schritt für Schritt durch die Verbindung.
+
+Mit persönlichem MCP kann ein Assistent Modelle, Aufgaben, Nutzung, API-Schlüssel, Abrechnung, Profil und Dateien **Ihres eigenen Kontos** verwalten. Es gewährt keine Plattformverwaltung. Auch Administratoren können damit nur ihre eigenen Daten abrufen.
+
+## Passende Zugangsdaten wählen
+
+| Zugangsdaten | Endpunkt | Zugriff |
+|---|---|---|
+| `sk_…` | `https://apiany.ai/mcp` | Bestehende sechs Modellwerkzeuge; flache Argumente ohne persönliches `input`-Objekt |
+| `mcp_user_…` | `https://apiany.ai/mcp` | Nur das eigene Konto mit festgelegten Rechten |
+| `sa_admin_…` | `/api/admin/agent/mcp` | Separate Administratorrechte; für normale Nutzer nicht verfügbar |
+
+Die bisherigen API-Schlüssel-Werkzeuge bleiben `list_models`, `get_balance`, `chat_completion`, `generate_image`, `generate_video`, `get_task`. Gleichnamige persönliche Werkzeuge können andere Eingaben haben. Nach dem Verbinden immer `tools/list` lesen.
+
+## Token erstellen und verbinden
+
+1. Unter [Dashboard → Agent](https://apiany.ai/de/dashboard/agent) **Personal MCP** öffnen.
+2. Einen Namen, die benötigten Rechte und **1–365 Tage** Gültigkeit wählen; Standard sind **30 Tage**.
+3. Für `models:invoke` oder `utilities:invoke` einen eigenen aktiven API-Schlüssel binden. Modellbeschränkungen, Budget und RPM bleiben wirksam. Kontodaten lassen sich ohne positives Guthaben lesen.
+4. Den bei Erstellung angezeigten `mcp_user_`-Token in den Geheimnis-Einstellungen des Clients speichern. Nicht in Quelltext, Chats oder Logs einfügen. Bei Bedarf im selben Dashboard widerrufen.
+
+Eine entfernte **Streamable HTTP**-MCP-Verbindung mit den folgenden Werten einrichten. Der Client muss einen Bearer-Token im `Authorization`-Header unterstützen. Die Protokollversion wird ausgehandelt. OAuth ist nicht implementiert; reine OAuth-Clients können diese Verbindung nicht nutzen. Die Tabelle enthält Verbindungsdaten, keine clientspezifische Konfigurationsdatei.
+
+| Einstellung | Wert |
+|---|---|
+| URL | `https://apiany.ai/mcp` |
+| Transport | Streamable HTTP |
+| Authorization | `Bearer mcp_user_YOUR_TOKEN` |
+
+## Werkzeuge vor dem Aufruf prüfen
+
+Nach der Initialisierung `get_capabilities` mit `{}` aufrufen und `tools/list` lesen. Die Antwort enthält `audience: user`, `ownership: self`, erlaubte `scopes`, Werkzeuge und `oauth: false`. Alle anderen persönlichen Werkzeuge verlangen ein `input`-Objekt, auch ohne fachliche Parameter.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get_capabilities",
+    "arguments": {}
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "get_balance",
+    "arguments": {
+      "input": {}
+    }
+  }
+}
+```
+
+## Berechtigungen
+
+Rechte werden auf der Website ausgewählt. MCP kann keine Berechtigungen ausstellen, eigene Rechte erweitern oder API-Schlüssel zu Administrator-Zugangsdaten machen. Auch bei direkten Aufrufen werden Eigentum und Rechte geprüft. `usage:content` verlangt zusätzlich eine ausdrückliche Inhaltsabfrage und aktivierte Inhaltsaufzeichnung am Schlüssel.
+
+| Scope | Ergebnis |
+|---|---|
+| `models:read` | Modelle, API-Anleitungen und Hilfsprogramme finden |
+| `models:invoke` | Modelle ausführen und eigene Aufgaben lesen |
+| `usage:read` | Nutzung, Auswertungen und Diagnose lesen |
+| `usage:content` | Explizit angeforderte gespeicherte Anfrageinhalte lesen |
+| `keys:read` | API-Schlüsseleinstellungen ohne Geheimwerte lesen |
+| `keys:write` | API-Schlüssel erstellen, ändern, deaktivieren und löschen |
+| `keys:secrets` | Einen API-Schlüssel nach Bestätigung einmal anzeigen |
+| `billing:read` | Guthaben, Bestellungen, Abos und Produkte lesen |
+| `billing:write` | Bezahlvorgänge, Einlösung, Benachrichtigungen und Kündigungsanfragen |
+| `account:read` | Profil, Kontoaktionen und Ausführungshistorie lesen |
+| `account:write` | Profil ändern und sensible Kontoaktionen anfordern |
+| `utilities:invoke` | Hilfsprogramme gemäß Berechtigung und Kontingent ausführen |
+| `files:write` | Eigene Dateien hochladen, lesen und veröffentlichen |
+
+## Schreiben, Ergebnisse und sichere Wiederholung
+
+Jeder Schreibvorgang benötigt einen eigenen, vorher gespeicherten `idempotencyKey`: **1–191 druckbare ASCII-Zeichen ohne Leerzeichen**. Bei verlorener Antwort dasselbe Werkzeug mit derselben Eingabe und demselben Schlüssel wiederholen. Andere Eingaben ergeben `idempotency_conflict`. Jeder Upload-Schritt braucht einen eigenen Schlüssel.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "update_api_key",
+    "arguments": {
+      "input": {
+        "key_id": "YOUR_KEY_ID",
+        "rpmLimit": 60
+      },
+      "idempotencyKey": "set-key-rpm-20261106-01"
+    }
+  }
+}
+```
+
+Erfolgreiche Ausgaben stehen in `structuredContent` und als JSON-Text in `content`. Der erste Aufruf liefert die folgende Hülle. Eine Wiederholung liefert `replayed: true` und einen kleinen `receipt` mit verfügbaren Kennungen, nicht das volle Originalergebnis oder einen Schlüssel-Geheimwert.
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending` (409) bedeutet, dass der erste Aufruf ungeklärt ist. `execution_unknown` (409) oder `status: unknown` bedeutet, dass die Wirkung bereits eingetreten sein kann. Erst `get_execution`, danach Aufgabe, Bestellung oder Kontoaktion prüfen. **Diese Zustände niemals mit einem neuen Schlüssel umgehen.** Eine abgeschlossene MCP-Ausführung kann noch eine offene Modellaufgabe oder Website-Bestätigung enthalten.
+
+## Modelle und Hilfsprogramme verwenden
+
+Mit `list_models` → `get_model_schema` eine öffentliche Modell-ID wählen. `body` enthält den vollständigen unterstützten HTTP-JSON-Request. Die ID steht in `body.model`; `generate_content` verlangt stattdessen das äußere `model`. Dateifelder sind nur bei `edit_image` (`image`, `image[]`, `mask`) erlaubt. Andere Medieneingaben verwenden veröffentlichte URLs.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "chat_completion",
+    "arguments": {
+      "input": {
+        "body": {
+          "model": "PUBLIC_MODEL_ID",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Hello"
+            }
+          ],
+          "stream": false
+        }
+      },
+      "idempotencyKey": "chat-example-20261106-01"
+    }
+  }
+}
+```
+
+Bei asynchronen Bildern/Videos `task_id` speichern und `get_task` abfragen. Mit `stream: true` werden Ereignisse im abschließenden MCP-Ergebnis gesammelt; für Live-Streaming im SDK die HTTP-API verwenden. Die optionale UUID v4 `client_request_id` dient der Zuordnung von Videoanfragen und ist unabhängig von `idempotencyKey`. Modellaufrufe können Credits verbrauchen.
+
+Die Erfassung von Modellergebnissen ist auf **8 MiB und 300 Sekunden** begrenzt. Bei Abbruch oder Überschreitung bleibt eine bekannte `request_id` im Ausführungsbeleg erhalten. Erst `get_execution` und die bestehende Anfrage oder Aufgabe prüfen; keinen weiteren kostenpflichtigen Request und keinen neuen Idempotenzschlüssel für einen ungeklärten Aufruf erzeugen. Eine Client-Trennung bedeutet nicht, dass eine angenommene Modellaufgabe abgebrochen wurde.
+
+Die 32 Hilfsprogramme über `list_utilities` → `get_utility_schema` → `run_utility` nutzen. Bestehende Voraussetzungen und Kontingente gelten weiter; einige Stapelaktionen erfordern ein qualifiziertes zahlendes Konto. Werte gehören in `parameters`, eigene Datei-IDs in `files`. Binäre oder große Ausgaben werden temporäre Dateien. Dateieingaben und Nicht-JSON-Ausgaben benötigen auch `files:write`.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```
+
+## Dateien hochladen und abrufen
+
+1. `begin_upload` mit Dateiname, MIME-Typ und exakter Bytezahl aufrufen, höchstens **250 MiB**.
+2. `upload_chunk` mit nullbasiertem `index` und Base64-`data` aufrufen. Dekodierte Teile sind höchstens **1 MiB** groß; die Indizes müssen bei null beginnen und lückenlos sein.
+3. `finish_upload` mit `file_id` und optional kleingeschriebenem SHA-256 aufrufen. Erst bei `status: ready` verwenden.
+4. Die ID an ein geeignetes Werkzeug übergeben. `get_artifact` liefert Metadaten oder mit `offset` Base64-Bytes. `next_offset` bis `null` folgen. Der Downloadlink verlangt die Website-Anmeldung des Eigentümers.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "begin_upload",
+    "arguments": {
+      "input": {
+        "name": "example.png",
+        "mime_type": "image/png",
+        "size": 12345
+      },
+      "idempotencyKey": "upload-example-begin-01"
+    }
+  }
+}
+```
+
+Temporäre Dateien gehören nur Ihrem Konto, sind verschlüsselt und laufen nach **24 Stunden** ab. Limit: **1 GiB / 100 nicht abgelaufene Dateien**; einzelne Werkzeuge können niedrigere Limits setzen. `upload_image` und `upload_media` veröffentlichen Dateien separat. Die erzeugten URLs sind teilbar; nur dafür vorgesehene Dateien veröffentlichen.
+
+Vor dem Lesen von Dateiinhalten werden Eigentum, Bereitschaft, Anzahl und Größe geprüft. Jede Dateireferenz zählt für die Grenzen der Operation, auch wiederholte IDs.
+
+- `upload_media`: höchstens **20 Dateien / 250 MiB insgesamt**.
+- `upload_image`: eine Datei mit höchstens **50 MiB**.
+- `edit_image`: höchstens **20 Dateien über alle Felder**, davon höchstens **eine `mask`**; **50 MiB pro Datei / 100 MiB insgesamt**. Die Array-Grenzen je Feld aus dem Eingabeschema gelten weiterhin.
+- `run_utility`: Datei-, Einzelgrößen- und Gesamtlimits aus `get_utility_schema` gelten. Die feste Obergrenze beträgt **250 MiB insgesamt**, auch wenn der Katalog mehr zulässt.
+
+## Website-Bestätigung und Zahlungen
+
+- **API-Geheimwert:** `start_reveal_key_action` → Nutzer bestätigt `confirmation_url` → `reveal_api_key` mit Aktions-`id` als `action_id`. Die Freigabe gilt für diesen Schlüssel und diese Zugangsdaten, läuft 15 Minuten nach Aktionserstellung ab und ist einmal nutzbar. `create_api_key` liefert nur Metadaten.
+- **Abo kündigen:** `cancel_subscription` startet die Bestätigung. Der Nutzer führt sie auf der Website aus. Vor einer Erfolgsmeldung `get_account_action` und Abostatus prüfen.
+- **Passwort/Kontolöschung:** `start_account_action` mit `password_change` oder `delete_account`. Codes und Passwörter gibt der Nutzer auf der Website ein, niemals beim Assistenten. Löschung widerruft den Zugriff und meldet ab; danach MCP nicht weiter abfragen.
+- **Zahlung:** `list_billing_products` → `create_checkout` → Nutzer bezahlt → `get_payment_status`. Ein Link beweist keine Zahlung.
+- **Echte Nachrichten:** `resend_invoice` und `test_credit_alert` senden E-Mail oder Webhook. Nur auf ausdrücklichen Wunsch ausführen.
+
+## Fehler ohne doppelte Arbeit behandeln
+
+Verbindungs-/Authentifizierungsfehler können HTTP-Fehler sein. Werkzeugfehler setzen `isError: true`; `structuredContent.error.code`, `status`, `execution_id` und `receipt` prüfen. Wiederholungen können einen nicht abgeschlossenen Ausführungs-`status` enthalten.
+
+```json
+{
+  "isError": true,
+  "structuredContent": {
+    "error": {
+      "code": "execution_pending",
+      "message": "The original execution is pending; inspect its receipt before retrying",
+      "status": 409,
+      "execution_id": "EXECUTION_ID"
+    }
+  }
+}
+```
+
+| Code | Ergebnis |
+|---|---|
+| 401 · `invalid_grant` | Token ungültig, abgelaufen oder widerrufen. Personal MCP auf der Website prüfen. |
+| 403 · `insufficient_scope` | Passende Rechte auf der Website wählen; keine Selbsterweiterung möglich. |
+| 400 · `model_key_required` | Eigenen aktiven API-Schlüssel binden. |
+| 400 · `invalid_input` / `idempotency_required` | `tools/list` lesen, Eingabe korrigieren oder Schreibschlüssel angeben. |
+| 404 · `not_found` | Ressource nicht verfügbar, abgelaufen oder fremd. Keine fremde ID verwenden. |
+| 409 · `idempotency_conflict` | Schlüssel gehört zu anderer Eingabe. Ursprüngliche Absicht vor neuer Aktion prüfen. |
+| 409 · `execution_pending` / `execution_unknown` | Bestehende Ausführung und Ressource prüfen, nie mit neuem Schlüssel wiederholen. |
+| 409 · `confirmation_required` / `action_closed`; 410 · `action_expired` | Website-Aktion prüfen. Freigabe und Ausführung sind getrennte Schritte. |
+| 413 · `file_too_large` / `response_too_large`; 429 · `file_quota` | Werkzeug- und Dateilimits beachten. Bei zu großer Modellausgabe vor neuem kostenpflichtigem Aufruf die Historie prüfen. |
+| 402 / 429 | Guthaben, Schlüsselbudget, RPM, Voraussetzungen und konkreten Fehlercode prüfen. |
+| 503 · `storage_unavailable` | Dienst vorübergehend nicht verfügbar. Ausführungskennungen behalten und später prüfen. |
+
+## Nützliche erste Leseabfragen
+
+- Ausgaben prüfen: `get_balance` → `summarize_usage` → einzelne Anfragen mit `list_usage`.
+- Fehler erklären: `diagnose_request` mit `task_id`; vor erneutem Modellaufruf Fehler und Erstattung prüfen.
+- Integration vorbereiten: `list_models` → `get_model_schema` → `get_api_guide`, ohne Modellaufruf.
+- Kontosicherheit prüfen: `list_api_keys` → `get_api_key` → `list_login_records`.
+
+Nutzungsfilter verwenden ISO-8601-Zeitstempel mit Zeitzone, `from` einschließlich und `to` ausschließlich. Standard: letzte 30 Tage, maximal 366. Nur aufbewahrte Datensätze; fehlende Tage beweisen keine Nullnutzung. `get_overview.timezoneOffset` nutzt JavaScript-`getTimezoneOffset` in Minuten (UTC minus Ortszeit), Standard 0. Listen und Gruppierungen bleiben UTC.
+
+In `summarize_usage` sind `creditsCharged` und `netCreditsCharged` die aufbewahrte Nettobelastung. `linkedRefundCredits` umfasst nur bekannte Erstattungen verknüpfter asynchroner Aufgaben. `knownGrossCredits` addiert diese zur Nettobelastung und ist keine vollständige Bruttoausgabe. `totalTokens`, `averageLatencyMs`, `pending`, `processing` beziehen sich auf passende aufbewahrte Anfragen.
+
+Weiter mit [vollständiger Werkzeugreferenz](/de/reference/mcp-tools), [Authentifizierung](/de/authentication) und [HTTP-API-Fehlern](/de/operations/errors).

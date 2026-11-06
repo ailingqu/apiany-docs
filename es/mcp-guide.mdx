@@ -1,0 +1,268 @@
+---
+title: "MCP personal"
+description: "Conecta un asistente a tu cuenta APIAny.AI con permisos limitados y credenciales que caducan."
+---
+
+¿Es tu primera vez con MCP? Sigue la [guía de conexión de clientes](https://apiany.ai/es/mcp-guide) paso a paso.
+
+El MCP personal permite que un asistente consulte y gestione **tu propia cuenta**: modelos, tareas, uso, claves API, facturación, perfil y archivos. No concede administración de la plataforma. Incluso un administrador solo accede a sus propios datos con estas credenciales.
+
+## Elige la credencial adecuada
+
+| Credencial | Endpoint | Acceso |
+|---|---|---|
+| `sk_…` | `https://apiany.ai/mcp` | Seis herramientas de modelo existentes; argumentos directos sin objeto personal `input` |
+| `mcp_user_…` | `https://apiany.ai/mcp` | Solo tu cuenta, según los permisos otorgados |
+| `sa_admin_…` | `/api/admin/agent/mcp` | Credenciales y permisos de administrador independientes; no disponibles para usuarios normales |
+
+Se mantienen `list_models`, `get_balance`, `chat_completion`, `generate_image`, `generate_video`, `get_task` con clave API. El mismo nombre puede usar otro esquema con un token personal: consulta `tools/list` tras conectar.
+
+## Crea un token y conecta
+
+1. En [Panel → Agent](https://apiany.ai/es/dashboard/agent), abre **Personal MCP**.
+2. Pon un nombre, selecciona los permisos necesarios y una caducidad de **1 a 365 días**, **30 días** por defecto.
+3. Para `models:invoke` o `utilities:invoke`, vincula una clave API activa propia. Se mantienen sus restricciones de modelos, presupuesto y RPM. Consultar la cuenta no exige saldo positivo.
+4. Al crearlo, copia el token `mcp_user_` a la configuración secreta del cliente. No lo incluyas en código, chats ni registros. Revócalo en el mismo panel cuando ya no lo necesites.
+
+Configura una conexión MCP remota **Streamable HTTP** con estos valores. El cliente debe admitir un token Bearer en `Authorization`. El cliente negocia la versión del protocolo. OAuth no está implementado; los clientes que solo aceptan OAuth no pueden conectar. La tabla contiene datos de conexión, no un archivo específico de un cliente.
+
+| Ajuste | Valor |
+|---|---|
+| URL | `https://apiany.ai/mcp` |
+| Transport | Streamable HTTP |
+| Authorization | `Bearer mcp_user_YOUR_TOKEN` |
+
+## Consulta las herramientas antes de llamarlas
+
+Tras inicializar, llama a `get_capabilities` con `{}` y lee `tools/list`. Devuelve `audience: user`, `ownership: self`, `scopes`, herramientas permitidas y `oauth: false`. Las demás herramientas personales usan `input`, incluso cuando no necesitan parámetros.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get_capabilities",
+    "arguments": {}
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "get_balance",
+    "arguments": {
+      "input": {}
+    }
+  }
+}
+```
+
+## Permisos
+
+Los permisos se eligen en la web. MCP no puede crear autorizaciones, ampliar sus propios permisos ni convertir una clave en credencial de administrador. Cada llamada comprueba permisos y propiedad, aunque la herramienta esté oculta. `usage:content` exige además una petición explícita y registro de contenido activado en la clave.
+
+| Scope | Resultado |
+|---|---|
+| `models:read` | Consultar modelos, guías API y utilidades |
+| `models:invoke` | Ejecutar modelos y consultar tus tareas |
+| `usage:read` | Leer uso, resúmenes y diagnósticos |
+| `usage:content` | Leer contenido guardado solicitado expresamente |
+| `keys:read` | Leer ajustes de claves sin secretos |
+| `keys:write` | Crear, cambiar, desactivar y eliminar claves |
+| `keys:secrets` | Revelar una clave una vez tras aprobarla en la web |
+| `billing:read` | Leer saldo, pedidos, suscripciones y productos |
+| `billing:write` | Pago, canje, alertas y solicitudes de cancelación |
+| `account:read` | Leer perfil, acciones de cuenta e historial de ejecución |
+| `account:write` | Actualizar perfil y solicitar acciones sensibles |
+| `utilities:invoke` | Ejecutar utilidades según requisitos y cuotas de la cuenta |
+| `files:write` | Subir, leer y publicar tus archivos |
+
+## Escrituras, resultados y reintentos seguros
+
+Cada escritura exige un `idempotencyKey` único para esa intención: **1–191 caracteres ASCII imprimibles sin espacios**. Guárdalo antes de llamar. Si pierdes la respuesta, repite herramienta, entrada y clave. Cambiar la entrada con la misma clave produce `idempotency_conflict`. Cada paso de carga necesita su clave.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "update_api_key",
+    "arguments": {
+      "input": {
+        "key_id": "YOUR_KEY_ID",
+        "rpmLimit": 60
+      },
+      "idempotencyKey": "set-key-rpm-20261106-01"
+    }
+  }
+}
+```
+
+El resultado aparece en `structuredContent` y como texto JSON en `content`. La primera ejecución devuelve la estructura siguiente. Una repetición devuelve `replayed: true` y un pequeño `receipt` con identificadores disponibles, sin el resultado completo ni el secreto de una clave.
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending` (409) indica que la primera llamada sigue sin resolverse. `execution_unknown` (409) o `status: unknown` indica que el efecto podría haber ocurrido. Consulta `get_execution` y después la tarea, pedido o acción. **No uses una clave nueva para saltarte estos estados.** Una ejecución MCP completada puede contener una tarea o aprobación web aún pendiente.
+
+## Modelos y utilidades
+
+Elige un ID público con `list_models` → `get_model_schema`. `body` admite toda la solicitud HTTP JSON compatible con el modelo. El ID va en `body.model`; `generate_content` requiere en su lugar el `model` exterior. Solo `edit_image` admite archivos (`image`, `image[]`, `mask`); los demás medios usan URL publicadas.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "chat_completion",
+    "arguments": {
+      "input": {
+        "body": {
+          "model": "PUBLIC_MODEL_ID",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Hello"
+            }
+          ],
+          "stream": false
+        }
+      },
+      "idempotencyKey": "chat-example-20261106-01"
+    }
+  }
+}
+```
+
+En imágenes/vídeos asíncronos, guarda `task_id` y consulta `get_task`. Con `stream: true`, los eventos se recopilan en el resultado MCP final; usa la API HTTP para streaming SDK en vivo. El UUID v4 opcional `client_request_id` relaciona solicitudes de vídeo y es distinto de `idempotencyKey`. Los modelos pueden consumir créditos.
+
+La recopilación de resultados del modelo se limita a **8 MiB y 300 segundos**. Si se interrumpe o supera un límite, el comprobante conserva cualquier `request_id` conocido. Revisa `get_execution` y la solicitud o tarea existente antes de actuar; no crees otra solicitud de pago ni una nueva clave de idempotencia para sustituir una llamada sin resolver. Desconectar el cliente no significa que una tarea ya aceptada se haya cancelado.
+
+Usa `list_utilities` → `get_utility_schema` → `run_utility` para las 32 utilidades. Mantienen sus requisitos y cuotas; algunas operaciones por lotes exigen una cuenta de pago elegible. Pon valores en `parameters` e ID de archivos propios en `files`. Las salidas binarias o grandes son archivos temporales. Archivos y salidas no JSON también requieren `files:write`.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```
+
+## Subir y recuperar archivos
+
+1. Llama a `begin_upload` con nombre, tipo MIME y tamaño exacto en bytes; máximo **250 MiB**.
+2. Llama a `upload_chunk` con `index` desde cero y `data` Base64. Cada bloque decodificado admite **1 MiB**; los índices deben ser consecutivos desde cero.
+3. Llama a `finish_upload` con `file_id` y SHA-256 opcional en minúsculas. Espera `status: ready`.
+4. Pasa el ID a una herramienta compatible. `get_artifact` devuelve metadatos o bytes Base64 si indicas `offset`. Sigue `next_offset` hasta `null`. El enlace exige iniciar sesión como propietario.
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "begin_upload",
+    "arguments": {
+      "input": {
+        "name": "example.png",
+        "mime_type": "image/png",
+        "size": 12345
+      },
+      "idempotencyKey": "upload-example-begin-01"
+    }
+  }
+}
+```
+
+Los archivos temporales son privados, cifrados y caducan en **24 horas**. Límite: **1 GiB / 100 archivos sin caducar**; cada utilidad puede imponer menos. `upload_image` y `upload_media` publican por separado: sus URL se pueden compartir. Publica solo archivos que quieras hacer accesibles mediante esas URL.
+
+Antes de leer el contenido, se comprueban la propiedad, el estado listo, la cantidad y el tamaño de los archivos. Cada referencia cuenta para los límites, incluso los ID repetidos.
+
+- `upload_media`: máximo **20 archivos / 250 MiB en total**.
+- `upload_image`: un archivo de hasta **50 MiB**.
+- `edit_image`: máximo **20 archivos entre todos los campos**, incluido como máximo **un `mask`**; **50 MiB por archivo / 100 MiB en total**. También se aplican los límites por array del esquema.
+- `run_utility`: aplica los límites de cantidad, tamaño individual y total de `get_utility_schema`, con un máximo absoluto de **250 MiB en total**, aunque el catálogo permita más.
+
+## Confirmación web y pagos
+
+- **Secreto de clave:** `start_reveal_key_action` → usuario aprueba `confirmation_url` → `reveal_api_key` con el `id` de la acción como `action_id`. La aprobación se vincula a esa clave y credencial, caduca 15 minutos después de crear la acción y se usa una sola vez. `create_api_key` solo devuelve metadatos.
+- **Cancelar suscripción:** `cancel_subscription` inicia la confirmación. El usuario la ejecuta en la web. Comprueba `get_account_action` y la suscripción antes de informar que terminó.
+- **Contraseña/eliminación:** `start_account_action` con `password_change` o `delete_account`. El usuario introduce códigos y contraseñas en la web, nunca en el asistente. Eliminar revoca el acceso y cierra la sesión; no sigas consultando MCP después.
+- **Pago:** `list_billing_products` → `create_checkout` → usuario paga → `get_payment_status`. Un enlace no prueba el pago.
+- **Mensajes reales:** `resend_invoice` y `test_credit_alert` envían correo o webhook. Úsalos solo por solicitud expresa.
+
+## Gestiona errores sin duplicar trabajo
+
+Los fallos de conexión/autenticación pueden ser errores HTTP. Un fallo de herramienta establece `isError: true`; revisa `structuredContent.error.code`, `status`, `execution_id` y `receipt`. Una repetición puede devolver un `status` de ejecución no completado.
+
+```json
+{
+  "isError": true,
+  "structuredContent": {
+    "error": {
+      "code": "execution_pending",
+      "message": "The original execution is pending; inspect its receipt before retrying",
+      "status": 409,
+      "execution_id": "EXECUTION_ID"
+    }
+  }
+}
+```
+
+| Code | Resultado |
+|---|---|
+| 401 · `invalid_grant` | Token inválido, caducado o revocado. Revisa Personal MCP en la web. |
+| 403 · `insufficient_scope` | Elige permisos en la web; el asistente no puede ampliarlos. |
+| 400 · `model_key_required` | Vincula una clave API activa propia. |
+| 400 · `invalid_input` / `idempotency_required` | Consulta `tools/list`, corrige entradas o añade clave de escritura. |
+| 404 · `not_found` | Recurso no disponible, caducado o ajeno. No uses el ID de otra cuenta. |
+| 409 · `idempotency_conflict` | Clave asociada a otra entrada. Revisa la intención antes de una operación distinta. |
+| 409 · `execution_pending` / `execution_unknown` | Revisa ejecución y recurso; nunca reintentes con otra clave. |
+| 409 · `confirmation_required` / `action_closed`; 410 · `action_expired` | Revisa la acción web. Aprobar y ejecutar son pasos distintos. |
+| 413 · `file_too_large` / `response_too_large`; 429 · `file_quota` | Respeta límites. Si la salida del modelo es excesiva, consulta el historial antes de otra llamada de pago. |
+| 402 / 429 | Revisa saldo, presupuesto, RPM, requisitos y código real. |
+| 503 · `storage_unavailable` | Servicio temporalmente no disponible. Guarda los identificadores y comprueba después. |
+
+## Primeros pasos de solo lectura
+
+- Gasto: `get_balance` → `summarize_usage` → solicitudes individuales con `list_usage`.
+- Fallo: `diagnose_request` con `task_id`; revisa error y reembolso antes de otra llamada al modelo.
+- Integración: `list_models` → `get_model_schema` → `get_api_guide`, sin ejecutar modelos.
+- Seguridad: `list_api_keys` → `get_api_key` → `list_login_records`.
+
+Los filtros usan ISO 8601 con zona horaria: `from` incluido y `to` excluido. Por defecto 30 días, máximo 366. Solo cubren registros conservados; un día ausente no prueba uso cero. `get_overview.timezoneOffset` usa minutos de JavaScript `getTimezoneOffset` (UTC menos hora local), por defecto 0. Las listas y resúmenes siguen en UTC.
+
+En `summarize_usage`, `creditsCharged` y `netCreditsCharged` son el cargo neto conservado. `linkedRefundCredits` cubre reembolsos conocidos de tareas asíncronas vinculadas. `knownGrossCredits` suma esos reembolsos al neto y no representa un gasto bruto completo. `totalTokens`, `averageLatencyMs`, `pending`, `processing` describen las solicitudes conservadas coincidentes.
+
+Consulta la [referencia completa](/es/reference/mcp-tools), la [autenticación](/es/authentication) y los [errores HTTP API](/es/operations/errors).

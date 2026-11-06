@@ -1,0 +1,806 @@
+---
+title: "MCP-Werkzeugreferenz"
+description: "Eingaben, Rechte, Ergebnisse und Grenzen aller persönlichen MCP-Werkzeuge."
+---
+
+Der Katalog enthält 61 Kontooperationen und `get_capabilities`. Sichtbar sind nur erlaubte Werkzeuge. Rechte und Eigentum werden bei jedem Aufruf erneut geprüft. Beginnen Sie mit dem [Schnellstart](/de/mcp-guide).
+
+Außer bei `get_capabilities` stehen alle folgenden Felder in `arguments.input`. Schreibzugriffe benötigen zusätzlich `arguments.idempotencyKey`: 1–191 druckbare ASCII-Zeichen ohne Leerzeichen. Felder mit Standardwert sind optional. `page_size` und `pageSize` sind unterschiedliche Namen. Maßgeblich ist das aktuelle Schema aus `tools/list`.
+
+Erfolgreiche Ausgaben stehen in `structuredContent` und als JSON-Text in `content`. Der erste Aufruf liefert die folgende Hülle. Eine Wiederholung liefert `replayed: true` und einen kleinen `receipt` mit verfügbaren Kennungen, nicht das volle Originalergebnis oder einen Schlüssel-Geheimwert.
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending` (409) bedeutet, dass der erste Aufruf ungeklärt ist. `execution_unknown` (409) oder `status: unknown` bedeutet, dass die Wirkung bereits eingetreten sein kann. Erst `get_execution`, danach Aufgabe, Bestellung oder Kontoaktion prüfen. **Diese Zustände niemals mit einem neuen Schlüssel umgehen.** Eine abgeschlossene MCP-Ausführung kann noch eine offene Modellaufgabe oder Website-Bestätigung enthalten.
+
+Die Erfassung von Modellergebnissen ist auf **8 MiB und 300 Sekunden** begrenzt. Bei Abbruch oder Überschreitung bleibt eine bekannte `request_id` im Ausführungsbeleg erhalten. Erst `get_execution` und die bestehende Anfrage oder Aufgabe prüfen; keinen weiteren kostenpflichtigen Request und keinen neuen Idempotenzschlüssel für einen ungeklärten Aufruf erzeugen. Eine Client-Trennung bedeutet nicht, dass eine angenommene Modellaufgabe abgebrochen wurde.
+
+## `get_capabilities`
+
+Lesen · `arguments: {}`
+
+Nach der Initialisierung `get_capabilities` mit `{}` aufrufen und `tools/list` lesen. Die Antwort enthält `audience: user`, `ownership: self`, erlaubte `scopes`, Werkzeuge und `oauth: false`. Alle anderen persönlichen Werkzeuge verlangen ein `input`-Objekt, auch ohne fachliche Parameter.
+
+## `list_models`
+
+Erforderliche Rechte: `models:read` · Lesen
+
+**Ergebnis:** Liefert `items`, `total`, `page`, `page_size` mit öffentlichen Modell-IDs, Preisen und Fähigkeiten.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `query` | `string`; Max. 100 Zeichen | Optional |
+| `type` | `string`; Max. 30 Zeichen | Optional |
+| `page` | `integer`; Min. 1 | Optional; Standard `1` |
+| `page_size` | `integer`; Min. 1, Max. 100 | Optional; Standard `25` |
+
+## `get_model_schema`
+
+Erforderliche Rechte: `models:read` · Lesen
+
+**Ergebnis:** Liefert Parameter, Fähigkeiten und Preise eines erlaubten Modells.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Pflicht |
+
+## `get_api_guide`
+
+Erforderliche Rechte: `models:read` · Lesen
+
+**Ergebnis:** Liefert URLs, Authentifizierungsplatzhalter, Endpunkte und Hinweise zur Aufgabenabfrage für `format`.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `format` | `"openai"` · `"responses"` · `"anthropic"` · `"gemini"` · `"image"` · `"video"` · `"mcp"` | Optional; Standard `"openai"` |
+
+## `chat_completion`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/chat-completions).
+
+## `create_response`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/responses).
+
+## `create_message`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/messages).
+
+## `generate_content`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/gemini-generate-content).
+
+## `generate_image`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/image-generation).
+
+## `generate_image_sync`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/image-generation).
+
+## `edit_image`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/image-generation).
+
+Vor dem Lesen von Dateiinhalten werden Eigentum, Bereitschaft, Anzahl und Größe geprüft. Jede Dateireferenz zählt für die Grenzen der Operation, auch wiederholte IDs.
+
+`edit_image`: höchstens **20 Dateien über alle Felder**, davon höchstens **eine `mask`**; **50 MiB pro Datei / 100 MiB insgesamt**. Die Array-Grenzen je Feld aus dem Eingabeschema gelten weiterhin.
+
+## `generate_video`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/video-generation).
+
+## `generate_video_sync`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/video-generation).
+
+## `moderate_content`
+
+Erforderliche Rechte: `models:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert HTTP-`status`, `request_id`, `credits_charged`, `content_type` sowie `response` oder gesammelte `events`. Asynchrone Aufgaben mit `get_task` prüfen; Annahme bedeutet noch keinen Abschluss.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `body` | `object` → `JSON` | Pflicht |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Optional |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 10 Einträge | Optional |
+
+`body` enthält den gesamten unterstützten HTTP-JSON-Request. `generate_content` benötigt das äußere `model`; sonst gilt `body.model`. `files` ordnet Bildbearbeitungsfelder eigenen Datei-ID-Arrays zu und benötigt `files:write`. `client_request_id` ist für Videozuordnung. Siehe [HTTP-Referenz](/de/reference/moderations).
+
+## `upload_image`
+
+Erforderliche Rechte: `models:invoke`, `files:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Veröffentlicht JPEG, PNG oder WebP und liefert die Modell-Eingabe-URL in der Standardantwort. Die URL ist teilbar.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `file_id` | `string`; Max. 100 Zeichen | Pflicht |
+
+Vor dem Lesen von Dateiinhalten werden Eigentum, Bereitschaft, Anzahl und Größe geprüft. Jede Dateireferenz zählt für die Grenzen der Operation, auch wiederholte IDs.
+
+`upload_image`: eine Datei mit höchstens **50 MiB**.
+
+## `upload_media`
+
+Erforderliche Rechte: `files:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Veröffentlicht Bilder, Videos oder Audio und liefert URLs. Die Veröffentlichung macht sie teilbar und ist ein eigener Schritt nach dem privaten Upload.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `file_ids` | `array` `string`; Min. 1 Zeichen, Max. 100 Zeichen; Min. 1 Einträge, Max. 20 Einträge | Pflicht |
+| `kind` | `"image"` · `"video"` · `"audio"` | Pflicht |
+
+Vor dem Lesen von Dateiinhalten werden Eigentum, Bereitschaft, Anzahl und Größe geprüft. Jede Dateireferenz zählt für die Grenzen der Operation, auch wiederholte IDs.
+
+`upload_media`: höchstens **20 Dateien / 250 MiB insgesamt**.
+
+## `get_task`
+
+Erforderliche Rechte: `models:invoke` · Lesen
+
+**Ergebnis:** Status und Ergebnis einer eigenen bestehenden Aufgabe, ohne neue Aufgabe oder erneute Berechnung.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `task_id` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Pflicht |
+
+## `list_utilities`
+
+Erforderliche Rechte: `models:read` · Lesen
+
+**Ergebnis:** `items` mit `id`, Name, Beschreibung, Methode, `body_kind`, `response_kind`, `fields`, `limits` und `access`.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `query` | `string`; Max. 100 Zeichen | Optional |
+
+## `get_utility_schema`
+
+Erforderliche Rechte: `models:read` · Lesen
+
+**Ergebnis:** Felder, Dateitypen, Standardwerte, Größenlimits und Zugangsvoraussetzungen des Hilfsprogramms.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `utility` | `string`; Max. 100 Zeichen | Pflicht |
+
+## `run_utility`
+
+Erforderliche Rechte: `utilities:invoke` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Liefert `status` und JSON-`result` oder ein temporäres `artifact` für binäre/große Ergebnisse. Dateien und Nicht-JSON-Ausgaben benötigen zusätzlich `files:write`; Kontingente und Zugangsvoraussetzungen gelten weiterhin.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `utility` | `string`; Max. 100 Zeichen | Pflicht |
+| `parameters` | `object` → `string`; Max. 10000 Zeichen / `number` / `boolean` | Optional; Standard `{}` |
+| `files` | `object` → `array` `string`; Max. 100 Zeichen; Max. 20 Einträge | Optional; Standard `{}` |
+
+Vor dem Lesen von Dateiinhalten werden Eigentum, Bereitschaft, Anzahl und Größe geprüft. Jede Dateireferenz zählt für die Grenzen der Operation, auch wiederholte IDs.
+
+`run_utility`: Datei-, Einzelgrößen- und Gesamtlimits aus `get_utility_schema` gelten. Die feste Obergrenze beträgt **250 MiB insgesamt**, auch wenn der Katalog mehr zulässt.
+
+## `begin_upload`
+
+Erforderliche Rechte: `files:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Dateimetadaten: `id`, `name`, `mime_type`, `size`, `status`, `expires_at`, `sha256`. Danach `id` als `file_id` verwenden.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `name` | `string`; Min. 1 Zeichen, Max. 180 Zeichen | Pflicht |
+| `mime_type` | `string`; Max. 120 Zeichen | Pflicht |
+| `size` | `integer`; Min. 1, Max. 262144000 | Pflicht |
+
+## `upload_chunk`
+
+Erforderliche Rechte: `files:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** `file_id`, `index`, `received: true`. Nach Base64-Dekodierung höchstens 1 MiB; gleicher Index verlangt identische Bytes.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `file_id` | `string`; Min. 1 Zeichen, Max. 100 Zeichen | Pflicht |
+| `index` | `integer`; Min. 0, Max. 249 | Pflicht |
+| `data` | `string`; Max. 1398104 Zeichen | Pflicht |
+
+## `finish_upload`
+
+Erforderliche Rechte: `files:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Geprüfte Metadaten mit `status: ready` und SHA-256. Alle aufeinanderfolgenden Teile und die exakt deklarierte Größe sind erforderlich.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `file_id` | `string`; Min. 1 Zeichen, Max. 100 Zeichen | Pflicht |
+| `sha256` | `string`; SHA-256 `[a-f0-9]{64}` | Optional |
+
+## `get_artifact`
+
+Erforderliche Rechte: `files:write` · Lesen
+
+**Ergebnis:** Ohne `offset`: Metadaten und `download_url` mit Website-Anmeldung. Mit `offset`: Base64-`data`, `offset`, `next_offset`; `null` bedeutet Ende. Standardlänge: 1 MiB.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `file_id` | `string`; Min. 1 Zeichen, Max. 100 Zeichen | Pflicht |
+| `offset` | `integer`; Min. 0 | Optional |
+| `length` | `integer`; Min. 1, Max. 1048576 | Optional |
+
+## `list_api_keys`
+
+Erforderliche Rechte: `keys:read` · Lesen
+
+**Ergebnis:** Paginierte Einstellungen und Präfixe, ohne Geheimwerte.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `page` | `integer`; Min. 1, Max. 100000 | Optional; Standard `1` |
+| `pageSize` | `integer`; Min. 1, Max. 100 | Optional; Standard `20` |
+| `search` | `string`; Max. 200 Zeichen | Optional |
+
+## `get_api_key`
+
+Erforderliche Rechte: `keys:read` · Lesen
+
+**Ergebnis:** Einstellungen des eigenen Schlüssels ohne Geheimwert.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `key_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `create_api_key`
+
+Erforderliche Rechte: `keys:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Nur Metadaten des neuen Schlüssels. Geheimwert erst nach Website-Bestätigung. `purpose` ist eine Bezeichnung ohne MCP-Rechte.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `title` | `string`; Min. 1 Zeichen, Max. 100 Zeichen | Pflicht |
+| `budgetCredits` | `number`; Min. 0 / `null` | Optional |
+| `budgetAlertThresholdCredits` | `number`; Min. 0 / `null` | Optional |
+| `rpmLimit` | `integer`; Min. 1, Max. 100000 / `null` | Optional |
+| `contentLoggingEnabled` | `boolean` | Optional |
+| `appName` | `string`; Max. 100 Zeichen | Optional |
+| `purpose` | `string`; Max. 200 Zeichen | Optional |
+| `modelScope` | `array` `string`; Min. 1 Zeichen, Max. 191 Zeichen; Max. 200 Einträge / `null` | Optional |
+
+## `update_api_key`
+
+Erforderliche Rechte: `keys:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Aktualisierte Einstellungen; mindestens ein Feld zusätzlich zu `key_id`.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `title` | `string`; Min. 1 Zeichen, Max. 100 Zeichen | Optional |
+| `budgetCredits` | `number`; Min. 0 / `null` | Optional |
+| `budgetAlertThresholdCredits` | `number`; Min. 0 / `null` | Optional |
+| `rpmLimit` | `integer`; Min. 1, Max. 100000 / `null` | Optional |
+| `contentLoggingEnabled` | `boolean` | Optional |
+| `key_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `set_api_key_status`
+
+Erforderliche Rechte: `keys:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Einstellungen mit Status `active` oder `disabled`.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `key_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+| `status` | `"active"` · `"disabled"` | Pflicht |
+
+## `delete_api_key`
+
+Erforderliche Rechte: `keys:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Bestätigte `id`, `status: deleted`, `deletedAt`. Gelöschte Schlüssel können nicht reaktiviert werden.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `key_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `start_reveal_key_action`
+
+Erforderliche Rechte: `keys:secrets` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Ausstehende Aktion mit `id`, `confirmation_url`, `expires_at` und Wirkung, ohne Geheimwert.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `key_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `reveal_api_key`
+
+Erforderliche Rechte: `keys:secrets` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Nach Bestätigung einmalig `action_id`, `key_id` und Klartext-`key`. Wiederholungen geben den Geheimwert nicht erneut aus.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `action_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `get_profile`
+
+Erforderliche Rechte: `account:read` · Lesen
+
+**Ergebnis:** Eigenes Profil, aktuelles Abo und `freeApi`-Berechtigung, RPM und Stapelzugriff.
+
+Keine Felder: `input: {}` verwenden.
+
+## `get_account_capabilities`
+
+Erforderliche Rechte: `account:read` · Lesen
+
+**Ergebnis:** `scopes`, `bound_api_key_id`, `free_api`-Stufe/RPM und bestätigungspflichtige Aktionen.
+
+Keine Felder: `input: {}` verwenden.
+
+## `update_profile`
+
+Erforderliche Rechte: `account:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Aktualisiertes Profil. `name` oder `image` erforderlich; leerer Bildwert entfernt das Bild. HTTP(S)- oder unterstützte Bild-data-URL möglich.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `name` | `string`; Min. 1 Zeichen, Max. 100 Zeichen | Optional |
+| `image` | `string`; Max. 4000000 Zeichen | Optional |
+
+## `list_login_records`
+
+Erforderliche Rechte: `account:read` · Lesen
+
+**Ergebnis:** Letzte Anmeldungen in `items` mit Zeit, Methode, IP und Ort, ohne Sitzungstoken.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `limit` | `integer`; Min. 1, Max. 50 | Optional; Standard `20` |
+
+## `get_integration_config`
+
+Erforderliche Rechte: `account:read` · Lesen
+
+**Ergebnis:** API- und MCP-URLs nur mit Platzhalter-Zugangsdaten.
+
+Keine Felder: `input: {}` verwenden.
+
+## `start_account_action`
+
+Erforderliche Rechte: `account:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Ausstehende Website-Bestätigung. Passwortänderung und Kontolöschung erfolgen auf der Website.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `kind` | `"password_change"` · `"delete_account"` | Pflicht |
+
+## `get_account_action`
+
+Erforderliche Rechte: `account:read` · Lesen
+
+**Ergebnis:** `status`, Bestätigungslink, Ablaufzeit, Ziel und Abschlusszeit der eigenen Aktion.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `action_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `get_balance`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Konto-`balance` und gegebenenfalls Budget und Restguthaben des gebundenen Schlüssels.
+
+Keine Felder: `input: {}` verwenden.
+
+## `list_credit_transactions`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Paginierte Guthabenbuchungen mit Beträgen, Richtung, Status, Datum und Bestellung oder Abo.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `page` | `integer`; Min. 1, Max. 100000 | Optional; Standard `1` |
+| `pageSize` | `integer`; Min. 1, Max. 100 | Optional; Standard `20` |
+| `range` | `"all"` · `"7d"` · `"30d"` · `"90d"` | Optional; Standard `"all"` |
+| `direction` | `"all"` · `"add"` · `"subtract"` | Optional; Standard `"all"` |
+
+## `list_orders`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Paginierte Bestellungen mit Status, Betrag, Währung, Produkt und Zahlungsterminen. Erstellung ist kein Zahlungsnachweis.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `page` | `integer`; Min. 1, Max. 100000 | Optional; Standard `1` |
+| `pageSize` | `integer`; Min. 1, Max. 100 | Optional; Standard `20` |
+| `search` | `string`; Max. 200 Zeichen | Optional |
+| `status` | `string`; Max. 30 Zeichen | Optional |
+| `paymentType` | `string`; Max. 30 Zeichen | Optional |
+
+## `list_billing_products`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Aktuelle Produkt-IDs, Preise, Währungen und Credits. Zur Zahlung eine gelieferte `productId` als `product_id` verwenden.
+
+Keine Felder: `input: {}` verwenden.
+
+## `create_checkout`
+
+Erforderliche Rechte: `billing:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** `checkout_url` und `order_no`. Der Nutzer bezahlt auf der Website; danach `get_payment_status` prüfen.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `product_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+| `payment_provider` | `"stripe"` · `"paypal"` · `"creem"` · `"nowpayments"` · `"alipay"` · `"wechat"` | Optional |
+| `redirect` | `string`; Max. 2000 Zeichen | Optional |
+
+## `get_payment_status`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Zahlungsstatus, Betrag, Währung und Zahlungszeit der eigenen Bestellung, gegebenenfalls mit Prüfstatus.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `order_no` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `get_invoice`
+
+Erforderliche Rechte: `billing:read`, `files:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** `order_no` und temporäre PDF-`file`. Verfügbarkeit hängt von der Zahlungsart ab; Dateierstellung verlangt einen Idempotenzschlüssel.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `order_no` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `resend_invoice`
+
+Erforderliche Rechte: `billing:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** `order_no`, Ziel-`email`, `sent: true`. Sendet eine echte Rechnungsmail an die Bestelladresse; nur auf Wunsch ausführen.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `order_no` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `list_subscriptions`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Paginierte Abodaten, Produkt, Status, Abrechnungszeitraum und Kündigungsdaten.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `page` | `integer`; Min. 1, Max. 100000 | Optional; Standard `1` |
+| `pageSize` | `integer`; Min. 1, Max. 100 | Optional; Standard `20` |
+| `status` | `string`; Max. 30 Zeichen | Optional |
+| `search` | `string`; Max. 200 Zeichen | Optional |
+
+## `get_current_subscription`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** `subscription`-Metadaten oder `null`, wenn kein aktuelles Abo besteht.
+
+Keine Felder: `input: {}` verwenden.
+
+## `cancel_subscription`
+
+Erforderliche Rechte: `billing:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Startet eine Bestätigung für ein Abo. Erst nach Website-Bestätigung und geprüftem Abschluss ist es gekündigt.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `subscription_no` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `list_redemptions`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Eigene letzte Einlösungen in `items`.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `limit` | `integer`; Min. 1, Max. 100 | Optional; Standard `20` |
+
+## `redeem_code`
+
+Erforderliche Rechte: `billing:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Hinzugefügte `credits` und `redeemed: true`. Ungültige oder verbrauchte Codes ergeben einen Fehler.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `code` | `string`; Min. 1 Zeichen, Max. 200 Zeichen | Pflicht |
+
+## `get_credit_alert`
+
+Erforderliche Rechte: `billing:read` · Lesen
+
+**Ergebnis:** Schwelle, E-Mail-/Webhook-Aktivierung, `webhookConfigured` und Häufigkeit, ohne geheime Webhook-URL.
+
+Keine Felder: `input: {}` verwenden.
+
+## `update_credit_alert`
+
+Erforderliche Rechte: `billing:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Aktualisierte Einstellungen; mindestens ein Feld angeben. Webhooks benötigen öffentliche HTTP(S)-URLs.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `threshold` | `number`; > 0 | Optional |
+| `emailEnabled` | `boolean` | Optional |
+| `webhookEnabled` | `boolean` | Optional |
+| `webhookUrl` | `string`; Max. 4000 Zeichen | Optional |
+| `frequencyHours` | `6` / `12` / `24` | Optional |
+
+## `test_credit_alert`
+
+Erforderliche Rechte: `billing:write` · Schreiben; `idempotencyKey` erforderlich
+
+**Ergebnis:** Sendet eine echte Guthabenwarnung über `delivery`; liefert Art, Guthaben, Schwelle und verfügbaren HTTP-Status. Nur auf Wunsch ausführen.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `delivery` | `"email"` · `"webhook"` | Optional; Standard `"webhook"` |
+| `webhookUrl` | `string`; Max. 4000 Zeichen | Optional |
+| `threshold` | `number`; > 0 | Optional |
+
+## `get_overview`
+
+Erforderliche Rechte: `usage:read` · Lesen
+
+**Ergebnis:** Übersicht für `timezoneOffset`: Nutzer, Guthaben, Schlüssel, Nutzung, letzte Aktivitäten und Abo.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `range` | `"today"` · `"yesterday"` · `"3d"` · `"7d"` · `"30d"` | Optional; Standard `"30d"` |
+| `granularity` | `"day"` · `"hour"` | Optional; Standard `"day"` |
+| `timezoneOffset` | `integer`; Min. -840, Max. 840 | Optional; Standard `0` |
+
+## `list_usage`
+
+Erforderliche Rechte: `usage:read` · Lesen
+
+**Ergebnis:** Paginierte aufbewahrte Anfragen und UTC-`window`; unbekannte Cache-Token bleiben `null`.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `page` | `integer`; Min. 1, Max. 100000 | Optional; Standard `1` |
+| `pageSize` | `integer`; Min. 1, Max. 100 | Optional; Standard `20` |
+| `q` | `string`; Max. 200 Zeichen | Optional |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; Max. 10 Einträge | Optional |
+| `models` | `array` `string`; Min. 1 Zeichen, Max. 191 Zeichen; Max. 100 Einträge | Optional |
+| `requestTypes` | `array` `string`; Min. 1 Zeichen, Max. 191 Zeichen; Max. 30 Einträge | Optional |
+| `apiKeyIds` | `array` `string`; Min. 1 Zeichen, Max. 191 Zeichen; Max. 100 Einträge | Optional |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | Optional; Standard `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | Optional; Standard `"all"` |
+| `from` | `string` · `date-time` | Optional |
+| `to` | `string` · `date-time` | Optional |
+
+Nutzungsfilter verwenden ISO-8601-Zeitstempel mit Zeitzone, `from` einschließlich und `to` ausschließlich. Standard: letzte 30 Tage, maximal 366. Nur aufbewahrte Datensätze; fehlende Tage beweisen keine Nullnutzung. `get_overview.timezoneOffset` nutzt JavaScript-`getTimezoneOffset` in Minuten (UTC minus Ortszeit), Standard 0. Listen und Gruppierungen bleiben UTC.
+
+## `get_usage_detail`
+
+Erforderliche Rechte: `usage:read` · Lesen
+
+**Ergebnis:** Status, Dauer und Abrechnung der eigenen Anfrage. Inhalt erfordert `include_content: true`, `usage:content` und aktivierte Inhaltsaufzeichnung am Schlüssel.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `task_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+| `include_content` | `boolean` | Optional; Standard `false` |
+
+## `diagnose_request`
+
+Erforderliche Rechte: `usage:read` · Lesen
+
+**Ergebnis:** `request_id`, `task_id`, Status, tatsächlicher Fehlercode, Abrechnung/Erstattung und Hinweise. Kein Modellaufruf oder automatischer Neuversuch.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `task_id` | `string`; Min. 1 Zeichen, Max. 191 Zeichen | Pflicht |
+
+## `summarize_usage`
+
+Erforderliche Rechte: `usage:read` · Lesen
+
+**Ergebnis:** `totals`, `groups`, `group_by`, UTC-`window` für alle passenden aufbewahrten Anfragen. Fehlende Tage werden ausgelassen; `cachedTokens` ist unbekannt. Erstattungen umfassen nur verknüpfte asynchrone Aufgaben.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `q` | `string`; Max. 200 Zeichen | Optional |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; Max. 10 Einträge | Optional |
+| `models` | `array` `string`; Min. 1 Zeichen, Max. 191 Zeichen; Max. 100 Einträge | Optional |
+| `requestTypes` | `array` `string`; Min. 1 Zeichen, Max. 191 Zeichen; Max. 30 Einträge | Optional |
+| `apiKeyIds` | `array` `string`; Min. 1 Zeichen, Max. 191 Zeichen; Max. 100 Einträge | Optional |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | Optional; Standard `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | Optional; Standard `"all"` |
+| `from` | `string` · `date-time` | Optional |
+| `to` | `string` · `date-time` | Optional |
+| `group_by` | `"day"` · `"model"` · `"key"` · `"type"` | Optional; Standard `"day"` |
+
+Nutzungsfilter verwenden ISO-8601-Zeitstempel mit Zeitzone, `from` einschließlich und `to` ausschließlich. Standard: letzte 30 Tage, maximal 366. Nur aufbewahrte Datensätze; fehlende Tage beweisen keine Nullnutzung. `get_overview.timezoneOffset` nutzt JavaScript-`getTimezoneOffset` in Minuten (UTC minus Ortszeit), Standard 0. Listen und Gruppierungen bleiben UTC.
+
+In `summarize_usage` sind `creditsCharged` und `netCreditsCharged` die aufbewahrte Nettobelastung. `linkedRefundCredits` umfasst nur bekannte Erstattungen verknüpfter asynchroner Aufgaben. `knownGrossCredits` addiert diese zur Nettobelastung und ist keine vollständige Bruttoausgabe. `totalTokens`, `averageLatencyMs`, `pending`, `processing` beziehen sich auf passende aufbewahrte Anfragen.
+
+## `list_executions`
+
+Erforderliche Rechte: `account:read` · Lesen
+
+**Ergebnis:** Paginierte Ausführungsbelege mit Operation, Status, Kennungen, Fehlercode und Zeit.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `page` | `integer`; Min. 1 | Optional; Standard `1` |
+| `page_size` | `integer`; Min. 1, Max. 100 | Optional; Standard `20` |
+
+## `get_execution`
+
+Erforderliche Rechte: `account:read` · Lesen
+
+**Ergebnis:** Ein eigener Ausführungsbeleg zur Klärung von `pending` oder `unknown`; ohne vollständige Ausgabe oder Geheimwerte.
+
+| Eingabefeld | Typ und Grenzen | Pflicht / Standard |
+|---|---|---|
+| `execution_id` | `string`; Max. 100 Zeichen | Pflicht |
+
+## Hilfsprogramme: 32 Funktionen
+
+Slug als `run_utility.input.utility` nutzen. Zuerst `get_utility_schema` lesen: `fields` beschreibt Namen, Typen, Pflichtwerte, Standardwerte, Mehrfachdateien und Formate; `limits` und `access` beschreiben Größe, Anzahl und Voraussetzungen. Stapelschemas nicht aus Einzeldateiversionen ableiten.
+
+| Zweck | Werkzeug-IDs |
+|---|---|
+| Bildkompression und Format | `compress-image`, `compress-image-stream`, `batch-compress`, `heic-to-webp`, `convert-image`, `batch-convert-images` |
+| Bildgröße und Anordnung | `resize-image`, `batch-resize-images`, `crop-image`, `batch-crop-images`, `rotate-image`, `batch-rotate-images`, `grid-cut-image`, `join-images` |
+| Wasserzeichen und Symbole | `watermark`, `batch-watermark`, `favicon-generator` |
+| Bildanalyse und Metadaten | `image-metadata`, `remove-image-metadata`, `batch-image-metadata`, `color-palette`, `batch-color-palette`, `image-hash`, `batch-image-hash`, `image-similarity`, `image-diff` |
+| Video und Audio | `compress-video`, `extract-audio`, `video-thumbnail`, `video-to-gif`, `gif-to-frames` |
+| Netzwerkstandort | `ip-geo` |
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```

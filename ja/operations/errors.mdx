@@ -85,3 +85,7 @@ Gemini）と同じ形式**でエラーを返します。すべてのエラーレ
 拒否がある場合に限ります。メッセージに `safety` が含まれることや HTTP `502` だけで、
 ポリシー違反と判断しないでください。非同期タスクが `pending` または `processing` の間は、
 同じ `task_id` で `/v1/tasks/{task_id}` を継続して照会し、生成リクエストを重複送信しないでください。
+
+## パーソナル MCP
+
+パーソナル MCP のエラーは `isError` と `structuredContent` を使います。不確実な書き込みは既存の実行を先に確認します。[エラー対処](/ja/mcp-guide)と[ツールリファレンス](/ja/reference/mcp-tools)を参照してください。

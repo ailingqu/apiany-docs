@@ -1,0 +1,806 @@
+---
+title: "MCP tool reference"
+description: "Inputs, permissions, results and limits for every personal MCP tool."
+---
+
+The catalog contains 61 account operations plus `get_capabilities`. Your credential sees only tools permitted by its scopes. All resource access is limited to your account and checked again for each call. Start with the [quickstart](/mcp-guide).
+
+Except for `get_capabilities`, fields below belong inside `arguments.input`. Writes also require `arguments.idempotencyKey`: 1–191 printable ASCII characters without spaces. Fields with defaults can be omitted. Do not change identifier spelling or mix `page_size` with `pageSize`. The live `tools/list` schema is the connection’s contract.
+
+Successful tool output appears in `structuredContent` and as JSON text in `content`. The first execution returns the envelope below. A replay returns `replayed: true` and a small `receipt` with available identifiers, not the original full result or API key secret.
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending` (409) means the first call is still unresolved. `execution_unknown` (409), or a receipt with `status: unknown`, means the side effect may already have happened. Inspect `get_execution`, then the referenced task, order or account action. **Do not create a new idempotency key to bypass these states.** A completed MCP execution can still contain a pending model task or a pending website confirmation.
+
+Model-result collection is limited to **8 MiB and 300 seconds**. If collection is interrupted or exceeds a limit, the execution receipt preserves any known `request_id`. Inspect `get_execution` and the existing request or task before further action; do not create another paid request or use a new idempotency key to replace an unresolved call. A client disconnect does not mean an accepted model task was canceled.
+
+## `get_capabilities`
+
+Read · `arguments: {}`
+
+After the client initializes the connection, call `get_capabilities` with `{}` and read `tools/list`. `get_capabilities` returns `audience: user`, `ownership: self`, granted `scopes`, permitted tools and `oauth: false`. Every other personal tool uses an `input` object, including tools without business parameters.
+
+## `list_models`
+
+Required scopes: `models:read` · Read
+
+**Result:** Paginated `items`, `total`, `page`, `page_size`; public model IDs, prices and capabilities.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `query` | `string`; max 100 characters | Optional |
+| `type` | `string`; max 30 characters | Optional |
+| `page` | `integer`; min 1 | Optional; Default `1` |
+| `page_size` | `integer`; min 1, max 100 | Optional; Default `25` |
+
+## `get_model_schema`
+
+Required scopes: `models:read` · Read
+
+**Result:** One permitted model with supported parameters, capabilities and prices.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `model` | `string`; min 1 characters, max 200 characters | Required |
+
+## `get_api_guide`
+
+Required scopes: `models:read` · Read
+
+**Result:** Integration URLs, authentication placeholders, endpoint map and task polling guidance for `format`.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `format` | `"openai"` · `"responses"` · `"anthropic"` · `"gemini"` · `"image"` · `"video"` · `"mcp"` | Optional; Default `"openai"` |
+
+## `chat_completion`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/chat-completions).
+
+## `create_response`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/responses).
+
+## `create_message`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/messages).
+
+## `generate_content`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/gemini-generate-content).
+
+## `generate_image`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/image-generation).
+
+## `generate_image_sync`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/image-generation).
+
+## `edit_image`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/image-generation).
+
+File operations check ownership, readiness, file count and sizes before reading any file contents. Every file reference counts toward the operation’s limits, including repeated IDs.
+
+`edit_image`: at most **20 files across all fields**, including at most **one `mask`**; **50 MiB per file / 100 MiB total**. The per-field array limits in the input schema still apply.
+
+## `generate_video`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/video-generation).
+
+## `generate_video_sync`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/video-generation).
+
+## `moderate_content`
+
+Required scopes: `models:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` (HTTP), `request_id`, `credits_charged`, `content_type`, and `response` or collected `events`. Asynchronous responses include a task to poll with `get_task`; acceptance is not completion.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `body` | `object` → `JSON` | Required |
+| `client_request_id` | `string` · `UUID v4` | Optional |
+| `model` | `string`; min 1 characters, max 200 characters | Optional |
+| `files` | `object` → `array` `string`; max 100 characters; max 10 items | Optional |
+
+`body` is the complete supported HTTP JSON body. `model` outside it is required for `generate_content`; other model calls read `body.model`. `files` maps edit-image field names to owned file-ID arrays and requires `files:write`. Use `client_request_id` for video correlation only. See the matching [HTTP request reference](/reference/moderations).
+
+## `upload_image`
+
+Required scopes: `models:invoke`, `files:write` · Write; `idempotencyKey` required
+
+**Result:** Publishes one JPEG, PNG or WebP and returns its model-input URL inside the standard model response. This URL is shareable.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `file_id` | `string`; max 100 characters | Required |
+
+File operations check ownership, readiness, file count and sizes before reading any file contents. Every file reference counts toward the operation’s limits, including repeated IDs.
+
+`upload_image`: one file, at most **50 MiB**.
+
+## `upload_media`
+
+Required scopes: `files:write` · Write; `idempotencyKey` required
+
+**Result:** Publishes the selected image, video or audio files and returns their URLs. Publishing makes those URLs shareable; it is a separate action from a private upload.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `file_ids` | `array` `string`; min 1 characters, max 100 characters; min 1 items, max 20 items | Required |
+| `kind` | `"image"` · `"video"` · `"audio"` | Required |
+
+File operations check ownership, readiness, file count and sizes before reading any file contents. Every file reference counts toward the operation’s limits, including repeated IDs.
+
+`upload_media`: at most **20 files / 250 MiB total**.
+
+## `get_task`
+
+Required scopes: `models:invoke` · Read
+
+**Result:** Your existing task status and result. Does not create another task or charge again.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `task_id` | `string`; min 1 characters, max 200 characters | Required |
+
+## `list_utilities`
+
+Required scopes: `models:read` · Read
+
+**Result:** `items` with utility `id`, title, description, method, `body_kind`, `response_kind`, `fields`, `limits` and `access`.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `query` | `string`; max 100 characters | Optional |
+
+## `get_utility_schema`
+
+Required scopes: `models:read` · Read
+
+**Result:** The selected utility’s fields, accepted file types, defaults, size limits and access requirements.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `utility` | `string`; max 100 characters | Required |
+
+## `run_utility`
+
+Required scopes: `utilities:invoke` · Write; `idempotencyKey` required
+
+**Result:** Returns `status` and JSON `result`, or temporary `artifact` for binary/large output. Files and non-JSON output also require `files:write`; account quotas and paid-access requirements still apply.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `utility` | `string`; max 100 characters | Required |
+| `parameters` | `object` → `string`; max 10000 characters / `number` / `boolean` | Optional; Default `{}` |
+| `files` | `object` → `array` `string`; max 100 characters; max 20 items | Optional; Default `{}` |
+
+File operations check ownership, readiness, file count and sizes before reading any file contents. Every file reference counts toward the operation’s limits, including repeated IDs.
+
+`run_utility`: the selected utility’s file-count, per-file and total limits from `get_utility_schema` apply, with a hard ceiling of **250 MiB total** even when the catalog permits more.
+
+## `begin_upload`
+
+Required scopes: `files:write` · Write; `idempotencyKey` required
+
+**Result:** Temporary file metadata: `id`, `name`, `mime_type`, `size`, `status`, `expires_at`, `sha256`. Use `id` as subsequent `file_id`.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `name` | `string`; min 1 characters, max 180 characters | Required |
+| `mime_type` | `string`; max 120 characters | Required |
+| `size` | `integer`; min 1, max 262144000 | Required |
+
+## `upload_chunk`
+
+Required scopes: `files:write` · Write; `idempotencyKey` required
+
+**Result:** `file_id`, `index`, `received: true`. Base64 decodes to at most 1 MiB. Reusing an index requires identical bytes.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `file_id` | `string`; min 1 characters, max 100 characters | Required |
+| `index` | `integer`; min 0, max 249 | Required |
+| `data` | `string`; max 1398104 characters | Required |
+
+## `finish_upload`
+
+Required scopes: `files:write` · Write; `idempotencyKey` required
+
+**Result:** Verified file metadata with `status: ready` and SHA-256. All sequential chunks and the exact declared byte size are required.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `file_id` | `string`; min 1 characters, max 100 characters | Required |
+| `sha256` | `string`; SHA-256 `[a-f0-9]{64}` | Optional |
+
+## `get_artifact`
+
+Required scopes: `files:write` · Read
+
+**Result:** Without `offset`: metadata and a `download_url` requiring website sign-in. With `offset`: Base64 `data`, `offset`, `next_offset`; `null` marks the end. Default read length is 1 MiB.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `file_id` | `string`; min 1 characters, max 100 characters | Required |
+| `offset` | `integer`; min 0 | Optional |
+| `length` | `integer`; min 1, max 1048576 | Optional |
+
+## `list_api_keys`
+
+Required scopes: `keys:read` · Read
+
+**Result:** Paginated settings and key prefixes; never plaintext secrets.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `page` | `integer`; min 1, max 100000 | Optional; Default `1` |
+| `pageSize` | `integer`; min 1, max 100 | Optional; Default `20` |
+| `search` | `string`; max 200 characters | Optional |
+
+## `get_api_key`
+
+Required scopes: `keys:read` · Read
+
+**Result:** Settings for your selected key, without its secret.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `key_id` | `string`; min 1 characters, max 191 characters | Required |
+
+## `create_api_key`
+
+Required scopes: `keys:write` · Write; `idempotencyKey` required
+
+**Result:** New key metadata only. Use website-approved reveal to retrieve its secret. `purpose` is a label and grants no MCP rights.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `title` | `string`; min 1 characters, max 100 characters | Required |
+| `budgetCredits` | `number`; min 0 / `null` | Optional |
+| `budgetAlertThresholdCredits` | `number`; min 0 / `null` | Optional |
+| `rpmLimit` | `integer`; min 1, max 100000 / `null` | Optional |
+| `contentLoggingEnabled` | `boolean` | Optional |
+| `appName` | `string`; max 100 characters | Optional |
+| `purpose` | `string`; max 200 characters | Optional |
+| `modelScope` | `array` `string`; min 1 characters, max 191 characters; max 200 items / `null` | Optional |
+
+## `update_api_key`
+
+Required scopes: `keys:write` · Write; `idempotencyKey` required
+
+**Result:** Updated key settings. Supply at least one setting besides `key_id`.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `title` | `string`; min 1 characters, max 100 characters | Optional |
+| `budgetCredits` | `number`; min 0 / `null` | Optional |
+| `budgetAlertThresholdCredits` | `number`; min 0 / `null` | Optional |
+| `rpmLimit` | `integer`; min 1, max 100000 / `null` | Optional |
+| `contentLoggingEnabled` | `boolean` | Optional |
+| `key_id` | `string`; min 1 characters, max 191 characters | Required |
+
+## `set_api_key_status`
+
+Required scopes: `keys:write` · Write; `idempotencyKey` required
+
+**Result:** Updated settings with `active` or `disabled` status.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `key_id` | `string`; min 1 characters, max 191 characters | Required |
+| `status` | `"active"` · `"disabled"` | Required |
+
+## `delete_api_key`
+
+Required scopes: `keys:write` · Write; `idempotencyKey` required
+
+**Result:** Verified `id`, `status: deleted`, `deletedAt`. Deleted keys cannot be reactivated.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `key_id` | `string`; min 1 characters, max 191 characters | Required |
+
+## `start_reveal_key_action`
+
+Required scopes: `keys:secrets` · Write; `idempotencyKey` required
+
+**Result:** Pending action with `id`, `confirmation_url`, `expires_at` and proposed effect. No secret is returned.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `key_id` | `string`; min 1 characters, max 191 characters | Required |
+
+## `reveal_api_key`
+
+Required scopes: `keys:secrets` · Write; `idempotencyKey` required
+
+**Result:** After approval: `action_id`, `key_id`, plaintext `key`, exactly once. Replays do not return the secret.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `action_id` | `string`; min 1 characters, max 191 characters | Required |
+
+## `get_profile`
+
+Required scopes: `account:read` · Read
+
+**Result:** Your profile, current subscription and `freeApi` eligibility, RPM and batch access.
+
+No fields: use `input: {}`.
+
+## `get_account_capabilities`
+
+Required scopes: `account:read` · Read
+
+**Result:** Granted `scopes`, `bound_api_key_id`, `free_api` tier/RPM and supported confirmation actions.
+
+No fields: use `input: {}`.
+
+## `update_profile`
+
+Required scopes: `account:write` · Write; `idempotencyKey` required
+
+**Result:** Updated profile. Supply `name` or `image`; an empty image clears it. Image may be an HTTP(S) URL or supported image data URL.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `name` | `string`; min 1 characters, max 100 characters | Optional |
+| `image` | `string`; max 4000000 characters | Optional |
+
+## `list_login_records`
+
+Required scopes: `account:read` · Read
+
+**Result:** Recent sign-in `items` including time, method, IP and location. No session tokens.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `limit` | `integer`; min 1, max 50 | Optional; Default `20` |
+
+## `get_integration_config`
+
+Required scopes: `account:read` · Read
+
+**Result:** API and MCP connection URLs with placeholder credentials only.
+
+No fields: use `input: {}`.
+
+## `start_account_action`
+
+Required scopes: `account:write` · Write; `idempotencyKey` required
+
+**Result:** A pending website confirmation action. Password change and account deletion happen on the website.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `kind` | `"password_change"` · `"delete_account"` | Required |
+
+## `get_account_action`
+
+Required scopes: `account:read` · Read
+
+**Result:** Your action’s `status`, confirmation link, expiry, resource and completion time.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `action_id` | `string`; min 1 characters, max 191 characters | Required |
+
+## `get_balance`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Account `balance` and optional bound-key budget and remaining credits.
+
+No fields: use `input: {}`.
+
+## `list_credit_transactions`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Paginated credit transactions: amounts, direction, status, dates and related order or subscription.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `page` | `integer`; min 1, max 100000 | Optional; Default `1` |
+| `pageSize` | `integer`; min 1, max 100 | Optional; Default `20` |
+| `range` | `"all"` · `"7d"` · `"30d"` · `"90d"` | Optional; Default `"all"` |
+| `direction` | `"all"` · `"add"` · `"subtract"` | Optional; Default `"all"` |
+
+## `list_orders`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Paginated orders with status, amount, currency, product and payment dates. A created order is not proof of payment.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `page` | `integer`; min 1, max 100000 | Optional; Default `1` |
+| `pageSize` | `integer`; min 1, max 100 | Optional; Default `20` |
+| `search` | `string`; max 200 characters | Optional |
+| `status` | `string`; max 30 characters | Optional |
+| `paymentType` | `string`; max 30 characters | Optional |
+
+## `list_billing_products`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Current product IDs, prices, currencies and credit amounts; pass a returned `productId` as checkout `product_id`.
+
+No fields: use `input: {}`.
+
+## `create_checkout`
+
+Required scopes: `billing:write` · Write; `idempotencyKey` required
+
+**Result:** `checkout_url` and `order_no`. The user pays on the website; verify the order with `get_payment_status`.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `product_id` | `string`; min 1 characters, max 191 characters | Required |
+| `payment_provider` | `"stripe"` · `"paypal"` · `"creem"` · `"nowpayments"` · `"alipay"` · `"wechat"` | Optional |
+| `redirect` | `string`; max 2000 characters | Optional |
+
+## `get_payment_status`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Your order’s payment status, amount, currency and paid time, with additional payment review state when applicable.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `order_no` | `string`; min 1 characters, max 191 characters | Required |
+
+## `get_invoice`
+
+Required scopes: `billing:read`, `files:write` · Write; `idempotencyKey` required
+
+**Result:** `order_no` and a temporary PDF `file`. Availability depends on the payment method; this creates a file and requires an idempotency key.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `order_no` | `string`; min 1 characters, max 191 characters | Required |
+
+## `resend_invoice`
+
+Required scopes: `billing:write` · Write; `idempotencyKey` required
+
+**Result:** `order_no`, destination `email`, `sent: true`. Sends a real invoice email to the address already on the order; use only when requested.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `order_no` | `string`; min 1 characters, max 191 characters | Required |
+
+## `list_subscriptions`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Paginated subscription metadata, product, status, billing period and cancellation dates.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `page` | `integer`; min 1, max 100000 | Optional; Default `1` |
+| `pageSize` | `integer`; min 1, max 100 | Optional; Default `20` |
+| `status` | `string`; max 30 characters | Optional |
+| `search` | `string`; max 200 characters | Optional |
+
+## `get_current_subscription`
+
+Required scopes: `billing:read` · Read
+
+**Result:** `subscription` metadata, or `null` when no current subscription exists.
+
+No fields: use `input: {}`.
+
+## `cancel_subscription`
+
+Required scopes: `billing:write` · Write; `idempotencyKey` required
+
+**Result:** Starts a pending confirmation action for one subscription. It is not canceled until the user confirms on the website and completion is verified.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `subscription_no` | `string`; min 1 characters, max 191 characters | Required |
+
+## `list_redemptions`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Your recent redemption `items`.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `limit` | `integer`; min 1, max 100 | Optional; Default `20` |
+
+## `redeem_code`
+
+Required scopes: `billing:write` · Write; `idempotencyKey` required
+
+**Result:** Added `credits` and `redeemed: true`. Invalid or already used codes return an error.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `code` | `string`; min 1 characters, max 200 characters | Required |
+
+## `get_credit_alert`
+
+Required scopes: `billing:read` · Read
+
+**Result:** Threshold, email/webhook enabled flags, `webhookConfigured` and frequency; no secret webhook URL.
+
+No fields: use `input: {}`.
+
+## `update_credit_alert`
+
+Required scopes: `billing:write` · Write; `idempotencyKey` required
+
+**Result:** Updated preferences; provide at least one setting. Webhook URLs must be public HTTP(S) addresses.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `threshold` | `number`; > 0 | Optional |
+| `emailEnabled` | `boolean` | Optional |
+| `webhookEnabled` | `boolean` | Optional |
+| `webhookUrl` | `string`; max 4000 characters | Optional |
+| `frequencyHours` | `6` / `12` / `24` | Optional |
+
+## `test_credit_alert`
+
+Required scopes: `billing:write` · Write; `idempotencyKey` required
+
+**Result:** Sends a real balance alert via `delivery`; returns delivery type, balance, threshold and HTTP status where available. Use only when requested.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `delivery` | `"email"` · `"webhook"` | Optional; Default `"webhook"` |
+| `webhookUrl` | `string`; max 4000 characters | Optional |
+| `threshold` | `number`; > 0 | Optional |
+
+## `get_overview`
+
+Required scopes: `usage:read` · Read
+
+**Result:** Dashboard summary for the selected `timezoneOffset`: user, balance, keys, usage, recent activity and subscription.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `range` | `"today"` · `"yesterday"` · `"3d"` · `"7d"` · `"30d"` | Optional; Default `"30d"` |
+| `granularity` | `"day"` · `"hour"` | Optional; Default `"day"` |
+| `timezoneOffset` | `integer`; min -840, max 840 | Optional; Default `0` |
+
+## `list_usage`
+
+Required scopes: `usage:read` · Read
+
+**Result:** Paginated retained requests and UTC `window`; unknown cached-token counts remain `null`.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `page` | `integer`; min 1, max 100000 | Optional; Default `1` |
+| `pageSize` | `integer`; min 1, max 100 | Optional; Default `20` |
+| `q` | `string`; max 200 characters | Optional |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; max 10 items | Optional |
+| `models` | `array` `string`; min 1 characters, max 191 characters; max 100 items | Optional |
+| `requestTypes` | `array` `string`; min 1 characters, max 191 characters; max 30 items | Optional |
+| `apiKeyIds` | `array` `string`; min 1 characters, max 191 characters; max 100 items | Optional |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | Optional; Default `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | Optional; Default `"all"` |
+| `from` | `string` · `date-time` | Optional |
+| `to` | `string` · `date-time` | Optional |
+
+Usage filters use an inclusive `from` and exclusive `to`, with ISO 8601 timestamps including a timezone. The default window is the previous 30 days, maximum 366 days. Results cover retained records only; omitted days are not evidence of zero usage. `get_overview.timezoneOffset` uses JavaScript `getTimezoneOffset` minutes (UTC minus local time), default 0; usage listings and grouped summaries remain UTC.
+
+## `get_usage_detail`
+
+Required scopes: `usage:read` · Read
+
+**Result:** Your request status, timing and billing. Content requires `include_content: true`, `usage:content`, and content logging enabled for the API key.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `task_id` | `string`; min 1 characters, max 191 characters | Required |
+| `include_content` | `boolean` | Optional; Default `false` |
+
+## `diagnose_request`
+
+Required scopes: `usage:read` · Read
+
+**Result:** `request_id`, `task_id`, status, actual error code, billing/refund state and suggested fixes. No model invocation or automatic retry.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `task_id` | `string`; min 1 characters, max 191 characters | Required |
+
+## `summarize_usage`
+
+Required scopes: `usage:read` · Read
+
+**Result:** `totals`, `groups`, `group_by`, UTC `window` across all matching retained requests. Missing days are omitted; `cachedTokens` is unknown. Refund totals cover linked asynchronous-task refunds only.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `q` | `string`; max 200 characters | Optional |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; max 10 items | Optional |
+| `models` | `array` `string`; min 1 characters, max 191 characters; max 100 items | Optional |
+| `requestTypes` | `array` `string`; min 1 characters, max 191 characters; max 30 items | Optional |
+| `apiKeyIds` | `array` `string`; min 1 characters, max 191 characters; max 100 items | Optional |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | Optional; Default `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | Optional; Default `"all"` |
+| `from` | `string` · `date-time` | Optional |
+| `to` | `string` · `date-time` | Optional |
+| `group_by` | `"day"` · `"model"` · `"key"` · `"type"` | Optional; Default `"day"` |
+
+Usage filters use an inclusive `from` and exclusive `to`, with ISO 8601 timestamps including a timezone. The default window is the previous 30 days, maximum 366 days. Results cover retained records only; omitted days are not evidence of zero usage. `get_overview.timezoneOffset` uses JavaScript `getTimezoneOffset` minutes (UTC minus local time), default 0; usage listings and grouped summaries remain UTC.
+
+In `summarize_usage`, `creditsCharged` and `netCreditsCharged` represent the retained net charge. `linkedRefundCredits` covers known refunds linked to asynchronous tasks only. `knownGrossCredits` adds those known refunds to the net charge; it is not a complete gross-spend total. `totalTokens`, `averageLatencyMs`, `pending` and `processing` describe the matching retained requests.
+
+## `list_executions`
+
+Required scopes: `account:read` · Read
+
+**Result:** Paginated execution receipts: operation, status, receipt identifiers, error code and timestamps.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `page` | `integer`; min 1 | Optional; Default `1` |
+| `page_size` | `integer`; min 1, max 100 | Optional; Default `20` |
+
+## `get_execution`
+
+Required scopes: `account:read` · Read
+
+**Result:** One owned execution receipt. Use it to reconcile `pending` or `unknown`; it does not replay the full output or reveal secrets.
+
+| Input field | Type and limits | Required / Default |
+|---|---|---|
+| `execution_id` | `string`; max 100 characters | Required |
+
+## Utility catalog: 32 operations
+
+Use each slug as `run_utility.input.utility`. Call `get_utility_schema` for that slug first: its `fields` specify exact parameter names, types, required values, defaults, file multiplicity and accepted formats; `limits` and `access` specify size, file-count and account requirements. Do not infer a batch schema from the single-file version.
+
+| Purpose | Utility IDs |
+|---|---|
+| Image compression and format | `compress-image`, `compress-image-stream`, `batch-compress`, `heic-to-webp`, `convert-image`, `batch-convert-images` |
+| Image size and layout | `resize-image`, `batch-resize-images`, `crop-image`, `batch-crop-images`, `rotate-image`, `batch-rotate-images`, `grid-cut-image`, `join-images` |
+| Watermarks and icons | `watermark`, `batch-watermark`, `favicon-generator` |
+| Image analysis and metadata | `image-metadata`, `remove-image-metadata`, `batch-image-metadata`, `color-palette`, `batch-color-palette`, `image-hash`, `batch-image-hash`, `image-similarity`, `image-diff` |
+| Video and audio | `compress-video`, `extract-audio`, `video-thumbnail`, `video-to-gif`, `gif-to-frames` |
+| Network location | `ip-geo` |
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```

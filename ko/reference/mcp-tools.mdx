@@ -1,0 +1,806 @@
+---
+title: "MCP 도구 참조"
+description: "모든 개인 MCP 도구의 입력, 권한, 결과 및 제한."
+---
+
+카탈로그에는 계정 작업 61개와 `get_capabilities`가 있습니다. 허용된 도구만 표시되며 호출마다 권한과 소유권을 다시 확인합니다. [빠른 시작](/ko/mcp-guide)을 먼저 읽으세요.
+
+`get_capabilities`를 제외한 필드는 `arguments.input` 안에 넣습니다. 쓰기에는 공백 없는 인쇄 가능 ASCII 1~191자의 `arguments.idempotencyKey`도 필요합니다. 기본값이 있는 필드는 생략할 수 있습니다. `page_size`와 `pageSize`를 혼용하지 마세요. 연결의 `tools/list` 스키마를 따르세요.
+
+성공 결과는 `structuredContent`와 `content`의 JSON 텍스트로 반환됩니다. 최초 실행 형식은 아래와 같습니다. 재호출은 `replayed: true`와 식별자가 있는 작은 `receipt`를 반환하며 원본 전체 결과나 키 비밀 값은 반환하지 않습니다.
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending`(409)은 최초 호출이 미해결임을 뜻합니다. `execution_unknown`(409) 또는 `status: unknown`은 실제 작업이 이미 발생했을 수 있다는 뜻입니다. `get_execution` 다음에 관련 작업, 주문 또는 계정 작업을 확인하세요. **새 키로 이 상태를 우회하지 마세요.** MCP 실행이 완료돼도 모델 작업이나 웹 확인은 대기 상태일 수 있습니다.
+
+모델 결과 수집 한도는 **8 MiB 및 300초**입니다. 수집이 중단되거나 한도를 초과하면 실행 영수증에 알려진 `request_id`가 보존됩니다. 먼저 `get_execution`과 기존 요청 또는 작업을 확인하세요. 미해결 호출을 대신해 새 유료 요청을 만들거나 새 멱등 키를 사용하지 마세요. 클라이언트 연결 종료가 이미 접수된 모델 작업의 취소를 뜻하지는 않습니다.
+
+## `get_capabilities`
+
+읽기 · `arguments: {}`
+
+연결 초기화 후 `{}`로 `get_capabilities`를 호출하고 `tools/list`를 확인합니다. `audience: user`, `ownership: self`, 허용된 `scopes` 및 도구, `oauth: false`가 반환됩니다. 다른 개인 도구는 업무 매개변수가 없어도 `input` 객체를 사용합니다.
+
+## `list_models`
+
+필요한 권한: `models:read` · 읽기
+
+**결과:** 페이지별 `items`, `total`, `page`, `page_size`와 공개 모델 ID, 가격, 기능을 반환합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `query` | `string`; 최대 100 자 | 선택 |
+| `type` | `string`; 최대 30 자 | 선택 |
+| `page` | `integer`; 최소 1 | 선택; 기본값 `1` |
+| `page_size` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `25` |
+
+## `get_model_schema`
+
+필요한 권한: `models:read` · 읽기
+
+**결과:** 허용된 모델의 지원 매개변수, 기능 및 가격을 반환합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `model` | `string`; 최소 1 자, 최대 200 자 | 필수 |
+
+## `get_api_guide`
+
+필요한 권한: `models:read` · 읽기
+
+**결과:** `format`의 연결 URL, 인증 자리표시자, 엔드포인트 및 작업 조회 안내를 반환합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `format` | `"openai"` · `"responses"` · `"anthropic"` · `"gemini"` · `"image"` · `"video"` · `"mcp"` | 선택; 기본값 `"openai"` |
+
+## `chat_completion`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/chat-completions)를 보세요.
+
+## `create_response`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/responses)를 보세요.
+
+## `create_message`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/messages)를 보세요.
+
+## `generate_content`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/gemini-generate-content)를 보세요.
+
+## `generate_image`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/image-generation)를 보세요.
+
+## `generate_image_sync`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/image-generation)를 보세요.
+
+## `edit_image`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/image-generation)를 보세요.
+
+파일 작업은 내용을 읽기 전에 소유권, 준비 상태, 파일 수와 크기를 확인합니다. 같은 ID를 반복해도 각 참조가 개수와 총 크기에 포함됩니다.
+
+`edit_image`: 모든 필드 합계 최대 **20개 파일**, 그중 `mask`는 최대 **1개**이며 **파일당 50 MiB / 총 100 MiB**입니다. 입력 스키마의 필드별 배열 제한도 적용됩니다.
+
+## `generate_video`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/video-generation)를 보세요.
+
+## `generate_video_sync`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/video-generation)를 보세요.
+
+## `moderate_content`
+
+필요한 권한: `models:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** HTTP `status`, `request_id`, `credits_charged`, `content_type`과 `response` 또는 수집된 `events`를 반환합니다. 비동기 작업은 `get_task`로 조회하세요. 접수는 완료가 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `body` | `object` → `JSON` | 필수 |
+| `client_request_id` | `string` · `UUID v4` | 선택 |
+| `model` | `string`; 최소 1 자, 최대 200 자 | 선택 |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 10 항목 | 선택 |
+
+`body`는 지원 HTTP JSON 전체입니다. `generate_content`는 바깥 `model`이 필수이고 다른 호출은 `body.model`을 읽습니다. `files`는 이미지 편집 필드와 본인 파일 ID 배열의 맵이며 `files:write`가 필요합니다. `client_request_id`는 동영상 연결용입니다. [HTTP 참조](/ko/reference/moderations)를 보세요.
+
+## `upload_image`
+
+필요한 권한: `models:invoke`, `files:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** JPEG, PNG 또는 WebP를 게시하고 표준 응답에 모델 입력 URL을 반환합니다. URL은 공유할 수 있습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `file_id` | `string`; 최대 100 자 | 필수 |
+
+파일 작업은 내용을 읽기 전에 소유권, 준비 상태, 파일 수와 크기를 확인합니다. 같은 ID를 반복해도 각 참조가 개수와 총 크기에 포함됩니다.
+
+`upload_image`: 파일 1개, 최대 **50 MiB**.
+
+## `upload_media`
+
+필요한 권한: `files:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 이미지, 동영상 또는 오디오를 게시하고 URL을 반환합니다. 게시 URL은 공유 가능하며 비공개 업로드와 별도 작업입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `file_ids` | `array` `string`; 최소 1 자, 최대 100 자; 최소 1 항목, 최대 20 항목 | 필수 |
+| `kind` | `"image"` · `"video"` · `"audio"` | 필수 |
+
+파일 작업은 내용을 읽기 전에 소유권, 준비 상태, 파일 수와 크기를 확인합니다. 같은 ID를 반복해도 각 참조가 개수와 총 크기에 포함됩니다.
+
+`upload_media`: 최대 **20개 파일 / 총 250 MiB**.
+
+## `get_task`
+
+필요한 권한: `models:invoke` · 읽기
+
+**결과:** 기존 본인 작업의 상태와 결과입니다. 새 작업이나 추가 청구를 만들지 않습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `task_id` | `string`; 최소 1 자, 최대 200 자 | 필수 |
+
+## `list_utilities`
+
+필요한 권한: `models:read` · 읽기
+
+**결과:** `items`에 도구 `id`, 이름, 설명, 메서드, `body_kind`, `response_kind`, `fields`, `limits`, `access`를 반환합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `query` | `string`; 최대 100 자 | 선택 |
+
+## `get_utility_schema`
+
+필요한 권한: `models:read` · 읽기
+
+**결과:** 선택한 도구의 필드, 파일 형식, 기본값, 크기 제한 및 이용 요건입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `utility` | `string`; 최대 100 자 | 필수 |
+
+## `run_utility`
+
+필요한 권한: `utilities:invoke` · 쓰기: `idempotencyKey` 필수
+
+**결과:** `status`와 JSON `result` 또는 바이너리/큰 결과의 임시 `artifact`를 반환합니다. 파일 및 비 JSON 출력에는 `files:write`도 필요합니다. 계정 할당량과 유료 자격 요건이 적용됩니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `utility` | `string`; 최대 100 자 | 필수 |
+| `parameters` | `object` → `string`; 최대 10000 자 / `number` / `boolean` | 선택; 기본값 `{}` |
+| `files` | `object` → `array` `string`; 최대 100 자; 최대 20 항목 | 선택; 기본값 `{}` |
+
+파일 작업은 내용을 읽기 전에 소유권, 준비 상태, 파일 수와 크기를 확인합니다. 같은 ID를 반복해도 각 참조가 개수와 총 크기에 포함됩니다.
+
+`run_utility`: `get_utility_schema`의 파일 수, 개별 크기 및 총 크기 제한이 적용되며, 카탈로그가 더 허용해도 **총 250 MiB**를 초과할 수 없습니다.
+
+## `begin_upload`
+
+필요한 권한: `files:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 임시 파일의 `id`, `name`, `mime_type`, `size`, `status`, `expires_at`, `sha256`를 반환합니다. 이후 `id`를 `file_id`로 사용합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `name` | `string`; 최소 1 자, 최대 180 자 | 필수 |
+| `mime_type` | `string`; 최대 120 자 | 필수 |
+| `size` | `integer`; 최소 1, 최대 262144000 | 필수 |
+
+## `upload_chunk`
+
+필요한 권한: `files:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** `file_id`, `index`, `received: true`입니다. Base64 디코딩 후 최대 1 MiB이며 같은 인덱스에는 동일한 바이트가 필요합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `file_id` | `string`; 최소 1 자, 최대 100 자 | 필수 |
+| `index` | `integer`; 최소 0, 최대 249 | 필수 |
+| `data` | `string`; 최대 1398104 자 | 필수 |
+
+## `finish_upload`
+
+필요한 권한: `files:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 검증된 메타데이터, `status: ready`, SHA-256입니다. 모든 연속 청크와 선언한 정확한 크기가 필요합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `file_id` | `string`; 최소 1 자, 최대 100 자 | 필수 |
+| `sha256` | `string`; SHA-256 `[a-f0-9]{64}` | 선택 |
+
+## `get_artifact`
+
+필요한 권한: `files:write` · 읽기
+
+**결과:** `offset` 생략 시 메타데이터와 웹사이트 로그인이 필요한 `download_url`을 반환합니다. 지정 시 Base64 `data`, `offset`, `next_offset`이며 `null`은 끝입니다. 기본 길이는 1 MiB입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `file_id` | `string`; 최소 1 자, 최대 100 자 | 필수 |
+| `offset` | `integer`; 최소 0 | 선택 |
+| `length` | `integer`; 최소 1, 최대 1048576 | 선택 |
+
+## `list_api_keys`
+
+필요한 권한: `keys:read` · 읽기
+
+**결과:** 설정과 키 접두사의 페이지별 목록이며 비밀 값은 없습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `page` | `integer`; 최소 1, 최대 100000 | 선택; 기본값 `1` |
+| `pageSize` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `20` |
+| `search` | `string`; 최대 200 자 | 선택 |
+
+## `get_api_key`
+
+필요한 권한: `keys:read` · 읽기
+
+**결과:** 선택한 본인 키의 설정이며 비밀 값은 없습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `key_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `create_api_key`
+
+필요한 권한: `keys:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 새 키 메타데이터만 반환합니다. 비밀 값은 웹 승인 후 조회합니다. `purpose`는 이름표이며 MCP 권한을 부여하지 않습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `title` | `string`; 최소 1 자, 최대 100 자 | 필수 |
+| `budgetCredits` | `number`; 최소 0 / `null` | 선택 |
+| `budgetAlertThresholdCredits` | `number`; 최소 0 / `null` | 선택 |
+| `rpmLimit` | `integer`; 최소 1, 최대 100000 / `null` | 선택 |
+| `contentLoggingEnabled` | `boolean` | 선택 |
+| `appName` | `string`; 최대 100 자 | 선택 |
+| `purpose` | `string`; 최대 200 자 | 선택 |
+| `modelScope` | `array` `string`; 최소 1 자, 최대 191 자; 최대 200 항목 / `null` | 선택 |
+
+## `update_api_key`
+
+필요한 권한: `keys:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 변경된 키 설정입니다. `key_id` 외에 설정을 하나 이상 지정하세요.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `title` | `string`; 최소 1 자, 최대 100 자 | 선택 |
+| `budgetCredits` | `number`; 최소 0 / `null` | 선택 |
+| `budgetAlertThresholdCredits` | `number`; 최소 0 / `null` | 선택 |
+| `rpmLimit` | `integer`; 최소 1, 최대 100000 / `null` | 선택 |
+| `contentLoggingEnabled` | `boolean` | 선택 |
+| `key_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `set_api_key_status`
+
+필요한 권한: `keys:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** `active` 또는 `disabled` 상태의 변경된 설정입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `key_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+| `status` | `"active"` · `"disabled"` | 필수 |
+
+## `delete_api_key`
+
+필요한 권한: `keys:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 확인된 `id`, `status: deleted`, `deletedAt`입니다. 삭제된 키는 재활성화할 수 없습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `key_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `start_reveal_key_action`
+
+필요한 권한: `keys:secrets` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 대기 작업의 `id`, `confirmation_url`, `expires_at` 및 효과이며 비밀 값은 없습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `key_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `reveal_api_key`
+
+필요한 권한: `keys:secrets` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 승인 후 `action_id`, `key_id`, 비밀 값 `key`를 한 번만 반환합니다. 재실행 영수증에는 비밀 값이 없습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `action_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `get_profile`
+
+필요한 권한: `account:read` · 읽기
+
+**결과:** 본인 프로필, 현재 구독 및 `freeApi` 자격, RPM, 일괄 접근입니다.
+
+필드 없음: `input: {}`를 사용합니다.
+
+## `get_account_capabilities`
+
+필요한 권한: `account:read` · 읽기
+
+**결과:** `scopes`, `bound_api_key_id`, `free_api` 등급/RPM 및 확인 작업입니다.
+
+필드 없음: `input: {}`를 사용합니다.
+
+## `update_profile`
+
+필요한 권한: `account:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 변경된 프로필입니다. `name` 또는 `image`가 필요하며 빈 이미지 값은 삭제합니다. HTTP(S) URL 또는 지원 이미지 data URL을 사용할 수 있습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `name` | `string`; 최소 1 자, 최대 100 자 | 선택 |
+| `image` | `string`; 최대 4000000 자 | 선택 |
+
+## `list_login_records`
+
+필요한 권한: `account:read` · 읽기
+
+**결과:** 최근 로그인 `items`: 시간, 방식, IP 및 위치이며 세션 토큰은 없습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `limit` | `integer`; 최소 1, 최대 50 | 선택; 기본값 `20` |
+
+## `get_integration_config`
+
+필요한 권한: `account:read` · 읽기
+
+**결과:** API 및 MCP 연결 URL과 자격 증명 자리표시자만 반환합니다.
+
+필드 없음: `input: {}`를 사용합니다.
+
+## `start_account_action`
+
+필요한 권한: `account:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 웹 확인을 기다리는 작업입니다. 비밀번호 변경과 계정 삭제는 웹사이트에서 완료합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `kind` | `"password_change"` · `"delete_account"` | 필수 |
+
+## `get_account_action`
+
+필요한 권한: `account:read` · 읽기
+
+**결과:** 본인 작업의 `status`, 확인 링크, 만료, 대상 및 완료 시간입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `action_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `get_balance`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 계정 `balance`와 연결된 키의 예산 및 남은 크레딧입니다.
+
+필드 없음: `input: {}`를 사용합니다.
+
+## `list_credit_transactions`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 크레딧 거래 목록: 금액, 증감, 상태, 날짜 및 관련 주문이나 구독입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `page` | `integer`; 최소 1, 최대 100000 | 선택; 기본값 `1` |
+| `pageSize` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `20` |
+| `range` | `"all"` · `"7d"` · `"30d"` · `"90d"` | 선택; 기본값 `"all"` |
+| `direction` | `"all"` · `"add"` · `"subtract"` | 선택; 기본값 `"all"` |
+
+## `list_orders`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 주문 목록: 상태, 금액, 통화, 상품 및 결제 일시입니다. 주문 생성은 결제 증명이 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `page` | `integer`; 최소 1, 최대 100000 | 선택; 기본값 `1` |
+| `pageSize` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `20` |
+| `search` | `string`; 최대 200 자 | 선택 |
+| `status` | `string`; 최대 30 자 | 선택 |
+| `paymentType` | `string`; 최대 30 자 | 선택 |
+
+## `list_billing_products`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 현재 상품 ID, 가격, 통화, 크레딧입니다. 결제에는 반환된 `productId`를 `product_id`로 사용합니다.
+
+필드 없음: `input: {}`를 사용합니다.
+
+## `create_checkout`
+
+필요한 권한: `billing:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** `checkout_url`과 `order_no`입니다. 사용자가 웹에서 결제한 뒤 `get_payment_status`로 확인합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `product_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+| `payment_provider` | `"stripe"` · `"paypal"` · `"creem"` · `"nowpayments"` · `"alipay"` · `"wechat"` | 선택 |
+| `redirect` | `string`; 최대 2000 자 | 선택 |
+
+## `get_payment_status`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 본인 주문의 결제 상태, 금액, 통화 및 결제 시간이며 해당 시 검토 상태도 포함합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `order_no` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `get_invoice`
+
+필요한 권한: `billing:read`, `files:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** `order_no`와 임시 PDF `file`입니다. 결제 방식에 따라 이용 가능 여부가 달라집니다. 파일 생성 작업이므로 멱등 키가 필요합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `order_no` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `resend_invoice`
+
+필요한 권한: `billing:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** `order_no`, 수신 `email`, `sent: true`입니다. 주문에 등록된 이메일로 실제 발송하므로 요청받았을 때만 실행합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `order_no` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `list_subscriptions`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 구독 목록의 메타데이터, 상품, 상태, 결제 기간 및 취소 날짜입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `page` | `integer`; 최소 1, 최대 100000 | 선택; 기본값 `1` |
+| `pageSize` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `20` |
+| `status` | `string`; 최대 30 자 | 선택 |
+| `search` | `string`; 최대 200 자 | 선택 |
+
+## `get_current_subscription`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 현재 `subscription` 메타데이터이며 없으면 `null`입니다.
+
+필드 없음: `input: {}`를 사용합니다.
+
+## `cancel_subscription`
+
+필요한 권한: `billing:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 구독 하나에 대한 확인 대기 작업을 시작합니다. 사용자가 웹에서 확인하고 완료를 검증하기 전에는 취소된 것이 아닙니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `subscription_no` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `list_redemptions`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 본인의 최근 코드 사용 `items`입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `limit` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `20` |
+
+## `redeem_code`
+
+필요한 권한: `billing:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 추가된 `credits`와 `redeemed: true`입니다. 유효하지 않거나 사용된 코드는 오류입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `code` | `string`; 최소 1 자, 최대 200 자 | 필수 |
+
+## `get_credit_alert`
+
+필요한 권한: `billing:read` · 읽기
+
+**결과:** 기준값, 이메일/Webhook 활성 상태, `webhookConfigured`, 주기이며 비밀 Webhook URL은 반환하지 않습니다.
+
+필드 없음: `input: {}`를 사용합니다.
+
+## `update_credit_alert`
+
+필요한 권한: `billing:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** 변경된 설정이며 하나 이상 입력해야 합니다. Webhook URL은 공개 HTTP(S) 주소여야 합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `threshold` | `number`; > 0 | 선택 |
+| `emailEnabled` | `boolean` | 선택 |
+| `webhookEnabled` | `boolean` | 선택 |
+| `webhookUrl` | `string`; 최대 4000 자 | 선택 |
+| `frequencyHours` | `6` / `12` / `24` | 선택 |
+
+## `test_credit_alert`
+
+필요한 권한: `billing:write` · 쓰기: `idempotencyKey` 필수
+
+**결과:** `delivery`로 실제 잔액 알림을 보내고 방식, 잔액, 기준값 및 가능한 HTTP 상태를 반환합니다. 요청받았을 때만 실행합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `delivery` | `"email"` · `"webhook"` | 선택; 기본값 `"webhook"` |
+| `webhookUrl` | `string`; 최대 4000 자 | 선택 |
+| `threshold` | `number`; > 0 | 선택 |
+
+## `get_overview`
+
+필요한 권한: `usage:read` · 읽기
+
+**결과:** `timezoneOffset`에 따른 대시보드 요약: 사용자, 잔액, 키, 사용량, 최근 활동 및 구독입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `range` | `"today"` · `"yesterday"` · `"3d"` · `"7d"` · `"30d"` | 선택; 기본값 `"30d"` |
+| `granularity` | `"day"` · `"hour"` | 선택; 기본값 `"day"` |
+| `timezoneOffset` | `integer`; 최소 -840, 최대 840 | 선택; 기본값 `0` |
+
+## `list_usage`
+
+필요한 권한: `usage:read` · 읽기
+
+**결과:** 보관 중인 요청 목록과 UTC `window`입니다. 알 수 없는 캐시 토큰 수는 `null`입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `page` | `integer`; 최소 1, 최대 100000 | 선택; 기본값 `1` |
+| `pageSize` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `20` |
+| `q` | `string`; 최대 200 자 | 선택 |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; 최대 10 항목 | 선택 |
+| `models` | `array` `string`; 최소 1 자, 최대 191 자; 최대 100 항목 | 선택 |
+| `requestTypes` | `array` `string`; 최소 1 자, 최대 191 자; 최대 30 항목 | 선택 |
+| `apiKeyIds` | `array` `string`; 최소 1 자, 최대 191 자; 최대 100 항목 | 선택 |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | 선택; 기본값 `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | 선택; 기본값 `"all"` |
+| `from` | `string` · `date-time` | 선택 |
+| `to` | `string` · `date-time` | 선택 |
+
+사용량은 시간대가 포함된 ISO 8601 `from` 이상, `to` 미만입니다. 기본 최근 30일, 최대 366일이며 보관 기록만 포함합니다. 없는 날짜는 사용량 0의 증거가 아닙니다. `get_overview.timezoneOffset`은 JavaScript `getTimezoneOffset` 분 값(UTC−현지 시간), 기본 0입니다. 사용 목록과 요약은 UTC입니다.
+
+## `get_usage_detail`
+
+필요한 권한: `usage:read` · 읽기
+
+**결과:** 본인 요청 상태, 시간 및 청구입니다. 내용 조회에는 `include_content: true`, `usage:content`, API 키 내용 기록 활성화가 모두 필요합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `task_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+| `include_content` | `boolean` | 선택; 기본값 `false` |
+
+## `diagnose_request`
+
+필요한 권한: `usage:read` · 읽기
+
+**결과:** `request_id`, `task_id`, 상태, 실제 오류 코드, 청구/환불 및 조치입니다. 모델 실행이나 자동 재시도는 없습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `task_id` | `string`; 최소 1 자, 최대 191 자 | 필수 |
+
+## `summarize_usage`
+
+필요한 권한: `usage:read` · 읽기
+
+**결과:** 일치하는 모든 보관 요청의 `totals`, `groups`, `group_by`, UTC `window`입니다. 없는 날짜는 생략하며 `cachedTokens`는 미상입니다. 환불 합계는 연결된 비동기 작업 환불만 포함합니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `q` | `string`; 최대 200 자 | 선택 |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; 최대 10 항목 | 선택 |
+| `models` | `array` `string`; 최소 1 자, 최대 191 자; 최대 100 항목 | 선택 |
+| `requestTypes` | `array` `string`; 최소 1 자, 최대 191 자; 최대 30 항목 | 선택 |
+| `apiKeyIds` | `array` `string`; 최소 1 자, 최대 191 자; 최대 100 항목 | 선택 |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | 선택; 기본값 `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | 선택; 기본값 `"all"` |
+| `from` | `string` · `date-time` | 선택 |
+| `to` | `string` · `date-time` | 선택 |
+| `group_by` | `"day"` · `"model"` · `"key"` · `"type"` | 선택; 기본값 `"day"` |
+
+사용량은 시간대가 포함된 ISO 8601 `from` 이상, `to` 미만입니다. 기본 최근 30일, 최대 366일이며 보관 기록만 포함합니다. 없는 날짜는 사용량 0의 증거가 아닙니다. `get_overview.timezoneOffset`은 JavaScript `getTimezoneOffset` 분 값(UTC−현지 시간), 기본 0입니다. 사용 목록과 요약은 UTC입니다.
+
+`summarize_usage`의 `creditsCharged`, `netCreditsCharged`는 보관 기록의 순청구액입니다. `linkedRefundCredits`는 비동기 작업에 연결된 알려진 환불만 포함합니다. `knownGrossCredits`는 순청구액에 이 환불을 더한 값이며 완전한 총지출은 아닙니다. `totalTokens`, `averageLatencyMs`, `pending`, `processing`은 일치하는 보관 요청 기준입니다.
+
+## `list_executions`
+
+필요한 권한: `account:read` · 읽기
+
+**결과:** 실행 영수증 목록: 작업, 상태, 식별자, 오류 코드 및 시간입니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `page` | `integer`; 최소 1 | 선택; 기본값 `1` |
+| `page_size` | `integer`; 최소 1, 최대 100 | 선택; 기본값 `20` |
+
+## `get_execution`
+
+필요한 권한: `account:read` · 읽기
+
+**결과:** 본인 실행 영수증 하나입니다. `pending` 또는 `unknown` 확인에 사용하며 전체 출력이나 비밀 값을 복원하지 않습니다.
+
+| 입력 필드 | 형식 및 제한 | 필수 / 기본값 |
+|---|---|---|
+| `execution_id` | `string`; 최대 100 자 | 필수 |
+
+## 유틸리티 목록: 32개
+
+각 slug를 `run_utility.input.utility`로 사용합니다. 먼저 `get_utility_schema`를 호출해 `fields`의 이름, 형식, 필수값, 기본값, 복수 파일 및 형식과 `limits`, `access`의 크기, 파일 수, 계정 요건을 확인하세요. 단일 파일 버전에서 일괄 스키마를 추측하지 마세요.
+
+| 용도 | 도구 ID |
+|---|---|
+| 이미지 압축 및 형식 | `compress-image`, `compress-image-stream`, `batch-compress`, `heic-to-webp`, `convert-image`, `batch-convert-images` |
+| 이미지 크기 및 배치 | `resize-image`, `batch-resize-images`, `crop-image`, `batch-crop-images`, `rotate-image`, `batch-rotate-images`, `grid-cut-image`, `join-images` |
+| 워터마크 및 아이콘 | `watermark`, `batch-watermark`, `favicon-generator` |
+| 이미지 분석 및 메타데이터 | `image-metadata`, `remove-image-metadata`, `batch-image-metadata`, `color-palette`, `batch-color-palette`, `image-hash`, `batch-image-hash`, `image-similarity`, `image-diff` |
+| 동영상 및 오디오 | `compress-video`, `extract-audio`, `video-thumbnail`, `video-to-gif`, `gif-to-frames` |
+| 네트워크 위치 | `ip-geo` |
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```

@@ -1,0 +1,806 @@
+---
+title: "MCP 工具参考"
+description: "个人 MCP 全部工具的输入、权限、结果和限制。"
+---
+
+工具目录包含 61 个账户操作和 `get_capabilities`。凭证只能看到所授权的工具；每次调用都会再次检查权限与资源归属，访问范围始终限于本人账户。先阅读[快速开始](/zh/mcp-guide)。
+
+除 `get_capabilities` 外，下表字段均放在 `arguments.input` 中。写入还必须提供 `arguments.idempotencyKey`：1–191 个不含空格的可打印 ASCII 字符。有默认值的字段可以省略。不要更改标识符拼写，也不要混用 `page_size` 和 `pageSize`。以连接实时返回的 `tools/list` Schema 为准。
+
+成功结果同时出现在 `structuredContent` 和 `content` 的 JSON 文本中。首次执行返回下列封装；重放返回 `replayed: true` 和只含可用标识符的小型 `receipt`，不会重新返回完整结果或 API Key 明文。
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending`（409）表示首次调用尚未得到确定结果。`execution_unknown`（409）或 `status: unknown` 回执表示操作可能已发生。先用 `get_execution` 核实，再检查相关任务、订单或账户操作。**不要换新幂等键绕过这些状态。** MCP 执行完成后，其业务结果仍可能是等待中的模型任务或网站确认。
+
+模型结果收集上限为 **8 MiB 和 300 秒**。若收集中断或超限，执行回执会保留已知的 `request_id`。先检查 `get_execution` 和已有请求或任务，再决定下一步；不要另建付费请求，也不要用新幂等键替代结果未明的调用。客户端断开不代表已受理的模型任务已取消。
+
+## `get_capabilities`
+
+读取 · `arguments: {}`
+
+客户端初始化连接后，以 `{}` 调用 `get_capabilities`，并读取 `tools/list`。前者返回 `audience: user`、`ownership: self`、授权 `scopes`、可用工具及 `oauth: false`。其余个人工具都使用 `input` 对象，包括无业务参数的工具。
+
+## `list_models`
+
+所需权限: `models:read` · 读取
+
+**返回结果:** 返回分页 `items`、`total`、`page`、`page_size`，含公开模型 ID、价格和能力。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `query` | `string`; 最大 100 字符 | 可选 |
+| `type` | `string`; 最大 30 字符 | 可选 |
+| `page` | `integer`; 最小 1 | 可选; 默认 `1` |
+| `page_size` | `integer`; 最小 1, 最大 100 | 可选; 默认 `25` |
+
+## `get_model_schema`
+
+所需权限: `models:read` · 读取
+
+**返回结果:** 返回一个允许使用的模型及其支持的参数、能力和价格。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 必填 |
+
+## `get_api_guide`
+
+所需权限: `models:read` · 读取
+
+**返回结果:** 返回 `format` 对应的集成地址、认证占位符、接口列表和任务轮询说明。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `format` | `"openai"` · `"responses"` · `"anthropic"` · `"gemini"` · `"image"` · `"video"` · `"mcp"` | 可选; 默认 `"openai"` |
+
+## `chat_completion`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/chat-completions)。
+
+## `create_response`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/responses)。
+
+## `create_message`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/messages)。
+
+## `generate_content`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/gemini-generate-content)。
+
+## `generate_image`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/image-generation)。
+
+## `generate_image_sync`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/image-generation)。
+
+## `edit_image`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/image-generation)。
+
+文件操作会在读取任何文件内容前检查归属、就绪状态、文件数量和大小。每个文件引用都计入该操作的限额，重复 ID 也会重复计数和累加大小。
+
+`edit_image`：所有字段合计最多 **20 个文件**，其中最多 **1 个 `mask`**；**单文件 50 MiB，合计 100 MiB**。输入 Schema 中各字段数组的限额仍然适用。
+
+## `generate_video`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/video-generation)。
+
+## `generate_video_sync`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/video-generation)。
+
+## `moderate_content`
+
+所需权限: `models:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 HTTP `status`、`request_id`、`credits_charged`、`content_type`，以及 `response` 或收集的 `events`。异步响应返回任务，须用 `get_task` 查询；受理不等于完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必填 |
+| `client_request_id` | `string` · `UUID v4` | 可选 |
+| `model` | `string`; 最小 1 字符, 最大 200 字符 | 可选 |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 10 项 | 可选 |
+
+`body` 为完整受支持 HTTP JSON 请求。`generate_content` 必须提供外层 `model`，其余模型调用读取 `body.model`。`files` 将图片编辑字段名映射到本人文件 ID 数组，还需要 `files:write`。`client_request_id` 仅用于视频关联。参阅对应 [HTTP 请求参考](/zh/reference/moderations)。
+
+## `upload_image`
+
+所需权限: `models:invoke`, `files:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 发布一张 JPEG、PNG 或 WebP，在标准模型响应中返回可用作模型输入的 URL；该 URL 可被分享访问。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `file_id` | `string`; 最大 100 字符 | 必填 |
+
+文件操作会在读取任何文件内容前检查归属、就绪状态、文件数量和大小。每个文件引用都计入该操作的限额，重复 ID 也会重复计数和累加大小。
+
+`upload_image`：单个文件，最大 **50 MiB**。
+
+## `upload_media`
+
+所需权限: `files:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 发布所选图片、视频或音频并返回 URL。发布后 URL 可分享访问，与私有文件上传是两个独立操作。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `file_ids` | `array` `string`; 最小 1 字符, 最大 100 字符; 最小 1 项, 最大 20 项 | 必填 |
+| `kind` | `"image"` · `"video"` · `"audio"` | 必填 |
+
+文件操作会在读取任何文件内容前检查归属、就绪状态、文件数量和大小。每个文件引用都计入该操作的限额，重复 ID 也会重复计数和累加大小。
+
+`upload_media`：最多 **20 个文件，合计 250 MiB**。
+
+## `get_task`
+
+所需权限: `models:invoke` · 读取
+
+**返回结果:** 返回本人已有任务的状态和结果，不会新建任务或再次计费。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `task_id` | `string`; 最小 1 字符, 最大 200 字符 | 必填 |
+
+## `list_utilities`
+
+所需权限: `models:read` · 读取
+
+**返回结果:** `items` 包含工具 `id`、名称、说明、方法、`body_kind`、`response_kind`、`fields`、`limits` 和 `access`。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `query` | `string`; 最大 100 字符 | 可选 |
+
+## `get_utility_schema`
+
+所需权限: `models:read` · 读取
+
+**返回结果:** 返回所选工具的字段、支持文件类型、默认值、大小上限及使用资格。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `utility` | `string`; 最大 100 字符 | 必填 |
+
+## `run_utility`
+
+所需权限: `utilities:invoke` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 `status` 与 JSON `result`，二进制或较大结果返回临时 `artifact`。文件及非 JSON 输出还需 `files:write`；仍受账户配额及付费资格要求限制。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `utility` | `string`; 最大 100 字符 | 必填 |
+| `parameters` | `object` → `string`; 最大 10000 字符 / `number` / `boolean` | 可选; 默认 `{}` |
+| `files` | `object` → `array` `string`; 最大 100 字符; 最大 20 项 | 可选; 默认 `{}` |
+
+文件操作会在读取任何文件内容前检查归属、就绪状态、文件数量和大小。每个文件引用都计入该操作的限额，重复 ID 也会重复计数和累加大小。
+
+`run_utility`：遵守 `get_utility_schema` 返回的工具文件数、单文件和总大小限额；即使目录允许更多，总大小也不得超过 **250 MiB**。
+
+## `begin_upload`
+
+所需权限: `files:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回临时文件元数据 `id`、`name`、`mime_type`、`size`、`status`、`expires_at`、`sha256`。后续调用将 `id` 作为 `file_id`。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `name` | `string`; 最小 1 字符, 最大 180 字符 | 必填 |
+| `mime_type` | `string`; 最大 120 字符 | 必填 |
+| `size` | `integer`; 最小 1, 最大 262144000 | 必填 |
+
+## `upload_chunk`
+
+所需权限: `files:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 `file_id`、`index`、`received: true`。Base64 解码后最多 1 MiB；重复索引必须提供相同字节。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `file_id` | `string`; 最小 1 字符, 最大 100 字符 | 必填 |
+| `index` | `integer`; 最小 0, 最大 249 | 必填 |
+| `data` | `string`; 最大 1398104 字符 | 必填 |
+
+## `finish_upload`
+
+所需权限: `files:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回已验证文件的元数据，包含 `status: ready` 与 SHA-256。必须具有全部连续分块且字节数等于声明大小。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `file_id` | `string`; 最小 1 字符, 最大 100 字符 | 必填 |
+| `sha256` | `string`; SHA-256 `[a-f0-9]{64}` | 可选 |
+
+## `get_artifact`
+
+所需权限: `files:write` · 读取
+
+**返回结果:** 不传 `offset`：返回元数据及需网站登录的 `download_url`。传 `offset`：返回 Base64 `data`、`offset`、`next_offset`；`null` 表示结束。默认读取 1 MiB。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `file_id` | `string`; 最小 1 字符, 最大 100 字符 | 必填 |
+| `offset` | `integer`; 最小 0 | 可选 |
+| `length` | `integer`; 最小 1, 最大 1048576 | 可选 |
+
+## `list_api_keys`
+
+所需权限: `keys:read` · 读取
+
+**返回结果:** 分页返回设置与密钥前缀，不含明文密钥。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 可选; 默认 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 可选; 默认 `20` |
+| `search` | `string`; 最大 200 字符 | 可选 |
+
+## `get_api_key`
+
+所需权限: `keys:read` · 读取
+
+**返回结果:** 返回指定本人密钥的设置，不含明文。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `create_api_key`
+
+所需权限: `keys:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 仅返回新密钥元数据；获取明文须经网站批准。`purpose` 只是标签，不授予 MCP 权限。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `title` | `string`; 最小 1 字符, 最大 100 字符 | 必填 |
+| `budgetCredits` | `number`; 最小 0 / `null` | 可选 |
+| `budgetAlertThresholdCredits` | `number`; 最小 0 / `null` | 可选 |
+| `rpmLimit` | `integer`; 最小 1, 最大 100000 / `null` | 可选 |
+| `contentLoggingEnabled` | `boolean` | 可选 |
+| `appName` | `string`; 最大 100 字符 | 可选 |
+| `purpose` | `string`; 最大 200 字符 | 可选 |
+| `modelScope` | `array` `string`; 最小 1 字符, 最大 191 字符; 最大 200 项 / `null` | 可选 |
+
+## `update_api_key`
+
+所需权限: `keys:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回更新后设置；除 `key_id` 外至少提供一个设置。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `title` | `string`; 最小 1 字符, 最大 100 字符 | 可选 |
+| `budgetCredits` | `number`; 最小 0 / `null` | 可选 |
+| `budgetAlertThresholdCredits` | `number`; 最小 0 / `null` | 可选 |
+| `rpmLimit` | `integer`; 最小 1, 最大 100000 / `null` | 可选 |
+| `contentLoggingEnabled` | `boolean` | 可选 |
+| `key_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `set_api_key_status`
+
+所需权限: `keys:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回状态为 `active` 或 `disabled` 的设置。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+| `status` | `"active"` · `"disabled"` | 必填 |
+
+## `delete_api_key`
+
+所需权限: `keys:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回已验证的 `id`、`status: deleted`、`deletedAt`；删除后不能重新启用。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `start_reveal_key_action`
+
+所需权限: `keys:secrets` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回待确认操作的 `id`、`confirmation_url`、`expires_at` 和操作效果，不返回密钥明文。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `reveal_api_key`
+
+所需权限: `keys:secrets` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 批准后仅一次返回 `action_id`、`key_id` 和明文 `key`；重放不会再次返回密钥。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `action_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `get_profile`
+
+所需权限: `account:read` · 读取
+
+**返回结果:** 返回本人资料、当前订阅及 `freeApi` 资格、RPM 和批量使用权限。
+
+无字段：传入 `input: {}`。
+
+## `get_account_capabilities`
+
+所需权限: `account:read` · 读取
+
+**返回结果:** 返回 `scopes`、`bound_api_key_id`、`free_api` 等级/RPM 及支持的确认操作。
+
+无字段：传入 `input: {}`。
+
+## `update_profile`
+
+所需权限: `account:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回更新后资料；提供 `name` 或 `image`，空图片值可清除头像。图片可为 HTTP(S) URL 或支持的图片 data URL。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `name` | `string`; 最小 1 字符, 最大 100 字符 | 可选 |
+| `image` | `string`; 最大 4000000 字符 | 可选 |
+
+## `list_login_records`
+
+所需权限: `account:read` · 读取
+
+**返回结果:** 最近登录 `items`，包括时间、方式、IP 和地点，不含会话令牌。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `limit` | `integer`; 最小 1, 最大 50 | 可选; 默认 `20` |
+
+## `get_integration_config`
+
+所需权限: `account:read` · 读取
+
+**返回结果:** 返回 API 与 MCP 连接地址及凭证占位符，不含真实密钥。
+
+无字段：传入 `input: {}`。
+
+## `start_account_action`
+
+所需权限: `account:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回待网站确认的操作；密码修改及注销在网站完成。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `kind` | `"password_change"` · `"delete_account"` | 必填 |
+
+## `get_account_action`
+
+所需权限: `account:read` · 读取
+
+**返回结果:** 返回本人操作的 `status`、确认链接、到期时间、资源和完成时间。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `action_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `get_balance`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 账户 `balance`，以及可用的绑定密钥预算与剩余额度。
+
+无字段：传入 `input: {}`。
+
+## `list_credit_transactions`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 分页积分交易，含金额、方向、状态、日期和关联订单或订阅。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 可选; 默认 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 可选; 默认 `20` |
+| `range` | `"all"` · `"7d"` · `"30d"` · `"90d"` | 可选; 默认 `"all"` |
+| `direction` | `"all"` · `"add"` · `"subtract"` | 可选; 默认 `"all"` |
+
+## `list_orders`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 分页订单，含状态、金额、币种、产品和支付时间。创建订单不代表已付款。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 可选; 默认 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 可选; 默认 `20` |
+| `search` | `string`; 最大 200 字符 | 可选 |
+| `status` | `string`; 最大 30 字符 | 可选 |
+| `paymentType` | `string`; 最大 30 字符 | 可选 |
+
+## `list_billing_products`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 返回当前产品 ID、价格、币种和积分数；将返回的 `productId` 作为结账 `product_id`。
+
+无字段：传入 `input: {}`。
+
+## `create_checkout`
+
+所需权限: `billing:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 `checkout_url` 和 `order_no`。用户在网站付款，之后用 `get_payment_status` 核实订单。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `product_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+| `payment_provider` | `"stripe"` · `"paypal"` · `"creem"` · `"nowpayments"` · `"alipay"` · `"wechat"` | 可选 |
+| `redirect` | `string`; 最大 2000 字符 | 可选 |
+
+## `get_payment_status`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 返回本人订单支付状态、金额、币种和付款时间，适用时包括支付审核状态。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `order_no` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `get_invoice`
+
+所需权限: `billing:read`, `files:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 `order_no` 和临时 PDF `file`。发票可用性取决于付款方式；此操作会创建文件，必须使用幂等键。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `order_no` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `resend_invoice`
+
+所需权限: `billing:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回 `order_no`、收件 `email`、`sent: true`。会向订单已有邮箱发送真实发票邮件，仅在用户明确请求时调用。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `order_no` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `list_subscriptions`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 返回分页订阅元数据、产品、状态、计费周期和取消日期。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 可选; 默认 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 可选; 默认 `20` |
+| `status` | `string`; 最大 30 字符 | 可选 |
+| `search` | `string`; 最大 200 字符 | 可选 |
+
+## `get_current_subscription`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 返回 `subscription` 元数据，没有当前订阅时为 `null`。
+
+无字段：传入 `input: {}`。
+
+## `cancel_subscription`
+
+所需权限: `billing:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 发起指定订阅的待确认操作。只有用户在网站确认且完成状态得到核实后，才能称为已取消。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `subscription_no` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `list_redemptions`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 返回本人最近的兑换 `items`。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `limit` | `integer`; 最小 1, 最大 100 | 可选; 默认 `20` |
+
+## `redeem_code`
+
+所需权限: `billing:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回增加的 `credits` 和 `redeemed: true`；无效或已使用的兑换码返回错误。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `code` | `string`; 最小 1 字符, 最大 200 字符 | 必填 |
+
+## `get_credit_alert`
+
+所需权限: `billing:read` · 读取
+
+**返回结果:** 返回阈值、邮件/Webhook 开关、`webhookConfigured` 和频率，不返回含密钥的 Webhook URL。
+
+无字段：传入 `input: {}`。
+
+## `update_credit_alert`
+
+所需权限: `billing:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 返回更新后设置，至少提供一个设置。Webhook URL 必须是公网 HTTP(S) 地址。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `threshold` | `number`; > 0 | 可选 |
+| `emailEnabled` | `boolean` | 可选 |
+| `webhookEnabled` | `boolean` | 可选 |
+| `webhookUrl` | `string`; 最大 4000 字符 | 可选 |
+| `frequencyHours` | `6` / `12` / `24` | 可选 |
+
+## `test_credit_alert`
+
+所需权限: `billing:write` · 写入；必须提供 `idempotencyKey`
+
+**返回结果:** 经 `delivery` 发送真实余额提醒，返回发送方式、余额、阈值和可用的 HTTP 状态；仅在用户明确请求时调用。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `delivery` | `"email"` · `"webhook"` | 可选; 默认 `"webhook"` |
+| `webhookUrl` | `string`; 最大 4000 字符 | 可选 |
+| `threshold` | `number`; > 0 | 可选 |
+
+## `get_overview`
+
+所需权限: `usage:read` · 读取
+
+**返回结果:** 按 `timezoneOffset` 返回控制台汇总，含用户、余额、密钥、用量、近期活动和订阅。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `range` | `"today"` · `"yesterday"` · `"3d"` · `"7d"` · `"30d"` | 可选; 默认 `"30d"` |
+| `granularity` | `"day"` · `"hour"` | 可选; 默认 `"day"` |
+| `timezoneOffset` | `integer`; 最小 -840, 最大 840 | 可选; 默认 `0` |
+
+## `list_usage`
+
+所需权限: `usage:read` · 读取
+
+**返回结果:** 返回保留中的请求分页及 UTC `window`；未知的缓存 Token 数保持 `null`。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 可选; 默认 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 可选; 默认 `20` |
+| `q` | `string`; 最大 200 字符 | 可选 |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; 最大 10 项 | 可选 |
+| `models` | `array` `string`; 最小 1 字符, 最大 191 字符; 最大 100 项 | 可选 |
+| `requestTypes` | `array` `string`; 最小 1 字符, 最大 191 字符; 最大 30 项 | 可选 |
+| `apiKeyIds` | `array` `string`; 最小 1 字符, 最大 191 字符; 最大 100 项 | 可选 |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | 可选; 默认 `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | 可选; 默认 `"all"` |
+| `from` | `string` · `date-time` | 可选 |
+| `to` | `string` · `date-time` | 可选 |
+
+用量筛选采用包含 `from`、不包含 `to` 的区间，时间使用带时区的 ISO 8601。默认最近 30 天，最长 366 天。只覆盖仍保留的记录，缺失日期不等于零用量。`get_overview.timezoneOffset` 采用 JavaScript `getTimezoneOffset` 分钟语义（UTC 减本地时间），默认 0；用量列表和分组汇总仍使用 UTC。
+
+## `get_usage_detail`
+
+所需权限: `usage:read` · 读取
+
+**返回结果:** 返回本人请求状态、耗时和计费。读取内容同时要求 `include_content: true`、`usage:content` 及 API Key 开启内容记录。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `task_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+| `include_content` | `boolean` | 可选; 默认 `false` |
+
+## `diagnose_request`
+
+所需权限: `usage:read` · 读取
+
+**返回结果:** 返回 `request_id`、`task_id`、状态、实际错误码、计费/退款状态和修复建议，不调用模型或自动重试。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `task_id` | `string`; 最小 1 字符, 最大 191 字符 | 必填 |
+
+## `summarize_usage`
+
+所需权限: `usage:read` · 读取
+
+**返回结果:** 返回全部匹配且仍保留请求的 `totals`、`groups`、`group_by` 和 UTC `window`。缺失日期不补零，`cachedTokens` 未知；退款汇总仅覆盖已关联的异步任务退款。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `q` | `string`; 最大 200 字符 | 可选 |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; 最大 10 项 | 可选 |
+| `models` | `array` `string`; 最小 1 字符, 最大 191 字符; 最大 100 项 | 可选 |
+| `requestTypes` | `array` `string`; 最小 1 字符, 最大 191 字符; 最大 30 项 | 可选 |
+| `apiKeyIds` | `array` `string`; 最小 1 字符, 最大 191 字符; 最大 100 项 | 可选 |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | 可选; 默认 `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | 可选; 默认 `"all"` |
+| `from` | `string` · `date-time` | 可选 |
+| `to` | `string` · `date-time` | 可选 |
+| `group_by` | `"day"` · `"model"` · `"key"` · `"type"` | 可选; 默认 `"day"` |
+
+用量筛选采用包含 `from`、不包含 `to` 的区间，时间使用带时区的 ISO 8601。默认最近 30 天，最长 366 天。只覆盖仍保留的记录，缺失日期不等于零用量。`get_overview.timezoneOffset` 采用 JavaScript `getTimezoneOffset` 分钟语义（UTC 减本地时间），默认 0；用量列表和分组汇总仍使用 UTC。
+
+`summarize_usage` 的 `creditsCharged` 与 `netCreditsCharged` 表示保留记录中的净扣款。`linkedRefundCredits` 仅含已知且关联异步任务的退款；`knownGrossCredits` 为净扣款加这些已知退款，不代表完整毛花费。`totalTokens`、`averageLatencyMs`、`pending` 和 `processing` 描述匹配且仍保留的请求。
+
+## `list_executions`
+
+所需权限: `account:read` · 读取
+
+**返回结果:** 分页执行回执，包含操作名、状态、回执标识符、错误码和时间。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `page` | `integer`; 最小 1 | 可选; 默认 `1` |
+| `page_size` | `integer`; 最小 1, 最大 100 | 可选; 默认 `20` |
+
+## `get_execution`
+
+所需权限: `account:read` · 读取
+
+**返回结果:** 返回本人单条执行回执，用于核实 `pending` 或 `unknown`；不会恢复完整输出或密钥。
+
+| 输入字段 | 类型和限制 | 必填 / 默认 |
+|---|---|---|
+| `execution_id` | `string`; 最大 100 字符 | 必填 |
+
+## 实用工具目录：32 项
+
+将各 slug 用作 `run_utility.input.utility`。先用该 slug 调用 `get_utility_schema`：`fields` 提供准确字段名、类型、必填项、默认值、文件数量及支持格式，`limits` 和 `access` 提供大小、文件数和账户要求。不要从单文件版本推测批量版本结构。
+
+| 用途 | 工具 ID |
+|---|---|
+| 图片压缩与格式 | `compress-image`, `compress-image-stream`, `batch-compress`, `heic-to-webp`, `convert-image`, `batch-convert-images` |
+| 图片尺寸与布局 | `resize-image`, `batch-resize-images`, `crop-image`, `batch-crop-images`, `rotate-image`, `batch-rotate-images`, `grid-cut-image`, `join-images` |
+| 水印与图标 | `watermark`, `batch-watermark`, `favicon-generator` |
+| 图片分析与元数据 | `image-metadata`, `remove-image-metadata`, `batch-image-metadata`, `color-palette`, `batch-color-palette`, `image-hash`, `batch-image-hash`, `image-similarity`, `image-diff` |
+| 视频与音频 | `compress-video`, `extract-audio`, `video-thumbnail`, `video-to-gif`, `gif-to-frames` |
+| 网络定位 | `ip-geo` |
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```

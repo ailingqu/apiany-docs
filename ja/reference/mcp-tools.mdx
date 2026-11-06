@@ -1,0 +1,806 @@
+---
+title: "MCP ツールリファレンス"
+description: "全パーソナル MCP ツールの入力、権限、結果、制限。"
+---
+
+カタログには 61 個のアカウント操作と `get_capabilities` があります。認証情報に許可されたツールのみ表示され、呼び出しごとに権限と所有者が確認されます。[クイックスタート](/ja/mcp-guide)から始めてください。
+
+`get_capabilities` 以外では、以下のフィールドを `arguments.input` に入れます。書き込みには空白を含まない印字可能 ASCII 1～191 文字の `arguments.idempotencyKey` も必要です。既定値のある項目は省略できます。`page_size` と `pageSize` を混同しないでください。接続先の `tools/list` スキーマに従います。
+
+成功結果は `structuredContent` と `content` の JSON テキストで返ります。初回は下記の形式です。再送時は `replayed: true` と識別子を含む小さな `receipt` を返し、完全な結果やキーの秘密値は返しません。
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending`（409）は初回の結果待ちです。`execution_unknown`（409）または `status: unknown` は、操作がすでに行われた可能性を示します。`get_execution` と対象タスク・注文・操作を確認します。**新しいキーでこれらの状態を回避しないでください。** MCP 実行完了でも、モデルタスクやサイト確認は保留中の場合があります。
+
+モデル結果の収集上限は **8 MiB・300 秒**です。中断または上限超過時は、判明している `request_id` が実行記録に残ります。まず `get_execution` と既存のリクエスト・タスクを確認し、未解決の呼び出しを新たな有料リクエストや新規冪等キーで置き換えないでください。クライアントの切断は、受理済みモデルタスクのキャンセルを意味しません。
+
+## `get_capabilities`
+
+読み取り · `arguments: {}`
+
+接続初期化後、`get_capabilities` を `{}` で呼び出し、`tools/list` を確認します。`audience: user`、`ownership: self`、許可された `scopes` とツール、`oauth: false` が返ります。他の個人用ツールでは、業務パラメーターがなくても `input` オブジェクトが必要です。
+
+## `list_models`
+
+必要な権限: `models:read` · 読み取り
+
+**結果:** `items`、`total`、`page`、`page_size` と公開モデル ID・価格・機能を返します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `query` | `string`; 最大 100 文字 | 任意 |
+| `type` | `string`; 最大 30 文字 | 任意 |
+| `page` | `integer`; 最小 1 | 任意; 既定値 `1` |
+| `page_size` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `25` |
+
+## `get_model_schema`
+
+必要な権限: `models:read` · 読み取り
+
+**結果:** 利用可能なモデルの対応パラメーター・機能・価格を返します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 必須 |
+
+## `get_api_guide`
+
+必要な権限: `models:read` · 読み取り
+
+**結果:** `format` の接続 URL、認証の例、エンドポイント、タスク確認方法を返します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `format` | `"openai"` · `"responses"` · `"anthropic"` · `"gemini"` · `"image"` · `"video"` · `"mcp"` | 任意; 既定値 `"openai"` |
+
+## `chat_completion`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/chat-completions)を参照。
+
+## `create_response`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/responses)を参照。
+
+## `create_message`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/messages)を参照。
+
+## `generate_content`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/gemini-generate-content)を参照。
+
+## `generate_image`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/image-generation)を参照。
+
+## `generate_image_sync`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/image-generation)を参照。
+
+## `edit_image`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/image-generation)を参照。
+
+ファイル操作は内容を読む前に、所有者、準備状態、件数、サイズを確認します。同じ ID を繰り返しても、各参照が件数と合計サイズに加算されます。
+
+`edit_image`：全フィールドで最大 **20 ファイル**、うち `mask` は最大 **1 ファイル**。**1 ファイル 50 MiB、合計 100 MiB**。入力スキーマの各配列上限も適用されます。
+
+## `generate_video`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/video-generation)を参照。
+
+## `generate_video_sync`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/video-generation)を参照。
+
+## `moderate_content`
+
+必要な権限: `models:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** HTTP `status`、`request_id`、`credits_charged`、`content_type` と `response` または収集した `events` を返します。非同期処理は `get_task` で確認します。受付は完了を意味しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `body` | `object` → `JSON` | 必須 |
+| `client_request_id` | `string` · `UUID v4` | 任意 |
+| `model` | `string`; 最小 1 文字, 最大 200 文字 | 任意 |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 10 件 | 任意 |
+
+`body` は対応 HTTP JSON 全体です。`generate_content` は外側の `model` が必須、他は `body.model` を読みます。`files` は画像編集フィールド名と自分のファイル ID 配列の対応で、`files:write` も必要です。`client_request_id` は動画照合用です。[HTTP リファレンス](/ja/reference/moderations)を参照。
+
+## `upload_image`
+
+必要な権限: `models:invoke`, `files:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** JPEG・PNG・WebP を公開し、標準レスポンス内にモデル入力用 URL を返します。URL は共有可能です。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `file_id` | `string`; 最大 100 文字 | 必須 |
+
+ファイル操作は内容を読む前に、所有者、準備状態、件数、サイズを確認します。同じ ID を繰り返しても、各参照が件数と合計サイズに加算されます。
+
+`upload_image`：1 ファイル、最大 **50 MiB**。
+
+## `upload_media`
+
+必要な権限: `files:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 画像・動画・音声を公開して URL を返します。私的アップロードとは別の操作で、公開 URL は共有可能です。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `file_ids` | `array` `string`; 最小 1 文字, 最大 100 文字; 最小 1 件, 最大 20 件 | 必須 |
+| `kind` | `"image"` · `"video"` · `"audio"` | 必須 |
+
+ファイル操作は内容を読む前に、所有者、準備状態、件数、サイズを確認します。同じ ID を繰り返しても、各参照が件数と合計サイズに加算されます。
+
+`upload_media`：最大 **20 ファイル、合計 250 MiB**。
+
+## `get_task`
+
+必要な権限: `models:invoke` · 読み取り
+
+**結果:** 既存の自分のタスクの状態と結果。新規作成や再課金はありません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `task_id` | `string`; 最小 1 文字, 最大 200 文字 | 必須 |
+
+## `list_utilities`
+
+必要な権限: `models:read` · 読み取り
+
+**結果:** `items` にツール `id`、名前、説明、メソッド、`body_kind`、`response_kind`、`fields`、`limits`、`access` を返します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `query` | `string`; 最大 100 文字 | 任意 |
+
+## `get_utility_schema`
+
+必要な権限: `models:read` · 読み取り
+
+**結果:** ツールの入力項目、対応ファイル形式、既定値、容量制限、利用条件。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `utility` | `string`; 最大 100 文字 | 必須 |
+
+## `run_utility`
+
+必要な権限: `utilities:invoke` · 書き込み。`idempotencyKey` 必須
+
+**結果:** `status` と JSON `result`、またはバイナリ・大きな結果の一時 `artifact` を返します。ファイル利用と非 JSON 出力は `files:write` も必要です。利用条件と上限は引き続き適用されます。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `utility` | `string`; 最大 100 文字 | 必須 |
+| `parameters` | `object` → `string`; 最大 10000 文字 / `number` / `boolean` | 任意; 既定値 `{}` |
+| `files` | `object` → `array` `string`; 最大 100 文字; 最大 20 件 | 任意; 既定値 `{}` |
+
+ファイル操作は内容を読む前に、所有者、準備状態、件数、サイズを確認します。同じ ID を繰り返しても、各参照が件数と合計サイズに加算されます。
+
+`run_utility`：`get_utility_schema` が返す件数・個別サイズ・合計サイズの上限に従います。カタログの値が大きくても、合計は **250 MiB** を超えられません。
+
+## `begin_upload`
+
+必要な権限: `files:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 一時ファイルの `id`、`name`、`mime_type`、`size`、`status`、`expires_at`、`sha256`。以後は `id` を `file_id` に指定します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `name` | `string`; 最小 1 文字, 最大 180 文字 | 必須 |
+| `mime_type` | `string`; 最大 120 文字 | 必須 |
+| `size` | `integer`; 最小 1, 最大 262144000 | 必須 |
+
+## `upload_chunk`
+
+必要な権限: `files:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** `file_id`、`index`、`received: true`。Base64 復号後は最大 1 MiB。同じインデックスには同一バイト列が必要です。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `file_id` | `string`; 最小 1 文字, 最大 100 文字 | 必須 |
+| `index` | `integer`; 最小 0, 最大 249 | 必須 |
+| `data` | `string`; 最大 1398104 文字 | 必須 |
+
+## `finish_upload`
+
+必要な権限: `files:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 検証済みメタデータ、`status: ready`、SHA-256。連続する全チャンクと申告どおりのバイト数が必要です。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `file_id` | `string`; 最小 1 文字, 最大 100 文字 | 必須 |
+| `sha256` | `string`; SHA-256 `[a-f0-9]{64}` | 任意 |
+
+## `get_artifact`
+
+必要な権限: `files:write` · 読み取り
+
+**結果:** `offset` なしはメタデータとサイトログインが必要な `download_url`。指定時は Base64 `data`、`offset`、`next_offset`。`null` は末尾。既定の読み取り量は 1 MiB です。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `file_id` | `string`; 最小 1 文字, 最大 100 文字 | 必須 |
+| `offset` | `integer`; 最小 0 | 任意 |
+| `length` | `integer`; 最小 1, 最大 1048576 | 任意 |
+
+## `list_api_keys`
+
+必要な権限: `keys:read` · 読み取り
+
+**結果:** 設定とキー接頭辞の一覧。秘密値は含みません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 任意; 既定値 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `20` |
+| `search` | `string`; 最大 200 文字 | 任意 |
+
+## `get_api_key`
+
+必要な権限: `keys:read` · 読み取り
+
+**結果:** 選択した自分のキーの設定。秘密値なし。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `create_api_key`
+
+必要な権限: `keys:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 新規キーのメタデータのみ。秘密値にはサイト承認が必要です。`purpose` はラベルで、MCP 権限を与えません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `title` | `string`; 最小 1 文字, 最大 100 文字 | 必須 |
+| `budgetCredits` | `number`; 最小 0 / `null` | 任意 |
+| `budgetAlertThresholdCredits` | `number`; 最小 0 / `null` | 任意 |
+| `rpmLimit` | `integer`; 最小 1, 最大 100000 / `null` | 任意 |
+| `contentLoggingEnabled` | `boolean` | 任意 |
+| `appName` | `string`; 最大 100 文字 | 任意 |
+| `purpose` | `string`; 最大 200 文字 | 任意 |
+| `modelScope` | `array` `string`; 最小 1 文字, 最大 191 文字; 最大 200 件 / `null` | 任意 |
+
+## `update_api_key`
+
+必要な権限: `keys:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 更新後の設定。`key_id` 以外に設定を一つ以上指定します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `title` | `string`; 最小 1 文字, 最大 100 文字 | 任意 |
+| `budgetCredits` | `number`; 最小 0 / `null` | 任意 |
+| `budgetAlertThresholdCredits` | `number`; 最小 0 / `null` | 任意 |
+| `rpmLimit` | `integer`; 最小 1, 最大 100000 / `null` | 任意 |
+| `contentLoggingEnabled` | `boolean` | 任意 |
+| `key_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `set_api_key_status`
+
+必要な権限: `keys:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** `active` または `disabled` 状態の更新済み設定。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+| `status` | `"active"` · `"disabled"` | 必須 |
+
+## `delete_api_key`
+
+必要な権限: `keys:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 確認済み `id`、`status: deleted`、`deletedAt`。削除したキーは再有効化できません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `start_reveal_key_action`
+
+必要な権限: `keys:secrets` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 保留中の操作の `id`、`confirmation_url`、`expires_at`、内容。秘密値は返しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `key_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `reveal_api_key`
+
+必要な権限: `keys:secrets` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 承認後に `action_id`、`key_id`、秘密値 `key` を一度だけ返します。再送しても秘密値は返りません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `action_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `get_profile`
+
+必要な権限: `account:read` · 読み取り
+
+**結果:** 自分のプロフィール、現在の契約、`freeApi` の利用条件・RPM・一括利用可否。
+
+フィールドなし。`input: {}` を指定します。
+
+## `get_account_capabilities`
+
+必要な権限: `account:read` · 読み取り
+
+**結果:** `scopes`、`bound_api_key_id`、`free_api` の区分・RPM、確認操作の種類。
+
+フィールドなし。`input: {}` を指定します。
+
+## `update_profile`
+
+必要な権限: `account:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 更新後のプロフィール。`name` または `image` が必要で、空の画像値は削除を意味します。HTTP(S) URL または対応画像 data URL を使えます。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `name` | `string`; 最小 1 文字, 最大 100 文字 | 任意 |
+| `image` | `string`; 最大 4000000 文字 | 任意 |
+
+## `list_login_records`
+
+必要な権限: `account:read` · 読み取り
+
+**結果:** 最近のログイン `items`：時刻、方法、IP、場所。セッショントークンなし。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `limit` | `integer`; 最小 1, 最大 50 | 任意; 既定値 `20` |
+
+## `get_integration_config`
+
+必要な権限: `account:read` · 読み取り
+
+**結果:** API・MCP 接続 URL と認証情報のプレースホルダーのみ。
+
+フィールドなし。`input: {}` を指定します。
+
+## `start_account_action`
+
+必要な権限: `account:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** サイト確認待ちの操作。パスワード変更とアカウント削除はサイトで行います。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `kind` | `"password_change"` · `"delete_account"` | 必須 |
+
+## `get_account_action`
+
+必要な権限: `account:read` · 読み取り
+
+**結果:** 自分の操作の `status`、確認リンク、有効期限、対象、完了時刻。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `action_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `get_balance`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** アカウントの `balance` と、設定されていれば紐付いたキーの予算・残額。
+
+フィールドなし。`input: {}` を指定します。
+
+## `list_credit_transactions`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** クレジット取引一覧：金額、増減、状態、日付、関連注文・契約。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 任意; 既定値 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `20` |
+| `range` | `"all"` · `"7d"` · `"30d"` · `"90d"` | 任意; 既定値 `"all"` |
+| `direction` | `"all"` · `"add"` · `"subtract"` | 任意; 既定値 `"all"` |
+
+## `list_orders`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** 注文一覧：状態、金額、通貨、商品、支払日時。作成済み注文は支払証明ではありません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 任意; 既定値 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `20` |
+| `search` | `string`; 最大 200 文字 | 任意 |
+| `status` | `string`; 最大 30 文字 | 任意 |
+| `paymentType` | `string`; 最大 30 文字 | 任意 |
+
+## `list_billing_products`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** 現在の商品 ID・価格・通貨・クレジット数。決済には返された `productId` を `product_id` に指定します。
+
+フィールドなし。`input: {}` を指定します。
+
+## `create_checkout`
+
+必要な権限: `billing:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** `checkout_url` と `order_no`。ユーザーがサイトで支払い、`get_payment_status` で確認します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `product_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+| `payment_provider` | `"stripe"` · `"paypal"` · `"creem"` · `"nowpayments"` · `"alipay"` · `"wechat"` | 任意 |
+| `redirect` | `string`; 最大 2000 文字 | 任意 |
+
+## `get_payment_status`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** 自分の注文の支払状態・金額・通貨・支払時刻。必要に応じて審査状態も含みます。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `order_no` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `get_invoice`
+
+必要な権限: `billing:read`, `files:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** `order_no` と一時 PDF `file`。支払方法により提供可否が異なります。ファイル作成のため冪等キーが必要です。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `order_no` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `resend_invoice`
+
+必要な権限: `billing:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** `order_no`、送信先 `email`、`sent: true`。注文登録済みアドレスへ実際にメール送信するため、依頼された場合のみ実行します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `order_no` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `list_subscriptions`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** 契約一覧のメタデータ・商品・状態・請求期間・解約日。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 任意; 既定値 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `20` |
+| `status` | `string`; 最大 30 文字 | 任意 |
+| `search` | `string`; 最大 200 文字 | 任意 |
+
+## `get_current_subscription`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** 現在の `subscription` メタデータ。ない場合は `null`。
+
+フィールドなし。`input: {}` を指定します。
+
+## `cancel_subscription`
+
+必要な権限: `billing:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 一つの契約の確認待ち操作を開始します。サイトでの確認と完了確認までは解約済みではありません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `subscription_no` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `list_redemptions`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** 最近の自分の引換履歴 `items`。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `limit` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `20` |
+
+## `redeem_code`
+
+必要な権限: `billing:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 追加された `credits` と `redeemed: true`。無効・使用済みコードはエラーになります。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `code` | `string`; 最小 1 文字, 最大 200 文字 | 必須 |
+
+## `get_credit_alert`
+
+必要な権限: `billing:read` · 読み取り
+
+**結果:** しきい値、メール/Webhook 設定、`webhookConfigured`、頻度。秘密を含む URL は返しません。
+
+フィールドなし。`input: {}` を指定します。
+
+## `update_credit_alert`
+
+必要な権限: `billing:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** 更新後の設定。最低一項目が必要です。Webhook は公開 HTTP(S) URL を指定します。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `threshold` | `number`; > 0 | 任意 |
+| `emailEnabled` | `boolean` | 任意 |
+| `webhookEnabled` | `boolean` | 任意 |
+| `webhookUrl` | `string`; 最大 4000 文字 | 任意 |
+| `frequencyHours` | `6` / `12` / `24` | 任意 |
+
+## `test_credit_alert`
+
+必要な権限: `billing:write` · 書き込み。`idempotencyKey` 必須
+
+**結果:** `delivery` で実際の残高通知を送信。送信種別、残高、しきい値、取得可能な HTTP 状態を返します。依頼時のみ実行してください。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `delivery` | `"email"` · `"webhook"` | 任意; 既定値 `"webhook"` |
+| `webhookUrl` | `string`; 最大 4000 文字 | 任意 |
+| `threshold` | `number`; > 0 | 任意 |
+
+## `get_overview`
+
+必要な権限: `usage:read` · 読み取り
+
+**結果:** `timezoneOffset` に応じた概要：ユーザー、残高、キー、利用状況、最近の活動、契約。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `range` | `"today"` · `"yesterday"` · `"3d"` · `"7d"` · `"30d"` | 任意; 既定値 `"30d"` |
+| `granularity` | `"day"` · `"hour"` | 任意; 既定値 `"day"` |
+| `timezoneOffset` | `integer`; 最小 -840, 最大 840 | 任意; 既定値 `0` |
+
+## `list_usage`
+
+必要な権限: `usage:read` · 読み取り
+
+**結果:** 保存期間内のリクエスト一覧と UTC `window`。不明なキャッシュトークン数は `null`。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `page` | `integer`; 最小 1, 最大 100000 | 任意; 既定値 `1` |
+| `pageSize` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `20` |
+| `q` | `string`; 最大 200 文字 | 任意 |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; 最大 10 件 | 任意 |
+| `models` | `array` `string`; 最小 1 文字, 最大 191 文字; 最大 100 件 | 任意 |
+| `requestTypes` | `array` `string`; 最小 1 文字, 最大 191 文字; 最大 30 件 | 任意 |
+| `apiKeyIds` | `array` `string`; 最小 1 文字, 最大 191 文字; 最大 100 件 | 任意 |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | 任意; 既定値 `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | 任意; 既定値 `"all"` |
+| `from` | `string` · `date-time` | 任意 |
+| `to` | `string` · `date-time` | 任意 |
+
+利用履歴はタイムゾーン付き ISO 8601 の `from` 以上・`to` 未満です。既定は直近 30 日、最大 366 日。保存期間内の記録のみで、日付の欠落は利用ゼロを意味しません。`get_overview.timezoneOffset` は JavaScript `getTimezoneOffset` の分（UTC−現地時刻）で既定 0。履歴一覧と集計は UTC です。
+
+## `get_usage_detail`
+
+必要な権限: `usage:read` · 読み取り
+
+**結果:** 自分のリクエストの状態・時間・料金。内容取得には `include_content: true`、`usage:content`、キーの内容記録設定が必要です。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `task_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+| `include_content` | `boolean` | 任意; 既定値 `false` |
+
+## `diagnose_request`
+
+必要な権限: `usage:read` · 読み取り
+
+**結果:** `request_id`、`task_id`、状態、実際のエラーコード、料金・返金、対処案。モデル実行や自動再試行はありません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `task_id` | `string`; 最小 1 文字, 最大 191 文字 | 必須 |
+
+## `summarize_usage`
+
+必要な権限: `usage:read` · 読み取り
+
+**結果:** 保存期間内の全一致リクエストの `totals`、`groups`、`group_by`、UTC `window`。存在しない日は省略し、`cachedTokens` は不明です。返金集計は紐付いた非同期タスクのみ。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `q` | `string`; 最大 200 文字 | 任意 |
+| `statuses` | `array` `"completed"` · `"pending"` · `"processing"` · `"failed"` · `"succeeded"` · `"success"` · `"timeout"` · `"error"`; 最大 10 件 | 任意 |
+| `models` | `array` `string`; 最小 1 文字, 最大 191 文字; 最大 100 件 | 任意 |
+| `requestTypes` | `array` `string`; 最小 1 文字, 最大 191 文字; 最大 30 件 | 任意 |
+| `apiKeyIds` | `array` `string`; 最小 1 文字, 最大 191 文字; 最大 100 件 | 任意 |
+| `category` | `"all"` · `"chat"` · `"generation"` · `"tool"` | 任意; 既定値 `"all"` |
+| `source` | `"all"` · `"async"` · `"usage"` | 任意; 既定値 `"all"` |
+| `from` | `string` · `date-time` | 任意 |
+| `to` | `string` · `date-time` | 任意 |
+| `group_by` | `"day"` · `"model"` · `"key"` · `"type"` | 任意; 既定値 `"day"` |
+
+利用履歴はタイムゾーン付き ISO 8601 の `from` 以上・`to` 未満です。既定は直近 30 日、最大 366 日。保存期間内の記録のみで、日付の欠落は利用ゼロを意味しません。`get_overview.timezoneOffset` は JavaScript `getTimezoneOffset` の分（UTC−現地時刻）で既定 0。履歴一覧と集計は UTC です。
+
+`summarize_usage` の `creditsCharged` と `netCreditsCharged` は保存記録の純請求額です。`linkedRefundCredits` は非同期タスクに紐付いた既知の返金のみ。`knownGrossCredits` は純額とその返金の和で、完全な総支出ではありません。`totalTokens`、`averageLatencyMs`、`pending`、`processing` は一致する保存記録の値です。
+
+## `list_executions`
+
+必要な権限: `account:read` · 読み取り
+
+**結果:** 実行記録一覧：操作、状態、識別子、エラーコード、時刻。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `page` | `integer`; 最小 1 | 任意; 既定値 `1` |
+| `page_size` | `integer`; 最小 1, 最大 100 | 任意; 既定値 `20` |
+
+## `get_execution`
+
+必要な権限: `account:read` · 読み取り
+
+**結果:** 自分の実行記録一件。`pending`・`unknown` の確認に使用し、完全な出力や秘密値は再取得しません。
+
+| 入力フィールド | 型と制限 | 必須 / 既定値 |
+|---|---|---|
+| `execution_id` | `string`; 最大 100 文字 | 必須 |
+
+## ユーティリティ一覧：32 種類
+
+各 slug を `run_utility.input.utility` に指定します。先に `get_utility_schema` を呼び、`fields` の名前・型・必須・既定値・複数ファイル可否・形式、`limits` と `access` の容量・件数・利用条件を確認します。単一ファイル版から一括版の入力を推測しないでください。
+
+| 用途 | ツール ID |
+|---|---|
+| 画像圧縮と形式 | `compress-image`, `compress-image-stream`, `batch-compress`, `heic-to-webp`, `convert-image`, `batch-convert-images` |
+| 画像サイズと配置 | `resize-image`, `batch-resize-images`, `crop-image`, `batch-crop-images`, `rotate-image`, `batch-rotate-images`, `grid-cut-image`, `join-images` |
+| 透かしとアイコン | `watermark`, `batch-watermark`, `favicon-generator` |
+| 画像解析とメタデータ | `image-metadata`, `remove-image-metadata`, `batch-image-metadata`, `color-palette`, `batch-color-palette`, `image-hash`, `batch-image-hash`, `image-similarity`, `image-diff` |
+| 動画と音声 | `compress-video`, `extract-audio`, `video-thumbnail`, `video-to-gif`, `gif-to-frames` |
+| ネットワーク位置 | `ip-geo` |
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```

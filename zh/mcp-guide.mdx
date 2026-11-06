@@ -1,0 +1,268 @@
+---
+title: "个人 MCP"
+description: "使用可设定权限和有效期的凭证，将助手连接到你自己的 APIAny.AI 账户。"
+---
+
+首次使用 MCP？先阅读[客户端接入指南](https://apiany.ai/zh/mcp-guide)，按步骤完成连接。
+
+个人 MCP 让助手查询和管理**你自己的账户**：模型、任务、用量、API Key、账单、资料和文件。它不提供平台管理能力；即使管理员使用个人凭证，也只能访问本人数据。
+
+## 选择正确凭证
+
+| 凭证 | 地址 | 访问范围 |
+|---|---|---|
+| `sk_…` | `https://apiany.ai/mcp` | 现有六个模型工具；使用平铺参数，不使用个人 MCP 的 `input` 包装 |
+| `mcp_user_…` | `https://apiany.ai/mcp` | 仅在授权范围内访问本人账户 |
+| `sa_admin_…` | `/api/admin/agent/mcp` | 独立管理员凭证与权限；普通用户不可用 |
+
+现有 API Key MCP 工具仍为 `list_models`、`get_balance`、`chat_completion`、`generate_image`、`generate_video` 和 `get_task`。同名工具在个人令牌下可能采用不同输入结构；连接后务必读取 `tools/list`。
+
+## 创建令牌并连接
+
+1. 登录[控制台 → Agent](https://apiany.ai/zh/dashboard/agent)，打开 **Personal MCP**。
+2. 为凭证命名，仅选择需要的权限，设置 **1–365 天**有效期，默认 **30 天**。
+3. 使用 `models:invoke` 或 `utilities:invoke` 时，绑定本人有效的 API Key；模型范围、预算和 RPM 限制继续生效。查询账户数据不要求余额大于零。
+4. 创建时复制 `mcp_user_` 令牌到客户端的密钥设置，不要放入源代码、聊天内容或日志。无需访问时在同一控制台撤销。
+
+使用下表配置远程 **Streamable HTTP** MCP 连接。客户端必须支持带 Bearer 令牌的 `Authorization` 请求头，协议版本由客户端协商。目前未实现 OAuth，仅支持 OAuth 的客户端无法使用该连接。下表是连接参数，不是某个客户端的专用配置文件。
+
+| 设置 | 值 |
+|---|---|
+| URL | `https://apiany.ai/mcp` |
+| Transport | Streamable HTTP |
+| Authorization | `Bearer mcp_user_YOUR_TOKEN` |
+
+## 先发现工具再调用
+
+客户端初始化连接后，以 `{}` 调用 `get_capabilities`，并读取 `tools/list`。前者返回 `audience: user`、`ownership: self`、授权 `scopes`、可用工具及 `oauth: false`。其余个人工具都使用 `input` 对象，包括无业务参数的工具。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get_capabilities",
+    "arguments": {}
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "get_balance",
+    "arguments": {
+      "input": {}
+    }
+  }
+}
+```
+
+## 权限
+
+权限在网站选择；MCP 不能创建授权、扩展自身权限或将 API Key 升级为管理员凭证。隐藏工具不代表可绕过权限：每次调用都会再次检查资源归属和权限。`usage:content` 还要求明确请求内容及 API Key 开启内容记录。
+
+| Scope | 返回结果 |
+|---|---|
+| `models:read` | 查询模型、API 指南和实用工具 |
+| `models:invoke` | 调用模型及读取本人任务 |
+| `usage:read` | 读取用量、汇总和诊断 |
+| `usage:content` | 读取明确请求且已保存的请求内容 |
+| `keys:read` | 读取 API Key 设置，不含明文密钥 |
+| `keys:write` | 创建、更新、停用和删除 API Key |
+| `keys:secrets` | 网站确认后读取一次 API Key 明文 |
+| `billing:read` | 读取余额、订单、订阅和产品 |
+| `billing:write` | 创建结账、兑换、提醒及取消订阅请求 |
+| `account:read` | 读取资料、账户操作和执行历史 |
+| `account:write` | 更新资料及发起敏感账户操作 |
+| `utilities:invoke` | 按账户资格和配额运行实用工具 |
+| `files:write` | 上传、读取和发布本人文件 |
+
+## 写入、结果和安全重试
+
+每次写入必须为该操作意图提供唯一 `idempotencyKey`：**1–191 个不含空格的可打印 ASCII 字符**，调用前先保存。若响应丢失，使用相同工具、相同输入和相同键重试。同一键用于不同输入会返回 `idempotency_conflict`。每个上传步骤各用一个键。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "update_api_key",
+    "arguments": {
+      "input": {
+        "key_id": "YOUR_KEY_ID",
+        "rpmLimit": 60
+      },
+      "idempotencyKey": "set-key-rpm-20261106-01"
+    }
+  }
+}
+```
+
+成功结果同时出现在 `structuredContent` 和 `content` 的 JSON 文本中。首次执行返回下列封装；重放返回 `replayed: true` 和只含可用标识符的小型 `receipt`，不会重新返回完整结果或 API Key 明文。
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending`（409）表示首次调用尚未得到确定结果。`execution_unknown`（409）或 `status: unknown` 回执表示操作可能已发生。先用 `get_execution` 核实，再检查相关任务、订单或账户操作。**不要换新幂等键绕过这些状态。** MCP 执行完成后，其业务结果仍可能是等待中的模型任务或网站确认。
+
+## 模型与实用工具流程
+
+先调用 `list_models` → `get_model_schema` 选择公开模型 ID。模型工具的 `body` 接受完整的受支持 HTTP JSON 请求，参数按对应模型文档填写。模型 ID 放在 `body.model`；`generate_content` 则使用必填的外层 `model`。文件字段仅供 `edit_image` 使用（`image`、`image[]`、`mask`），其他媒体输入使用已发布 URL。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "chat_completion",
+    "arguments": {
+      "input": {
+        "body": {
+          "model": "PUBLIC_MODEL_ID",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Hello"
+            }
+          ],
+          "stream": false
+        }
+      },
+      "idempotencyKey": "chat-example-20261106-01"
+    }
+  }
+}
+```
+
+异步图片/视频响应返回后，保存 `task_id` 并用 `get_task` 轮询。`stream: true` 会将流事件收集到最终 MCP 结果；SDK 实时流式输出请使用 HTTP API。可选 `client_request_id` 为视频请求关联用 UUID v4，与 `idempotencyKey` 不同。模型调用可能消耗积分。
+
+模型结果收集上限为 **8 MiB 和 300 秒**。若收集中断或超限，执行回执会保留已知的 `request_id`。先检查 `get_execution` 和已有请求或任务，再决定下一步；不要另建付费请求，也不要用新幂等键替代结果未明的调用。客户端断开不代表已受理的模型任务已取消。
+
+按 `list_utilities` → `get_utility_schema` → `run_utility` 使用 32 个实用工具。原有使用资格和配额继续生效，部分批量操作要求付费账户资格。普通字段放在 `parameters`，本人文件 ID 放在 `files`；二进制或较大结果返回临时文件。文件输入及非 JSON 输出还需要 `files:write`。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```
+
+## 上传与取回文件
+
+1. 用文件名、MIME 类型和精确字节数调用 `begin_upload`，文件最多 **250 MiB**。
+2. 用从零开始的 `index` 和 Base64 `data` 调用 `upload_chunk`。每块解码后最多 **1 MiB**，索引必须从零连续递增。
+3. 用 `file_id` 和可选小写 SHA-256 调用 `finish_upload`；仅在 `status: ready` 后使用文件。
+4. 将文件 ID 交给支持文件的工具。`get_artifact` 返回元数据，传入 `offset` 则返回 Base64 字节；按 `next_offset` 继续读取直到 `null`。下载链接要求所有者登录网站。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "begin_upload",
+    "arguments": {
+      "input": {
+        "name": "example.png",
+        "mime_type": "image/png",
+        "size": 12345
+      },
+      "idempotencyKey": "upload-example-begin-01"
+    }
+  }
+}
+```
+
+临时文件仅本人账户可访问，经过加密，**24 小时**后到期。账户上限为 **1 GiB / 100 个未到期文件**，具体工具可能限制更低。`upload_image` 和 `upload_media` 是独立的发布操作，所返回模型输入 URL 可分享访问；仅发布你愿意经这些 URL 公开访问的文件。
+
+文件操作会在读取任何文件内容前检查归属、就绪状态、文件数量和大小。每个文件引用都计入该操作的限额，重复 ID 也会重复计数和累加大小。
+
+- `upload_media`：最多 **20 个文件，合计 250 MiB**。
+- `upload_image`：单个文件，最大 **50 MiB**。
+- `edit_image`：所有字段合计最多 **20 个文件**，其中最多 **1 个 `mask`**；**单文件 50 MiB，合计 100 MiB**。输入 Schema 中各字段数组的限额仍然适用。
+- `run_utility`：遵守 `get_utility_schema` 返回的工具文件数、单文件和总大小限额；即使目录允许更多，总大小也不得超过 **250 MiB**。
+
+## 网站确认与付款
+
+- **API Key 明文：**`start_reveal_key_action` → 用户打开 `confirmation_url` 并批准 → 将操作 `id` 作为 `action_id` 调用 `reveal_api_key`。批准绑定该密钥及凭证，操作创建 15 分钟后到期，只能消费一次。`create_api_key` 仅返回元数据。
+- **取消订阅：**`cancel_subscription` 发起确认，用户在网站执行。报告完成前检查 `get_account_action` 及订阅状态。
+- **密码或账户注销：**以 `password_change` 或 `delete_account` 调用 `start_account_action`。验证码和密码由用户在网站输入，不交给助手。注销会撤销凭证并退出登录，之后不要继续轮询 MCP。
+- **付款：**`list_billing_products` → `create_checkout` → 用户付款 → `get_payment_status`。结账链接不等于付款成功。
+- **真实消息：**`resend_invoice` 和 `test_credit_alert` 会发送邮件或 Webhook；仅在用户明确要求发送时调用。
+
+## 处理错误并避免重复操作
+
+连接或认证失败可能返回 HTTP 错误。工具失败会设置 `isError: true`，应检查 `structuredContent.error.code`、`status`、`execution_id` 及可能存在的 `receipt`。重放也可能返回未完成的执行 `status`。
+
+```json
+{
+  "isError": true,
+  "structuredContent": {
+    "error": {
+      "code": "execution_pending",
+      "message": "The original execution is pending; inspect its receipt before retrying",
+      "status": 409,
+      "execution_id": "EXECUTION_ID"
+    }
+  }
+}
+```
+
+| Code | 返回结果 |
+|---|---|
+| 401 · `invalid_grant` | 令牌无效、过期或已撤销；在网站 Personal MCP 检查。 |
+| 403 · `insufficient_scope` | 在网站选择合适权限，助手不能自行扩权。 |
+| 400 · `model_key_required` | 绑定本人有效 API Key。 |
+| 400 · `invalid_input` / `idempotency_required` | 阅读 `tools/list`，修正输入或补充写入幂等键。 |
+| 404 · `not_found` | 资源不可用、已过期或不属于本人；不要改用其他账户的 ID。 |
+| 409 · `idempotency_conflict` | 同一键已对应不同输入；创建独立操作前先核对原意图。 |
+| 409 · `execution_pending` / `execution_unknown` | 检查已有执行和相关资源，切勿换新键重试。 |
+| 409 · `confirmation_required` / `action_closed`; 410 · `action_expired` | 检查网站操作及准确状态；批准与执行是不同步骤。 |
+| 413 · `file_too_large` / `response_too_large`; 429 · `file_quota` | 遵守工具及临时文件限制；模型输出过大时，付费重试前先查请求历史。 |
+| 402 / 429 | 检查余额、API Key 预算、RPM 和工具资格，并阅读实际错误码。 |
+| 503 · `storage_unavailable` | 个人 MCP 暂不可用；保存执行标识符，稍后检查。 |
+
+## 实用的只读起点
+
+- 查看花费：`get_balance` → `summarize_usage` → `list_usage` 查看单次请求。
+- 解释失败：将 `task_id` 传给 `diagnose_request`，再次调用模型前先核实实际错误与退款状态。
+- 准备集成：`list_models` → `get_model_schema` → `get_api_guide`，读取指南无需调用模型。
+- 查看账户安全：`list_api_keys` → `get_api_key` → `list_login_records`。
+
+用量筛选采用包含 `from`、不包含 `to` 的区间，时间使用带时区的 ISO 8601。默认最近 30 天，最长 366 天。只覆盖仍保留的记录，缺失日期不等于零用量。`get_overview.timezoneOffset` 采用 JavaScript `getTimezoneOffset` 分钟语义（UTC 减本地时间），默认 0；用量列表和分组汇总仍使用 UTC。
+
+`summarize_usage` 的 `creditsCharged` 与 `netCreditsCharged` 表示保留记录中的净扣款。`linkedRefundCredits` 仅含已知且关联异步任务的退款；`knownGrossCredits` 为净扣款加这些已知退款，不代表完整毛花费。`totalTokens`、`averageLatencyMs`、`pending` 和 `processing` 描述匹配且仍保留的请求。
+
+继续阅读[完整工具参考](/zh/reference/mcp-tools)、[认证](/zh/authentication)和 [HTTP API 错误](/zh/operations/errors)。

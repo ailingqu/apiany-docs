@@ -77,3 +77,7 @@ description: APIAny.AI 标准错误分类。
 只有明确的内容策略错误码或明确的内容策略拒绝，才应建议修改内容。不能仅凭错误消息提到
 `safety`，或 HTTP `502`，推断内容违规。异步任务仍为 `pending` 或 `processing` 时，
 继续使用同一个 `task_id` 查询 `/v1/tasks/{task_id}`，不要重复提交生成请求。
+
+## 个人 MCP
+
+个人 MCP 工具错误通过 `isError` 与 `structuredContent` 返回；写入结果不确定时应先检查已有执行。参阅[个人 MCP 错误处理](/zh/mcp-guide)与[工具参考](/zh/reference/mcp-tools)。

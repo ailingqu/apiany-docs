@@ -1,0 +1,268 @@
+---
+title: "パーソナル MCP"
+description: "権限と有効期限を設定した認証情報で、アシスタントを自分の APIAny.AI アカウントに接続します。"
+---
+
+MCP が初めてですか？[クライアント接続ガイド](https://apiany.ai/ja/mcp-guide)で手順に沿って設定してください。
+
+パーソナル MCP は、モデル、タスク、利用状況、API キー、請求、プロフィール、ファイルなど、**自分のアカウント**をアシスタントから操作する機能です。プラットフォーム管理権限はありません。管理者も個人認証情報では自分のデータだけにアクセスできます。
+
+## 認証情報を選ぶ
+
+| 認証情報 | エンドポイント | アクセス範囲 |
+|---|---|---|
+| `sk_…` | `https://apiany.ai/mcp` | 既存のモデル用 6 ツール。引数は直接指定し、個人用 `input` で囲みません |
+| `mcp_user_…` | `https://apiany.ai/mcp` | 許可された自分のアカウントのみ |
+| `sa_admin_…` | `/api/admin/agent/mcp` | 独立した管理者認証情報と権限。一般ユーザーは利用不可 |
+
+API キー版は引き続き `list_models`、`get_balance`、`chat_completion`、`generate_image`、`generate_video`、`get_task` です。同名でも個人トークンでは入力が異なるため、接続後に `tools/list` を取得してください。
+
+## トークンの作成と接続
+
+1. [ダッシュボード → Agent](https://apiany.ai/ja/dashboard/agent) にログインし、**Personal MCP** を開きます。
+2. 名前と必要最小限の権限を選び、有効期限を **1～365 日**（既定 **30 日**）に設定します。
+3. `models:invoke` または `utilities:invoke` には自分の有効な API キーを紐付けます。モデル制限、予算、RPM はそのまま適用されます。アカウント照会には正の残高は不要です。
+4. 作成時に `mcp_user_` トークンをクライアントのシークレット設定へ保存します。コード、チャット、ログに記載しないでください。不要になったら同じ画面で取り消します。
+
+以下の値でリモート **Streamable HTTP** MCP 接続を設定します。Bearer トークン付き `Authorization` ヘッダーに対応したクライアントが必要です。バージョンはクライアントが交渉します。OAuth は未対応で、OAuth 専用クライアントは接続できません。表は接続情報であり、特定クライアント用の設定ファイルではありません。
+
+| 設定 | 値 |
+|---|---|
+| URL | `https://apiany.ai/mcp` |
+| Transport | Streamable HTTP |
+| Authorization | `Bearer mcp_user_YOUR_TOKEN` |
+
+## 呼び出す前にツールを確認
+
+接続初期化後、`get_capabilities` を `{}` で呼び出し、`tools/list` を確認します。`audience: user`、`ownership: self`、許可された `scopes` とツール、`oauth: false` が返ります。他の個人用ツールでは、業務パラメーターがなくても `input` オブジェクトが必要です。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get_capabilities",
+    "arguments": {}
+  }
+}
+```
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "get_balance",
+    "arguments": {
+      "input": {}
+    }
+  }
+}
+```
+
+## 権限
+
+権限はサイトで設定します。MCP 自身による認証情報作成、権限拡大、管理者への昇格はできません。非表示ツールを直接呼んでも、毎回所有者と権限が確認されます。`usage:content` には明示的な取得要求とキーの内容記録設定も必要です。
+
+| Scope | 結果 |
+|---|---|
+| `models:read` | モデル・API ガイド・ユーティリティの検索 |
+| `models:invoke` | モデル実行と自分のタスク取得 |
+| `usage:read` | 利用状況・集計・診断の取得 |
+| `usage:content` | 明示的に要求した保存済みリクエスト内容の取得 |
+| `keys:read` | 秘密値を除く API キー設定の取得 |
+| `keys:write` | API キーの作成・変更・無効化・削除 |
+| `keys:secrets` | サイト承認後に API キーを一度表示 |
+| `billing:read` | 残高・注文・契約・商品の取得 |
+| `billing:write` | 決済リンク・コード引換・通知・解約申請 |
+| `account:read` | プロフィール・アカウント操作・実行履歴の取得 |
+| `account:write` | プロフィール変更と機密操作の申請 |
+| `utilities:invoke` | アカウントの利用条件と上限に従ってツール実行 |
+| `files:write` | 自分のファイルのアップロード・取得・公開 |
+
+## 書き込み・結果・再試行
+
+書き込みごとに、その意図専用の `idempotencyKey`（**空白なしの印字可能 ASCII 1～191 文字**）を事前に保存します。応答を失ったら同じツール・入力・キーで再試行します。別入力で同じキーを使うと `idempotency_conflict` になります。アップロードの各手順には個別のキーを使います。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "update_api_key",
+    "arguments": {
+      "input": {
+        "key_id": "YOUR_KEY_ID",
+        "rpmLimit": 60
+      },
+      "idempotencyKey": "set-key-rpm-20261106-01"
+    }
+  }
+}
+```
+
+成功結果は `structuredContent` と `content` の JSON テキストで返ります。初回は下記の形式です。再送時は `replayed: true` と識別子を含む小さな `receipt` を返し、完全な結果やキーの秘密値は返しません。
+
+```json
+{
+  "execution_id": "EXECUTION_ID",
+  "replayed": false,
+  "status": "completed",
+  "data": {
+    "balance": 100,
+    "key": null
+  }
+}
+```
+
+`execution_pending`（409）は初回の結果待ちです。`execution_unknown`（409）または `status: unknown` は、操作がすでに行われた可能性を示します。`get_execution` と対象タスク・注文・操作を確認します。**新しいキーでこれらの状態を回避しないでください。** MCP 実行完了でも、モデルタスクやサイト確認は保留中の場合があります。
+
+## モデルとユーティリティの利用
+
+`list_models` → `get_model_schema` で公開モデル ID を選びます。`body` には対応する HTTP JSON リクエスト全体を渡します。モデル ID は `body.model`、`generate_content` では代わりに外側の `model` が必須です。ファイル指定は `edit_image` の `image`、`image[]`、`mask` のみ。他のメディア入力には公開 URL を使います。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "chat_completion",
+    "arguments": {
+      "input": {
+        "body": {
+          "model": "PUBLIC_MODEL_ID",
+          "messages": [
+            {
+              "role": "user",
+              "content": "Hello"
+            }
+          ],
+          "stream": false
+        }
+      },
+      "idempotencyKey": "chat-example-20261106-01"
+    }
+  }
+}
+```
+
+非同期画像・動画は返された `task_id` を保存して `get_task` で確認します。`stream: true` のイベントは最終 MCP 結果にまとめられます。SDK のリアルタイム配信には HTTP API を使います。任意の UUID v4 `client_request_id` は動画リクエスト照合用で、`idempotencyKey` とは別です。モデル実行はクレジットを消費する場合があります。
+
+モデル結果の収集上限は **8 MiB・300 秒**です。中断または上限超過時は、判明している `request_id` が実行記録に残ります。まず `get_execution` と既存のリクエスト・タスクを確認し、未解決の呼び出しを新たな有料リクエストや新規冪等キーで置き換えないでください。クライアントの切断は、受理済みモデルタスクのキャンセルを意味しません。
+
+32 種類のユーティリティは `list_utilities` → `get_utility_schema` → `run_utility` の順に使います。利用条件と上限は維持され、一部の一括操作には有料アカウント資格が必要です。値は `parameters`、自分のファイル ID は `files` に入れます。バイナリや大きな出力は一時ファイルとなり、ファイル入力・非 JSON 出力には `files:write` も必要です。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "tools/call",
+  "params": {
+    "name": "run_utility",
+    "arguments": {
+      "input": {
+        "utility": "image-hash",
+        "parameters": {},
+        "files": {
+          "image": [
+            "YOUR_FILE_ID"
+          ]
+        }
+      },
+      "idempotencyKey": "image-hash-example-01"
+    }
+  }
+}
+```
+
+## ファイルのアップロードと取得
+
+1. ファイル名・MIME 型・正確なバイト数で `begin_upload` を呼びます。最大 **250 MiB** です。
+2. 0 始まりの `index` と Base64 `data` で `upload_chunk` を呼びます。復号後は最大 **1 MiB**、インデックスは 0 から連続させます。
+3. `file_id` と任意の小文字 SHA-256 で `finish_upload` を呼び、`status: ready` を確認します。
+4. 対応ツールへ ID を渡します。`get_artifact` はメタデータ、`offset` 指定時は Base64 バイトを返します。`next_offset` が `null` になるまで続けます。ダウンロードリンクには所有者のサイトログインが必要です。
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 5,
+  "method": "tools/call",
+  "params": {
+    "name": "begin_upload",
+    "arguments": {
+      "input": {
+        "name": "example.png",
+        "mime_type": "image/png",
+        "size": 12345
+      },
+      "idempotencyKey": "upload-example-begin-01"
+    }
+  }
+}
+```
+
+一時ファイルは暗号化され、自分のアカウントだけが利用でき、**24 時間**で失効します。上限は **1 GiB・有効な 100 ファイル**で、ツールごとにさらに小さい上限があります。`upload_image` と `upload_media` は別の公開操作です。結果の URL は共有可能なので、その URL でアクセスを許可するファイルだけ公開してください。
+
+ファイル操作は内容を読む前に、所有者、準備状態、件数、サイズを確認します。同じ ID を繰り返しても、各参照が件数と合計サイズに加算されます。
+
+- `upload_media`：最大 **20 ファイル、合計 250 MiB**。
+- `upload_image`：1 ファイル、最大 **50 MiB**。
+- `edit_image`：全フィールドで最大 **20 ファイル**、うち `mask` は最大 **1 ファイル**。**1 ファイル 50 MiB、合計 100 MiB**。入力スキーマの各配列上限も適用されます。
+- `run_utility`：`get_utility_schema` が返す件数・個別サイズ・合計サイズの上限に従います。カタログの値が大きくても、合計は **250 MiB** を超えられません。
+
+## サイト確認と支払い
+
+- **API キー秘密値：**`start_reveal_key_action` → ユーザーが `confirmation_url` で承認 → 操作の `id` を `action_id` として `reveal_api_key`。そのキーと認証情報に紐付き、操作作成から 15 分で失効し、一度だけ利用できます。`create_api_key` はメタデータのみ返します。
+- **契約解約：**`cancel_subscription` で確認を開始し、ユーザーがサイトで実行します。完了報告前に `get_account_action` と契約状態を確認します。
+- **パスワード・アカウント削除：**`start_account_action` に `password_change` または `delete_account` を指定。メールコードとパスワードはユーザーがサイトに入力し、アシスタントには渡しません。削除後はアクセス失効・ログアウトとなるため MCP の照会を続けません。
+- **支払い：**`list_billing_products` → `create_checkout` → ユーザーが支払い → `get_payment_status`。リンク作成は支払完了ではありません。
+- **実際の送信：**`resend_invoice` と `test_credit_alert` はメールや Webhook を送信します。ユーザーが明示的に依頼した場合だけ実行します。
+
+## 重複操作を避けてエラーに対処
+
+接続・認証エラーは HTTP エラーの場合があります。ツール失敗は `isError: true` となり、`structuredContent.error.code`、`status`、`execution_id`、`receipt` を確認します。再送では未完了の実行 `status` が返る場合もあります。
+
+```json
+{
+  "isError": true,
+  "structuredContent": {
+    "error": {
+      "code": "execution_pending",
+      "message": "The original execution is pending; inspect its receipt before retrying",
+      "status": 409,
+      "execution_id": "EXECUTION_ID"
+    }
+  }
+}
+```
+
+| Code | 結果 |
+|---|---|
+| 401 · `invalid_grant` | 無効・期限切れ・取り消し済み。サイトの Personal MCP を確認。 |
+| 403 · `insufficient_scope` | サイトで必要な権限を選択。アシスタントによる権限拡大は不可。 |
+| 400 · `model_key_required` | 自分の有効な API キーを紐付ける。 |
+| 400 · `invalid_input` / `idempotency_required` | `tools/list` を確認し、入力を修正または書き込みキーを追加。 |
+| 404 · `not_found` | 利用不可・期限切れ・他人のリソース。他アカウントの ID を使わない。 |
+| 409 · `idempotency_conflict` | キーが別入力に使用済み。別操作を作る前に元の意図を確認。 |
+| 409 · `execution_pending` / `execution_unknown` | 既存の実行と対象を確認。新規キーで再試行しない。 |
+| 409 · `confirmation_required` / `action_closed`; 410 · `action_expired` | サイトの操作状態を確認。承認と実行は別の段階。 |
+| 413 · `file_too_large` / `response_too_large`; 429 · `file_quota` | ツール・一時ファイル上限を守る。モデル出力過大時は有料再実行前に履歴確認。 |
+| 402 / 429 | 残高、キー予算、RPM、利用条件と実際のエラーコードを確認。 |
+| 503 · `storage_unavailable` | パーソナル MCP が一時利用不可。実行識別子を保持して後で確認。 |
+
+## 読み取りから始める例
+
+- 支出確認：`get_balance` → `summarize_usage` → 個別の `list_usage`。
+- 失敗調査：`task_id` で `diagnose_request`。再実行前に実際のエラーと返金を確認。
+- 接続準備：`list_models` → `get_model_schema` → `get_api_guide`。ガイド取得にモデル実行は不要。
+- 安全確認：`list_api_keys` → `get_api_key` → `list_login_records`。
+
+利用履歴はタイムゾーン付き ISO 8601 の `from` 以上・`to` 未満です。既定は直近 30 日、最大 366 日。保存期間内の記録のみで、日付の欠落は利用ゼロを意味しません。`get_overview.timezoneOffset` は JavaScript `getTimezoneOffset` の分（UTC−現地時刻）で既定 0。履歴一覧と集計は UTC です。
+
+`summarize_usage` の `creditsCharged` と `netCreditsCharged` は保存記録の純請求額です。`linkedRefundCredits` は非同期タスクに紐付いた既知の返金のみ。`knownGrossCredits` は純額とその返金の和で、完全な総支出ではありません。`totalTokens`、`averageLatencyMs`、`pending`、`processing` は一致する保存記録の値です。
+
+[全ツールリファレンス](/ja/reference/mcp-tools)、[認証](/ja/authentication)、[HTTP API エラー](/ja/operations/errors)も参照してください。

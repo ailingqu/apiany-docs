@@ -81,3 +81,7 @@ claro por la política de contenido. La mera mención de `safety` en un mensaje,
 `502` por sí solo, no demuestra una infracción. Si una tarea asíncrona sigue en `pending`
 o `processing`, continúa consultando `/v1/tasks/{task_id}` con el mismo `task_id`;
 no envíes otra solicitud de generación duplicada.
+
+## MCP personal
+
+Los errores MCP personales usan `isError` y `structuredContent`. Comprueba la ejecución existente antes de repetir una escritura incierta. Consulta [gestión de errores](/es/mcp-guide) y [referencia](/es/reference/mcp-tools).

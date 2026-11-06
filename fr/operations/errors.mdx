@@ -91,3 +91,7 @@ d'un refus clair lié à la politique de contenu. La simple mention de `safety` 
 message, ou HTTP `502` seul, ne prouve pas une infraction. Si une tâche asynchrone reste
 `pending` ou `processing`, continuez à interroger `/v1/tasks/{task_id}` avec le même
 `task_id` ; ne soumettez pas de requête de génération en double.
+
+## MCP personnel
+
+Les erreurs MCP personnelles utilisent `isError` et `structuredContent`. Vérifier l’exécution existante avant de retenter une écriture incertaine. Voir la [gestion des erreurs](/fr/mcp-guide) et la [référence](/fr/reference/mcp-tools).

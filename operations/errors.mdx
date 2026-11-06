@@ -104,3 +104,7 @@ are charged.
 Ordinary child-safe scenes such as family, classroom, sports, and art prompts
 are not blocked by this targeted preflight rule. Requests that pass preflight
 remain subject to each model's general safety policy.
+
+## Personal MCP
+
+Personal MCP tool failures use `isError` and `structuredContent`; uncertain writes require checking the existing execution before another attempt. See [Personal MCP error handling](/mcp-guide) and the [tool reference](/reference/mcp-tools).
