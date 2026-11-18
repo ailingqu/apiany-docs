@@ -7,9 +7,10 @@ description: 接收异步任务完成回调。
 
 当回调发送失败时，平台会根据配置进行重试。
 
-回调内容与任务详情结构一致。`result` 按任务类型不同：图片任务的地址在
-`result.data[0].url`，视频/音频任务的地址在 `result.video_url` /
-`result.audio_url`（并同时列在 `result.urls[]`）。
+回调 JSON 包含任务 ID、请求 ID、状态、模型、结果、错误和积分。图片地址在
+`result.data[0].url`，视频和音频地址分别在 `result.video_url`、`result.audio_url`，
+也会列入 `result.urls[]`。回调请求中的 `X-ApiAny-Task-Id` 与
+`X-ApiAny-Request-Id` 请求头也会携带这两个 ID。
 
 ```json
 {
@@ -25,7 +26,12 @@ description: 接收异步任务完成回调。
 }
 ```
 
-## 建议
+## 核对回调
 
-对于高价值工作流，收到 webhook 后仍建议通过 `/v1/tasks/{task_id}` 查询一次最终状态，再执行后续业务逻辑。
+1. 对照自己已提交的任务核对任务 ID，接受通知后返回 `2xx`。
+2. 使用 API Key 查询[任务状态](/zh/reference/tasks)，根据鉴权查询得到的结果执行后续操作。回调请求头里的 ID 只用于关联请求。
+3. 以 `task_id` 对业务动作去重，避免回调重复投递时重复处理。
+
+将 `callback_url` 设为直接接收 `POST` 的公开 HTTPS 地址。
+回调未送达时，按[错误处理](/zh/operations/errors)说明主动查询任务。
 

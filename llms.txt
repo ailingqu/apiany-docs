@@ -17,7 +17,14 @@ Important pages:
 - Image models, including GPT Image 2.6 PNG and GIF requests: /models/image-models
 - Chinese image models: /zh/models/image-models
 - Video generation: /reference/video-generation
-- Tasks: /reference/tasks
+- Tasks and timeout recovery: /reference/tasks
+- Chinese tasks: /zh/reference/tasks
+- Errors and retries: /operations/errors
+- Chinese errors and retries: /zh/operations/errors
+- Billing and credits: /operations/billing
+- Webhooks and authenticated verification: /operations/webhooks
+- Personal MCP setup: /mcp-guide
+- Personal MCP tool contracts: /reference/mcp-tools
 - Batch image APIs: /reference/batch-image-apis
 - OpenAPI specification: /openapi.json
 - Chinese OpenAPI specification: /zh/openapi.json
@@ -25,8 +32,11 @@ Important pages:
 Public API base URL:
 
 ```txt
-https://apiany.ai
+https://apiany.ai/v1
 ```
+
+Use the full paths in the examples, such as `https://apiany.ai/v1/models`.
+The Gemini-compatible endpoints use the separately documented `/v1beta` paths.
 
 Authentication:
 

@@ -5,7 +5,8 @@ description: Make your first APIAny.AI request.
 
 ## 1. Create an API key
 
-Open the APIAny.AI dashboard and create a project API key.
+Create a key in [API Keys](https://apiany.ai/dashboard/apikeys) and set
+`APIANY_API_KEY` in your shell. Keep it out of browser code and source control.
 
 <Snippet file="snippets/auth-header.mdx" />
 
@@ -16,37 +17,56 @@ curl https://apiany.ai/v1/models \
   -H "Authorization: Bearer $APIANY_API_KEY"
 ```
 
-## 3. Run a chat completion
+## 3. Check your available credits
 
 ```bash
-curl https://apiany.ai/v1/chat/completions \
+curl https://apiany.ai/v1/credits/balance \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+Check `balance` and `api_key.budget_remaining_credits` before submitting. A
+`null` remaining key budget means there is no separate key budget. Account
+credits still apply.
+
+## 4. Generate a PNG with GPT Image 2.6
+
+Confirm `gpt-image-2.6` appears in the model list. The sample uses one 1K PNG.
+Check the [model page](https://apiany.ai/models/gpt-image-2-6) for the current
+per-request rate or set the same options in its Playground before running the command.
+Each separate generation request can consume credits.
+
+```bash
+curl -i https://apiany.ai/v1/images/generations \
   -H "Authorization: Bearer $APIANY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-5.4",
-    "messages": [
-      { "role": "user", "content": "Write a concise product tagline for APIAny.AI." }
-    ]
+    "model": "gpt-image-2.6",
+    "prompt": "A studio product photo of a matte orange ceramic lamp on a cream background",
+    "output_format": "png",
+    "size": "1:1",
+    "resolution": "1K",
+    "quality": "auto",
+    "n": 1
   }'
 ```
 
-## 4. Create an image task
+## 5. Retrieve the result and check settlement
 
-```bash
-curl https://apiany.ai/v1/images/generations \
-  -H "Authorization: Bearer $APIANY_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "nano-banana",
-    "prompt": "A clean product hero image for an AI API gateway",
-    "size": "1k"
-  }'
-```
-
-The response includes a `task_id`. Poll the task until it completes:
+Save the returned `task_id` and `request_id` from the HTTP `202` response.
+Replace `task_123` below with the returned `task_id`:
 
 ```bash
 curl https://apiany.ai/v1/tasks/task_123 \
   -H "Authorization: Bearer $APIANY_API_KEY"
 ```
+
+If the state is `pending` or `processing`, wait for `retry_after_ms` when
+present, then query the same task again. For a `completed` task, download
+`result.data[0].url` and check `credits.charged` for that task. Use the result
+URL while it is available. For `failed` or `expired`, inspect the task
+details before submitting a new job.
+
+See [task states](/reference/tasks), [image parameters](/reference/image-generation),
+[billing](/operations/billing), and [error handling](/operations/errors).
+For text integration, follow the [Chat Completions reference](/reference/chat-completions).
 

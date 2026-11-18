@@ -5,15 +5,21 @@ description: 请求限流和额度校验规则。
 
 APIAny.AI 会在模型请求执行前完成 API Key 校验、模型权限校验、积分额度校验和速率限制。
 
-当请求超过限制时，接口会返回：
+OpenAI 兼容接口超过配置的请求限额时会返回 HTTP `429`：
 
 ```json
 {
   "error": {
-    "type": "rate_limit",
-    "message": "Rate limit exceeded"
+    "type": "rate_limit_error",
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded",
+    "param": null,
+    "request_id": "req_example"
   }
 }
 ```
 
 建议不同应用和不同环境使用独立 API Key，方便分别查看限流、额度和用量记录。
+
+响应可能带有 `X-RateLimit-Limit`、`X-RateLimit-Remaining` 和 `X-RateLimit-Reset`。
+请降低并发，并参阅[错误处理](/zh/operations/errors)中的重试说明。

@@ -16,7 +16,8 @@ debug your request.
     "message": "Insufficient credits",
     "type": "insufficient_quota",
     "code": "insufficient_credits",
-    "param": null
+    "param": null,
+    "request_id": "req_example"
   }
 }
 ```
@@ -29,7 +30,8 @@ debug your request.
   "error": {
     "type": "authentication_error",
     "message": "Invalid API key"
-  }
+  },
+  "request_id": "req_example"
 }
 ```
 
@@ -57,13 +59,32 @@ The error `type` / `status` is derived from the HTTP status:
 | 404  | not_found_error       | not_found_error       | NOT_FOUND        |
 | 402  | insufficient_quota    | invalid_request_error | RESOURCE_EXHAUSTED |
 | 429  | rate_limit_error      | rate_limit_error      | RESOURCE_EXHAUSTED |
-| 5xx  | api_error             | api_error / overloaded_error | SERVER_ERROR / UNAVAILABLE |
+| 503  | api_error             | overloaded_error | UNAVAILABLE |
+| 504  | api_error             | api_error        | DEADLINE_EXCEEDED |
+
+## Fix authentication, credit or rate-limit errors
+
+| HTTP | Example OpenAI-style `error.code` | What to check |
+|------|-----------------------------------|---------------|
+| 401 | `auth_error` | Check that the header is `Authorization: Bearer $APIANY_API_KEY` and the key is active. See [authentication](/authentication). |
+| 403 | `model_not_allowed` | Check the requested model against the API key's allowed model list. |
+| 402 | `insufficient_credits` | Check `balance` using `GET /v1/credits/balance` and compare it with the request cost. See [billing](/operations/billing). |
+| 402 | `api_key_budget_exhausted` | Check `api_key.budget_remaining_credits` using the same endpoint. A key budget can be exhausted even when the account has credits. |
+| 429 | `rate_limit_exceeded` | Reduce concurrent requests. If supplied, use `X-RateLimit-Reset` to see when the request window resets. See [rate limits](/operations/rate-limits). |
+
+When a known request is rejected with HTTP `429`, retry a limited number of
+times with jittered exponential backoff. For example, draw the next wait at
+random between 0 and `min(30_000, 1_000 * 2 ** attempt)` milliseconds. If the
+response specifies a later `X-RateLimit-Reset`, also wait until that time.
+Honor your application's time budget. This retry rule applies to a confirmed
+rejection and to safe reads. A timeout during media submission requires the
+recovery steps below.
 
 ## Model parameter rejections
 
 When a model does not accept a value in your request, the endpoint returns HTTP `400` with the model's own explanation. Reasoning settings use the code `invalid_reasoning_effort`, and the message lists the values that model accepts, so the request can be corrected without guessing. Each model's accepted reasoning levels, its default and whether reasoning can be disabled are published in `GET /v1/models` under `capability_metadata.reasoning`.
 
-Rate limiting returns `429`, and a request that exceeds the time budget returns `504`. A `502` means the platform could not obtain a usable answer from the model after retrying — it is not a verdict on your parameters, so read the response body before changing them.
+A `504` indicates that a request exceeded its time budget. A `502` indicates that model execution did not produce a usable response. Read the structured error before changing request parameters.
 
 ## Media generation errors and retries
 
@@ -81,6 +102,10 @@ refusal. A message merely mentioning `safety`, or HTTP `502` alone, is not evide
 of a policy violation. If an asynchronous task is still `pending` or `processing`,
 continue querying `/v1/tasks/{task_id}` with the same `task_id`; do not submit a
 duplicate generation request.
+
+- With a known `task_id`, follow [task status](/reference/tasks) and resume polling that task after a client timeout. Once it finishes, inspect `credits.charged` and the [billing policy](/operations/billing) before deciding whether to submit again.
+- If submission timed out before you received a `task_id`, check task history before sending another create request. Keep any `request_id` or `X-Request-Id` you received for support. Some video tools have their own documented [request correlation](/models/video-models) option.
+- Treat a callback as a notification. Confirm its task ID and terminal result with an authenticated task lookup before taking an irreversible action. See [webhooks](/operations/webhooks).
 
 ## Minor-sensitive media prompts
 

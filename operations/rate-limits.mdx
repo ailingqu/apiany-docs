@@ -5,15 +5,22 @@ description: Request limits and quota behavior.
 
 APIAny.AI applies API key validation, model access checks, credit checks, and rate limits before a model request runs.
 
-When a request exceeds a configured limit, the API returns:
+When an OpenAI-compatible request exceeds a configured request limit, the API returns HTTP `429`:
 
 ```json
 {
   "error": {
-    "type": "rate_limit",
-    "message": "Rate limit exceeded"
+    "type": "rate_limit_error",
+    "code": "rate_limit_exceeded",
+    "message": "Rate limit exceeded",
+    "param": null,
+    "request_id": "req_example"
   }
 }
 ```
 
 Use separate API keys for different applications or environments so limits and usage remain easy to inspect.
+
+The response can include `X-RateLimit-Limit`, `X-RateLimit-Remaining` and
+`X-RateLimit-Reset`. Reduce parallel requests and see [error handling](/operations/errors)
+for retry guidance.

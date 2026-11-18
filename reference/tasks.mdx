@@ -3,7 +3,8 @@ title: Tasks
 description: Query long-running image, video, and future audio jobs.
 ---
 
-Use `/v1/tasks/{task_id}` to query asynchronous task state.
+Use `GET /v1/tasks/{task_id}` to query an asynchronous task from your account.
+Save the task ID and the `request_id` returned when you submit the job.
 
 ```bash
 curl https://apiany.ai/v1/tasks/task_123 \
@@ -17,6 +18,11 @@ curl https://apiany.ai/v1/tasks/task_123 \
 - `completed`
 - `failed`
 - `expired`
+
+While `terminal` is `false`, keep the same task ID and wait the indicated
+`retry_after_ms` before polling again. If your client reaches its own polling
+deadline, save the ID and resume later. To recover a request when you did not
+receive an ID, see [media timeout handling](/operations/errors).
 
 ## Completed task
 
@@ -62,10 +68,19 @@ The shape of `result` depends on the task type.
 ```json
 {
   "task_id": "task_123",
+  "request_id": "req_example",
   "status": "failed",
+  "terminal": true,
+  "result": null,
   "error": {
-    "type": "service_error",
-    "message": "The task could not be completed."
+    "code": "not_found",
+    "message": "Image generation did not return a valid image."
   }
 }
 ```
+
+The terminal task response includes `credits.reserved` and `credits.charged`.
+The reserved value is the original estimate. Use the charged value to check the
+final task cost, and see [billing](/operations/billing) for failure handling.
+
+See [webhooks](/operations/webhooks) to receive task notifications.

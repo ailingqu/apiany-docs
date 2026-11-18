@@ -7,7 +7,8 @@ import AuthHeader from "/zh/snippets/auth-header.mdx";
 
 ## 1. 创建 API Key
 
-进入 APIAny.AI 控制台，在 API Keys 页面创建项目密钥。
+在控制台的 [API Keys](https://apiany.ai/zh/dashboard/apikeys) 创建密钥，在终端设置
+`APIANY_API_KEY` 环境变量。密钥只保存在服务端，避免写入浏览器代码和代码仓库。
 
 <AuthHeader />
 
@@ -18,37 +19,53 @@ curl https://apiany.ai/v1/models \
   -H "Authorization: Bearer $APIANY_API_KEY"
 ```
 
-## 3. 调用对话模型
+## 3. 查看可用积分
 
 ```bash
-curl https://apiany.ai/v1/chat/completions \
+curl https://apiany.ai/v1/credits/balance \
+  -H "Authorization: Bearer $APIANY_API_KEY"
+```
+
+提交前查看 `balance` 和 `api_key.budget_remaining_credits`。
+密钥剩余预算为 `null` 表示未单独设置密钥预算，调用仍受账户积分余额限制。
+
+## 4. 用 GPT Image 2.6 生成 PNG
+
+确认模型列表中有 `gpt-image-2.6`。下面的请求生成一张 1K PNG。
+在 [模型页](https://apiany.ai/zh/models/gpt-image-2-6) 查看当前单次价格，也可先在
+Playground 里选择相同的参数。每次单独提交生成请求都可能消耗积分。
+
+```bash
+curl -i https://apiany.ai/v1/images/generations \
   -H "Authorization: Bearer $APIANY_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "gpt-5.4",
-    "messages": [
-      { "role": "user", "content": "为 APIAny.AI 写一句简短的产品标语。" }
-    ]
+    "model": "gpt-image-2.6",
+    "prompt": "奶油色背景上的哑光橙色陶瓷灯，棚拍产品照片",
+    "output_format": "png",
+    "size": "1:1",
+    "resolution": "1K",
+    "quality": "auto",
+    "n": 1
   }'
 ```
 
-## 4. 创建图片任务
+## 5. 取回图片并核对结算
 
-```bash
-curl https://apiany.ai/v1/images/generations \
-  -H "Authorization: Bearer $APIANY_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "nano-banana",
-    "prompt": "A clean product hero image for an AI API gateway",
-    "size": "1k"
-  }'
-```
-
-接口会返回 `task_id`。随后通过任务查询接口轮询结果：
+保存 HTTP `202` 响应中的 `task_id` 和 `request_id`。
+把下方的 `task_123` 替换成收到的 `task_id`：
 
 ```bash
 curl https://apiany.ai/v1/tasks/task_123 \
   -H "Authorization: Bearer $APIANY_API_KEY"
 ```
+
+状态为 `pending` 或 `processing` 时，如有 `retry_after_ms` 则按提示等待，
+再查询同一个任务。`completed` 时从 `result.data[0].url` 下载图片，通过
+`credits.charged` 核对该任务的扣费。请趁结果地址可用时下载。
+遇到 `failed` 或 `expired`，先核对任务详情再决定是否重新提交。
+
+参阅 [任务状态](/zh/reference/tasks)、[图像参数](/zh/reference/image-generation)、
+[计费](/zh/operations/billing)和[错误处理](/zh/operations/errors)。
+调用文本模型请参考 [Chat Completions](/zh/reference/chat-completions)。
 

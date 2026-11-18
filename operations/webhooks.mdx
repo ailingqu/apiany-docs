@@ -7,9 +7,10 @@ Async media tasks can include a callback URL when enabled for the API key or req
 
 Callbacks are retried by the platform when delivery fails.
 
-The callback body is the same shape as the task detail. The `result` differs by
-task type: image results carry `result.data[0].url`, while video/audio results
-carry `result.video_url` / `result.audio_url` (and `result.urls[]`).
+The JSON callback includes the task and request IDs, state, model, result, error
+and credits. Image results carry `result.data[0].url`; video and audio results
+carry `result.video_url` or `result.audio_url` and `result.urls[]`.
+The `X-ApiAny-Task-Id` and `X-ApiAny-Request-Id` headers repeat the identifiers.
 
 ```json
 {
@@ -25,7 +26,13 @@ carry `result.video_url` / `result.audio_url` (and `result.urls[]`).
 }
 ```
 
-## Recommendation
+## Verify a notification
 
-Always verify task status through `/v1/tasks/{task_id}` before treating a webhook as final in high-value workflows.
+1. Match the task ID against a job you submitted and acknowledge delivery with a `2xx`.
+2. Fetch [task status](/reference/tasks) using your API key. Use the authenticated result before making downstream changes. The callback headers are correlation identifiers, not signatures.
+3. Deduplicate task processing by `task_id` so repeated delivery does not trigger duplicate work.
+
+Set `callback_url` to a public HTTPS endpoint that accepts `POST` directly.
+Return `2xx` once you accept the notification. Follow [error handling](/operations/errors)
+to recover a task without relying on webhook delivery.
 

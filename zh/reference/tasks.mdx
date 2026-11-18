@@ -3,7 +3,8 @@ title: 任务查询
 description: 查询图片、视频以及后续音频等异步任务状态。
 ---
 
-使用 `/v1/tasks/{task_id}` 查询异步任务状态。
+通过 `GET /v1/tasks/{task_id}` 查询当前账户的异步任务。
+提交任务后，保存返回的任务 ID 和 `request_id`。
 
 ```bash
 curl https://apiany.ai/v1/tasks/task_123 \
@@ -17,6 +18,10 @@ curl https://apiany.ai/v1/tasks/task_123 \
 - `completed`
 - `failed`
 - `expired`
+
+`terminal` 为 `false` 时，按 `retry_after_ms` 指示等待，再查询同一个任务 ID。
+客户端轮询达到等待上限时，保存 ID，稍后恢复查询。
+提交超时且未收到 ID 时，参阅[媒体任务超时处理](/zh/operations/errors)。
 
 ## 成功任务
 
@@ -62,10 +67,18 @@ curl https://apiany.ai/v1/tasks/task_123 \
 ```json
 {
   "task_id": "task_123",
+  "request_id": "req_example",
   "status": "failed",
+  "terminal": true,
+  "result": null,
   "error": {
-    "type": "service_error",
-    "message": "任务未能完成。"
+    "code": "not_found",
+    "message": "Image generation did not return a valid image."
   }
 }
 ```
+
+最终任务响应会包含 `credits.reserved` 和 `credits.charged`。
+前者是初始预留积分，通过后者核对最终扣费。失败任务的处理规则参阅[计费说明](/zh/operations/billing)。
+
+通过 [Webhook 回调](/zh/operations/webhooks) 接收任务通知。

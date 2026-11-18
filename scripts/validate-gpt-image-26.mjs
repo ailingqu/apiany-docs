@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 
 const locales = ['', 'zh/', 'ja/', 'ko/', 'de/', 'fr/', 'es/'];
@@ -112,6 +113,23 @@ for (const prefix of locales) {
       assert.equal(Object.hasOwn(request, 'background'), false, `${label}${page}: examples should omit advanced background controls`);
       assertions++;
     }
+  }
+  if (prefix === '' || prefix === 'zh/') {
+    const quickstart = await readFile(`${prefix}quickstart.mdx`, 'utf8');
+    const commands = [...quickstart.matchAll(/\x60{3}bash\n([\s\S]+?)\x60{3}/g)].map((match) => match[1]);
+    assert.equal(commands.length, 4, `${label}: model list, balance check, generation, and polling examples`);
+    assert.match(commands[0], /\/v1\/models/);
+    assert.match(commands[1], /\/v1\/credits\/balance/);
+    assert.match(commands[2], /\/v1\/images\/generations/);
+    assert.match(commands[3], /\/v1\/tasks\/task_123/);
+    const request = JSON.parse(commands[2].match(/-d '([\s\S]+?)'/)[1]);
+    assert.ok(matches(request, schema, spec), `${label}: Quickstart example does not match the schema`);
+    for (const command of commands) {
+      assert.match(command, /Authorization: Bearer \$APIANY_API_KEY/);
+      const result = spawnSync('bash', ['-n'], { input: command, encoding: 'utf8' });
+      assert.equal(result.status, 0, result.stderr || String(result.error ?? ''));
+    }
+    assertions += 14;
   }
   console.log(`GPT Image 2.6 docs passed: ${label} (${assertions} cumulative checks)`);
 }
